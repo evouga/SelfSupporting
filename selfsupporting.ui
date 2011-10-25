@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SelfSupporting</class>
+ <widget class="QWidget" name="SelfSupporting">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1281</width>
+    <height>480</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>SelfSupporting</string>
+  </property>
+  <widget class="OpenGLPanel3D" name="GLPanel3D" native="true">
+   <property name="geometry">
+    <rect>
+     <x>9</x>
+     <y>9</y>
+     <width>621</width>
+     <height>461</height>
+    </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>50</width>
+     <height>50</height>
+    </size>
+   </property>
+   <property name="baseSize">
+    <size>
+     <width>640</width>
+     <height>480</height>
+    </size>
+   </property>
+  </widget>
+  <widget class="OpenGLPanel2D" name="GLPanel2D" native="true">
+   <property name="geometry">
+    <rect>
+     <x>650</x>
+     <y>9</y>
+     <width>621</width>
+     <height>461</height>
+    </rect>
+   </property>
+  </widget>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>OpenGLPanel3D</class>
+   <extends>QWidget</extends>
+   <header>openglpanel3d.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>OpenGLPanel2D</class>
+   <extends>QWidget</extends>
+   <header>openglpanel2d.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

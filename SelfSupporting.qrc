@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>plane.obj</file>
+    </qresource>
+</RCC>
