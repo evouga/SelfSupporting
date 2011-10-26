@@ -12,7 +12,7 @@
 using namespace std;
 using namespace Eigen;
 
-Mesh::Mesh(Controller &cont) : cont_(cont)
+Mesh::Mesh(Controller &cont) : cont_(cont), meshMutex_(QMutex::Recursive)
 {
 }
 
@@ -20,23 +20,39 @@ Mesh::~Mesh()
 {
 }
 
-const MyMesh &Mesh::getMesh() const
+const MyMesh &Mesh::getMesh()
 {
+    lockMesh();
     return mesh_;
+}
+
+void Mesh::lockMesh()
+{
+    meshMutex_.lock();
+}
+
+void Mesh::releaseMesh()
+{
+    meshMutex_.unlock();
 }
 
 void Mesh::copyMesh(const MyMesh &m)
 {
+    lockMesh();
     mesh_ = m;
+    releaseMesh();
 }
 
 void Mesh::clearMesh()
 {
+    lockMesh();
     mesh_ = MyMesh();
+    releaseMesh();
 }
 
 Vector3d Mesh::computeCentroid()
 {
+    lockMesh();
     Vector3d result;
     result.setZero();
     for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
@@ -45,11 +61,13 @@ Vector3d Mesh::computeCentroid()
             result[i] += mesh_.point(vi)[i];
     }
     result /= mesh_.n_vertices();
+    releaseMesh();
     return result;
 }
 
 double Mesh::computeBoundingSphere(const Eigen::Vector3d &center)
 {
+    lockMesh();
     double radius = 0;
     for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
     {
@@ -59,11 +77,13 @@ double Mesh::computeBoundingSphere(const Eigen::Vector3d &center)
         if(radius < thisr)
             radius = thisr;
     }
+    releaseMesh();
     return sqrt(radius);
 }
 
 double Mesh::computeBoundingCircle(const Eigen::Vector3d &center)
 {
+    lockMesh();
     double radius = 0;
     for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
     {
@@ -77,11 +97,13 @@ double Mesh::computeBoundingCircle(const Eigen::Vector3d &center)
         if(radius < thisr)
             radius = thisr;
     }
+    releaseMesh();
     return sqrt(radius);
 }
 
 MyMesh::Point Mesh::computeEdgeMidpoint(MyMesh::EdgeHandle edge)
 {
+    lockMesh();
     MyMesh::HalfedgeHandle heh = mesh_.halfedge_handle(edge, 0);
     if(!heh.is_valid())
         heh = mesh_.halfedge_handle(edge, 1);
@@ -90,11 +112,13 @@ MyMesh::Point Mesh::computeEdgeMidpoint(MyMesh::EdgeHandle edge)
     MyMesh::Point result = mesh_.point(mesh_.from_vertex_handle(heh));
     result += mesh_.point(mesh_.to_vertex_handle(heh));
     result *= 0.5;
+    releaseMesh();
     return result;
 }
 
-void Mesh::edgeEndpoints(MyMesh::EdgeHandle edge, MyMesh::Point &p1, MyMesh::Point &p2) const
+void Mesh::edgeEndpoints(MyMesh::EdgeHandle edge, MyMesh::Point &p1, MyMesh::Point &p2)
 {
+    lockMesh();
     MyMesh::HalfedgeHandle heh = mesh_.halfedge_handle(edge,0);
     if(!heh.is_valid())
         heh = mesh_.halfedge_handle(edge,1);
@@ -102,6 +126,7 @@ void Mesh::edgeEndpoints(MyMesh::EdgeHandle edge, MyMesh::Point &p1, MyMesh::Poi
 
     p1 = mesh_.point(mesh_.from_vertex_handle(heh));
     p2 = mesh_.point(mesh_.to_vertex_handle(heh));
+    releaseMesh();
 }
 
 double Mesh::randomDouble()
@@ -111,16 +136,19 @@ double Mesh::randomDouble()
 
 void Mesh::translateVertex(int vidx, const Eigen::Vector3d &translation)
 {
+    lockMesh();
     assert(vidx >= 0 && vidx < (int)mesh_.n_vertices());
 
     MyMesh::VertexHandle vh = mesh_.vertex_handle(vidx);
     MyMesh::Point &pt = mesh_.point(vh);
     for(int i=0; i<3; i++)
         pt[i] += translation[i];
+    releaseMesh();
 }
 
 void Mesh::translateFace(int fidx, const Vector3d &translation)
 {
+    lockMesh();
     assert(fidx >= 0 && fidx < (int)mesh_.n_faces());
 
     MyMesh::FaceHandle fh = mesh_.face_handle(fidx);
@@ -131,10 +159,12 @@ void Mesh::translateFace(int fidx, const Vector3d &translation)
         pt[1] += translation[1];
         pt[2] += translation[2];
     }
+    releaseMesh();
 }
 
 double Mesh::faceAreaOnPlane(MyMesh::FaceHandle face)
 {
+    lockMesh();
     MyMesh::FaceVertexIter prevvert = mesh_.fv_iter(face);
     MyMesh::FaceVertexIter curvert = prevvert;
     double area = 0;
@@ -151,21 +181,25 @@ double Mesh::faceAreaOnPlane(MyMesh::FaceHandle face)
     area += last[0]*first[2] - last[2]*first[0];
 
     area /= 2.0;
+    releaseMesh();
     return fabs(area);
 }
 
 int Mesh::numFaceVerts(MyMesh::FaceHandle face)
 {
+    lockMesh();
     int result = 0;
     for(MyMesh::FaceVertexIter fvi = mesh_.fv_iter(face); fvi; ++fvi)
     {
         result++;
     }
+    releaseMesh();
     return result;
 }
 
 double Mesh::vertexAreaOnPlane(MyMesh::VertexHandle vert)
 {
+    lockMesh();
     double ans = 0;
     for(MyMesh::VertexFaceIter it = mesh_.vf_iter(vert); it; ++it)
     {
@@ -173,20 +207,24 @@ double Mesh::vertexAreaOnPlane(MyMesh::VertexHandle vert)
         double facearea = faceAreaOnPlane(it);
         ans += facearea/verts;
     }
+    releaseMesh();
     return ans;
 }
 
 void Mesh::setPlaneAreaLoads()
 {
+    lockMesh();
     for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
     {
         double area = vertexAreaOnPlane(vi);
         mesh_.data(vi).set_load(area);
     }
+    releaseMesh();
 }
 
 void Mesh::getNRing(int vidx, int n, set<int> &nring)
 {
+    lockMesh();
     //TODO optimize away interior
     int numv = mesh_.n_vertices();
     assert(vidx >= 0 && vidx < numv);
@@ -212,10 +250,12 @@ void Mesh::getNRing(int vidx, int n, set<int> &nring)
         std::swap(result, newresult);
     }
     nring = *result;
+    releaseMesh();
 }
 
-Vector3d Mesh::projectToFace(MyMesh::FaceHandle fh, const Vector3d &p) const
+Vector3d Mesh::projectToFace(MyMesh::FaceHandle fh, const Vector3d &p)
 {
+    lockMesh();
     MyMesh::Point centroid;
     mesh_.calc_face_centroid(fh, centroid);
 
@@ -234,11 +274,13 @@ Vector3d Mesh::projectToFace(MyMesh::FaceHandle fh, const Vector3d &p) const
     for(int j=0; j<3; j++)
         diff[j] -= centroid[j];
     Vector3d result = p - diff.dot(normal) * normal;
+    releaseMesh();
     return result;
 }
 
-Vector3d Mesh::approximateClosestPoint(const Vector3d &p) const
+Vector3d Mesh::approximateClosestPoint(const Vector3d &p)
 {
+    lockMesh();
     int closestface = -1;
     double closestdist = std::numeric_limits<double>::infinity();
 
@@ -261,7 +303,9 @@ Vector3d Mesh::approximateClosestPoint(const Vector3d &p) const
     {
         MyMesh::FaceHandle fh = mesh_.face_handle(closestface);
         Vector3d newpos = projectToFace(fh, p);
+        releaseMesh();
         return newpos;
     }
+    releaseMesh();
     return p;
 }

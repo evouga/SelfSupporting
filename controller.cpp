@@ -8,6 +8,7 @@
 #include "networkmesh.h"
 #include "referencemeshrenderer.h"
 #include "solvers.h"
+#include "networkthread.h"
 
 using namespace Eigen;
 
@@ -16,6 +17,8 @@ Controller::Controller(MainWindow &w) : w_(w)
     rm_ = new ReferenceMesh(*this);
     nm_ = new NetworkMesh(*this);
     solvers_ = new Solvers();
+    nt_ = new NetworkThread(*this);
+    resetParams();
 }
 
 Controller::~Controller()
@@ -28,6 +31,7 @@ Controller::~Controller()
 void Controller::initialize()
 {
     buildQuadMesh(10,10);
+    nt_->start();
 }
 
 Solvers &Controller::getSolvers()
@@ -51,18 +55,16 @@ void Controller::loadMesh(const char *filename)
 void Controller::computeWeightsFromTopView()
 {
     rm_->setPlaneAreaLoads();
-    double wresidual = nm_->computeWeightsOnPlane(*rm_, w_.getWeightSliderValue());
+    double wresidual = nm_->computeWeightsOnPlane(*rm_, p_.weightsum);
     double hresidual = nm_->updateHeights();
-    QString msg = "Computed weights, with residual " + QString::number(wresidual) + ", heights with residual " + QString::number(hresidual) + ".";
-    w_.setStatusBar(msg);
+    p_.statusmsg = "Computed weights, with residual " + QString::number(wresidual) + ", heights with residual " + QString::number(hresidual) + ".";
     w_.updateGLWindows();
 }
 
 void Controller::resetNetworkMesh()
 {
     nm_->copyFromReferenceMesh(*rm_);
-    w_.setAlphaSliderValue(.1);
-    w_.setBetaSliderValue(.2);
+    resetParams();
     w_.updateGLWindows();
 }
 
@@ -76,28 +78,26 @@ void Controller::iterateNetwork()
 {
     nm_->setPlaneAreaLoads();
     //TODO fix
-    double alpha = w_.getAlphaSliderValue();
-    double beta = w_.getBetaSliderValue();
     double residualw = nm_->computeBestWeights();
-    double residualp = nm_->computeBestPositionsTangentLS(*rm_, alpha, beta);
-    QString msg = "Projected onto best weights and positions. Residual after calculating best weights " + QString::number(residualw)
+    double residualp = nm_->computeBestPositionsTangentLS(*rm_, 0.01*p_.alpha, 0.1*p_.beta);
+    p_.statusmsg = "Projected onto best weights and positions. Residual after calculating best weights " + QString::number(residualw)
             + ", and after adjusting position " + QString::number(residualp) + ".";
-    w_.setStatusBar(msg);
-    w_.setAlphaSliderValue(alpha*0.5);
-    w_.setBetaSliderValue(2*beta);
+    p_.alpha /= 2;
+    p_.beta *= 2;
     w_.updateGLWindows();
 }
 
 void Controller::jitterMesh()
 {
     rm_->jitterOnPlane();
+    resetNetworkMesh();
     w_.updateGLWindows();
 }
 
 void Controller::subdivideMesh()
 {
     nm_->subdivide();
-    w_.setBetaSliderValue(.2);
+    p_.beta = 2;
     w_.updateGLWindows();
 }
 
@@ -119,18 +119,21 @@ double Controller::computeMeshBoundingSphere(const Vector3d &center)
 void Controller::translateVertex(int vidx, const Vector3d &translation)
 {
     rm_->translateVertex(vidx, translation);
+    resetNetworkMesh();
     updateGLWindows();
 }
 
 void Controller::translateFace(int fidx, const Vector3d &translation)
 {
     rm_->translateFace(fidx, translation);
+    resetNetworkMesh();
     updateGLWindows();
 }
 
 void Controller::dragVertex(int vidx, const Vector3d &translation)
 {
     rm_->applyLaplacianDeformation(vidx, translation);
+    resetNetworkMesh();
     updateGLWindows();
 }
 
@@ -188,4 +191,17 @@ void Controller::setAnchor(int vidx)
 void Controller::clearAnchor(int vidx)
 {
     rm_->setAnchor(vidx, false);
+}
+
+void Controller::resetParams()
+{
+    p_.statusmsg = "Ready";
+    p_.alpha = 10;
+    p_.beta = 2;
+    p_.weightsum = 50;
+}
+
+const Params &Controller::getParams()
+{
+    return p_;
 }

@@ -28,7 +28,8 @@ SOURCES += main.cpp\
     referencemesh.cpp \
     networkmesh.cpp \
     networkmeshrenderer.cpp \
-    referencemeshrenderer.cpp
+    referencemeshrenderer.cpp \
+    networkthread.cpp
 
 HEADERS  += \
     eiquadprog.hpp \
@@ -49,7 +50,8 @@ HEADERS  += \
     referencemesh.h \
     networkmesh.h \
     networkmeshrenderer.h \
-    referencemeshrenderer.h
+    referencemeshrenderer.h \
+    networkthread.h
 
 FORMS    += \
     mainwindow.ui \
@@ -109,6 +111,8 @@ QMAKE_CXXFLAGS += -g
 unix:!macx:!symbian: LIBS += -lbcls
 
 unix|win32: LIBS += -lcblas
+
+
 
 
 

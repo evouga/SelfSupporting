@@ -27,14 +27,20 @@ MeshRenderer &ReferenceMesh::getRenderer()
 
 bool ReferenceMesh::loadMesh(const char *name)
 {
+    lockMesh();
     OpenMesh::IO::Options opt;
     if(!OpenMesh::IO::read_mesh(mesh_, name, opt))
+    {
+        releaseMesh();
         return false;
+    }
+    releaseMesh();
     return true;
 }
 
 void ReferenceMesh::buildQuadMesh(int w, int h)
 {
+    lockMesh();
     if(w<2)
         w=2;
     if(h<2)
@@ -59,10 +65,13 @@ void ReferenceMesh::buildQuadMesh(int w, int h)
             face_vhandles.push_back(MyMesh::VertexHandle(i*w+j+w));
             mesh_.add_face(face_vhandles);
         }
+
+    releaseMesh();
 }
 
 void ReferenceMesh::buildTriMesh(int w, int h)
 {
+    lockMesh();
     if(w<2)
         w=2;
     if(h<2)
@@ -90,10 +99,13 @@ void ReferenceMesh::buildTriMesh(int w, int h)
             face_vhandles[2] = MyMesh::VertexHandle(i*w+j+w);
             mesh_.add_face(face_vhandles);
         }
+
+    releaseMesh();
 }
 
 void ReferenceMesh::computeClosestPointOnPlane(const Vector2d &pos, int &closestidx, double &closestdist)
 {
+    lockMesh();
     closestdist = std::numeric_limits<double>::infinity();
     closestidx = -1;
 
@@ -111,13 +123,18 @@ void ReferenceMesh::computeClosestPointOnPlane(const Vector2d &pos, int &closest
     }
 
     closestdist = sqrt(closestdist);
+    releaseMesh();
 }
 
 void ReferenceMesh::jitterOnPlane()
 {
+    lockMesh();
     int n = mesh_.n_vertices();
     if(n == 0)
+    {
+        releaseMesh();
         return;
+    }
     VectorXd lens(n);
     for(int i=0; i<n; i++)
     {
@@ -142,10 +159,13 @@ void ReferenceMesh::jitterOnPlane()
         pt[0] += scale*(2.0*randomDouble()-1.0);
         pt[2] += scale*(2.0*randomDouble()-1.0);
     }
+    releaseMesh();
 }
 
 void ReferenceMesh::applyLaplacianDeformation(int vidx, const Eigen::Vector3d &delta)
 {
+    lockMesh();
+
     int n = mesh_.n_vertices();
 
     DynamicSparseMatrix<double> L(3*n,3*n);
@@ -218,12 +238,15 @@ void ReferenceMesh::applyLaplacianDeformation(int vidx, const Eigen::Vector3d &d
         pt[2] = v0[3*i+2];
     }
 
+    releaseMesh();
 }
 
 void ReferenceMesh::setAnchor(int vidx, bool state)
 {
+    lockMesh();
     int n = mesh_.n_vertices();
     assert(vidx >= 0 && vidx < n);
 
     mesh_.data(mesh_.vertex_handle(vidx)).set_anchored(state);
+    releaseMesh();
 }

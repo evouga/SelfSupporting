@@ -41,6 +41,7 @@ void ReferenceMeshRenderer::render2D()
         glVertex2d(pt[0], pt[2]);
     }
     glEnd();
+    m_.releaseMesh();
 }
 
 void ReferenceMeshRenderer::render3D()
@@ -155,5 +156,6 @@ void ReferenceMeshRenderer::renderSurface3D(int renderFlags)
     }
     gluDeleteQuadric(sphere);
 
+    m_.releaseMesh();
 
 }

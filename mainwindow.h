@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QApplication>
 #include "controller.h"
 
 namespace Ui {
@@ -17,15 +18,11 @@ public:
     ~MainWindow();
     void updateGLWindows();
     void centerCameras();
-    void setStatusBar(QString &str);
-    double getWeightSliderValue();
 
-    void setAlphaSliderValue(double value);
-    double getAlphaSliderValue();
-    void setBetaSliderValue(double value);
-    double getBetaSliderValue();
     bool showReferenceMesh();
     bool showNetworkMesh();
+
+    void paintEvent(QPaintEvent *);
 
 private slots:
 

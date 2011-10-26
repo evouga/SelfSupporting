@@ -2,11 +2,21 @@
 #define CONTROLLER_H
 
 #include <Eigen/Core>
+#include <QString>
 
 class MainWindow;
 class ReferenceMesh;
 class NetworkMesh;
 class Solvers;
+class NetworkThread;
+
+struct Params
+{
+    QString statusmsg;
+    int alpha;
+    int beta;
+    int weightsum;
+};
 
 class Controller
 {
@@ -45,13 +55,18 @@ public:
     void renderMesh2D();
 
     void updateGLWindows();
+    const Params &getParams();
 
 private:
+    void resetParams();
+
     MainWindow &w_;
     ReferenceMesh *rm_;
     NetworkMesh *nm_;
     Solvers *solvers_;
+    NetworkThread *nt_;
 
+    Params p_;
 };
 
 #endif // CONTROLLER_H

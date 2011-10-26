@@ -4,6 +4,7 @@
 #include <OpenMesh/Core/IO/MeshIO.hh>   // Must be included before mesh kernel
 #include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
 #include <set>
+#include <QMutex>
 
 #include <Eigen/Core>
 
@@ -53,7 +54,10 @@ public:
 
     enum PrimType {PT_NONE, PT_VERTEX, PT_EDGE, PT_FACE};
 
-    const MyMesh &getMesh() const;
+    const MyMesh &getMesh();
+    void lockMesh();
+    void releaseMesh();
+
     void copyMesh(const MyMesh &m);
     void clearMesh();
 
@@ -70,9 +74,9 @@ public:
 
     void setPlaneAreaLoads();
 
-    Eigen::Vector3d projectToFace(MyMesh::FaceHandle fh, const Eigen::Vector3d &p) const;
-    Eigen::Vector3d approximateClosestPoint(const Eigen::Vector3d &p) const;
-    void edgeEndpoints(MyMesh::EdgeHandle edge, MyMesh::Point &p1, MyMesh::Point &p2) const;
+    Eigen::Vector3d projectToFace(MyMesh::FaceHandle fh, const Eigen::Vector3d &p);
+    Eigen::Vector3d approximateClosestPoint(const Eigen::Vector3d &p);
+    void edgeEndpoints(MyMesh::EdgeHandle edge, MyMesh::Point &p1, MyMesh::Point &p2);
 
 
 protected:
@@ -83,9 +87,11 @@ protected:
     int numFaceVerts(MyMesh::FaceHandle face);
     MyMesh::Point computeEdgeMidpoint(MyMesh::EdgeHandle edge);
 
-
     MyMesh mesh_;
     Controller &cont_;
+    QMutex meshMutex_;
+
+
 private:
 
 };

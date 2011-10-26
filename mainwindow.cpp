@@ -26,31 +26,6 @@ void MainWindow::centerCameras()
     ui->GLPanel3D->centerCamera();
 }
 
-double MainWindow::getWeightSliderValue()
-{
-    return ui->weightSumSlider->value();
-}
-
-double MainWindow::getBetaSliderValue()
-{
-    return 0.1*ui->betaSlider->value();
-}
-
-double MainWindow::getAlphaSliderValue()
-{
-    return 0.01*ui->alphaSlider->value();
-}
-
-void MainWindow::setAlphaSliderValue(double value)
-{
-    ui->alphaSlider->setValue(100*value);
-}
-
-void MainWindow::setBetaSliderValue(double value)
-{
-    ui->betaSlider->setValue(10*value);
-}
-
 void MainWindow::on_actionLoad_Mesh_triggered()
 {
     QString filename = QFileDialog::getOpenFileName(this, "Load Mesh", ".", "Mesh Files (*.obj)");
@@ -74,15 +49,21 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
         close();
 }
 
-void MainWindow::updateGLWindows()
+void MainWindow::paintEvent(QPaintEvent *e)
 {
+    const Params &p = c_.getParams();
+    ui->statusbar->showMessage(p.statusmsg);
+    ui->alphaSlider->setValue(p.alpha);
+    ui->betaSlider->setValue(p.beta);
     ui->GLPanel2D->updateGL();
     ui->GLPanel3D->updateGL();
 }
 
-void MainWindow::setStatusBar(QString &str)
+void MainWindow::updateGLWindows()
 {
-    ui->statusbar->showMessage(str);
+    update();
+//    ui->GLPanel2D->updateGL();
+//    ui->GLPanel3D->updateGL();
 }
 
 void MainWindow::on_jitterButton_clicked()

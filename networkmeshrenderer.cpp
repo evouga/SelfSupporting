@@ -26,6 +26,7 @@ void NetworkMeshRenderer::render3D()
         glVertex3f(p2[0],p2[1],p2[2]);
     }
     glEnd();
+    m_.releaseMesh();
 }
 
 void NetworkMeshRenderer::render2D()

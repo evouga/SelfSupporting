@@ -14,9 +14,9 @@ public:
 
     MeshRenderer &getRenderer();
 
-    void copyFromReferenceMesh(const ReferenceMesh &rm);
+    void copyFromReferenceMesh(ReferenceMesh &rm);
 
-    double computeWeightsOnPlane(const ReferenceMesh &rm, double sum);
+    double computeWeightsOnPlane(ReferenceMesh &rm, double sum);
     double updateHeights();
 
     // Given a (possibly non-self-supporting) 3D mesh, finds non-negative weights that come as close as possible to
@@ -24,9 +24,9 @@ public:
     double computeBestWeights();
 
     // Given non-negative weights, finds the closest mesh to the given mesh that is self-supporting with those weights
-    double computeBestPositionsTangentLS(const ReferenceMesh &rm, double alpha, double beta);
+    double computeBestPositionsTangentLS(ReferenceMesh &rm, double alpha, double beta);
 
-    void projectOntoReference(const ReferenceMesh &rm);
+    void projectOntoReference(ReferenceMesh &rm);
 
 
     void subdivide();

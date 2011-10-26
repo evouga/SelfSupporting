@@ -25,13 +25,15 @@ MeshRenderer &NetworkMesh::getRenderer()
     return *renderer_;
 }
 
-void NetworkMesh::copyFromReferenceMesh(const ReferenceMesh &rm)
+void NetworkMesh::copyFromReferenceMesh(ReferenceMesh &rm)
 {
     copyMesh(rm.getMesh());
+    rm.releaseMesh();
 }
 
 double NetworkMesh::calculateEquilibriumViolation()
 {
+    lockMesh();
     double result = 0;
     int n = mesh_.n_vertices();
     for(int i=0; i<n; i++)
@@ -54,11 +56,13 @@ double NetworkMesh::calculateEquilibriumViolation()
         sum[1] += mesh_.data(vh).load();
         result += sum[0]*sum[0] + sum[1]*sum[1] + sum[2]*sum[2];
     }
+    releaseMesh();
     return sqrt(result);
 }
 
 double NetworkMesh::computeBestWeights()
 {
+    lockMesh();
     int n = mesh_.n_vertices();
     int e = mesh_.n_edges();
 
@@ -144,12 +148,15 @@ double NetworkMesh::computeBestWeights()
     }
 
     fixBadVertices();
-
-    return calculateEquilibriumViolation();
+    double residual = calculateEquilibriumViolation();
+    releaseMesh();
+    return residual;
 }
 
-double NetworkMesh::computeBestPositionsTangentLS(const ReferenceMesh &rm, double alpha, double beta)
+double NetworkMesh::computeBestPositionsTangentLS(ReferenceMesh &rm, double alpha, double beta)
 {
+    rm.lockMesh();
+    lockMesh();
     int n = mesh_.n_vertices();
 
     VectorXd q0(3*n);
@@ -239,12 +246,18 @@ double NetworkMesh::computeBestPositionsTangentLS(const ReferenceMesh &rm, doubl
             pt[j] = result[3*i+j];
     }
 
-    return calculateEquilibriumViolation();
+    double residual = calculateEquilibriumViolation();
+    releaseMesh();
+    rm.releaseMesh();
+    return residual;
 }
 
 
-double NetworkMesh::computeWeightsOnPlane(const ReferenceMesh &rm, double sum)
+double NetworkMesh::computeWeightsOnPlane(ReferenceMesh &rm, double sum)
 {
+    rm.lockMesh();
+    lockMesh();
+
     copyFromReferenceMesh(rm);
     int n = mesh_.n_vertices();
     if(n == 0)
@@ -367,14 +380,21 @@ double NetworkMesh::computeWeightsOnPlane(const ReferenceMesh &rm, double sum)
         mesh_.data(eh).set_weight(weight);
     }
 
+    releaseMesh();
+    rm.releaseMesh();
+
     return residual;
 }
 
 double NetworkMesh::updateHeights()
 {
+    lockMesh();
     int n = mesh_.n_vertices();
     if(n == 0)
+    {
+        releaseMesh();
         return 0;
+    }
 
     MatrixXd M(n,n);
     M.setZero();
@@ -418,26 +438,36 @@ double NetworkMesh::updateHeights()
         mesh_.point(vh)[1] = -heights[i];
     }
 
+    releaseMesh();
     return residual;
 }
 
 bool NetworkMesh::isBadVertex(MyMesh::VertexHandle vert)
 {
+    lockMesh();
     if(mesh_.is_boundary(vert))
+    {
+        releaseMesh();
         return false;
+    }
 
     for(MyMesh::VertexOHalfedgeIter vhe = mesh_.voh_iter(vert); vhe; ++vhe)
     {
         MyMesh::HalfedgeHandle heh = vhe;
         MyMesh::EdgeHandle eh = mesh_.edge_handle(heh);
         if(mesh_.data(eh).weight() > 1e-6)
+        {
+            releaseMesh();
             return false;
+        }
     }
+    releaseMesh();
     return true;
 }
 
 void NetworkMesh::subdivide()
 {
+    lockMesh();
     int e = mesh_.n_edges();
     int n = mesh_.n_vertices();
     int f = mesh_.n_faces();
@@ -546,10 +576,13 @@ void NetworkMesh::subdivide()
     }
 
     mesh_ = newmesh;
+    releaseMesh();
 }
 
-void NetworkMesh::projectOntoReference(const ReferenceMesh &rm)
+void NetworkMesh::projectOntoReference(ReferenceMesh &rm)
 {
+    rm.lockMesh();
+    lockMesh();
     for(MyMesh::VertexIter v = mesh_.vertices_begin(); v != mesh_.vertices_end(); ++v)
     {
         MyMesh::Point &pt = mesh_.point(v);
@@ -558,10 +591,13 @@ void NetworkMesh::projectOntoReference(const ReferenceMesh &rm)
         for(int j=0; j<3; j++)
             pt[j] = newpos[j];
     }
+    releaseMesh();
+    rm.releaseMesh();
 }
 
 void NetworkMesh::fixBadVertices()
 {
+    lockMesh();
     for(MyMesh::VertexIter v = mesh_.vertices_begin(); v != mesh_.vertices_end(); ++v)
     {
         if(isBadVertex(v))
@@ -570,4 +606,5 @@ void NetworkMesh::fixBadVertices()
         }
     }
     mesh_.garbage_collection();
+    releaseMesh();
 }
