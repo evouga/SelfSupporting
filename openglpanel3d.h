@@ -20,7 +20,7 @@ public:
     void centerCamera();
 
 protected:
-    enum MouseAction { MA_NONE, MA_TRANSLATE, MA_ROTATE, MA_ZOOM, MA_SELECT };
+    enum MouseAction { MA_NONE, MA_TRANSLATE, MA_ROTATE, MA_ZOOM, MA_SELECT, MA_DELETEFACE };
 
     void initializeGL();
     void resizeGL(int w, int h);

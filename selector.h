@@ -12,7 +12,7 @@ class Selector
 public:
     Selector(Camera &c);
 
-    enum SelectMode {SM_DRAG, SM_SETANCHOR, SM_CLEARANCHOR};
+    enum SelectMode {SM_DRAG, SM_SETANCHOR, SM_CLEARANCHOR, SM_DELETEFACE};
 
     void setController(Controller &c);
 

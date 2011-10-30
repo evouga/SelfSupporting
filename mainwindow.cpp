@@ -4,6 +4,7 @@
 #include <QMessageBox>
 #include <QKeyEvent>
 #include "newmeshdialog.h"
+#include "networkthread.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -13,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->GLPanel3D->setController(c_);
     ui->GLPanel2D->setController(c_);
     c_.initialize();
+    connect(c_.getNT(), SIGNAL(updateUI()), this, SLOT(updateUI()));
 }
 
 MainWindow::~MainWindow()
@@ -49,21 +51,13 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
         close();
 }
 
-void MainWindow::paintEvent(QPaintEvent *e)
+void MainWindow::updateGLWindows()
 {
     const Params &p = c_.getParams();
     ui->statusbar->showMessage(p.statusmsg);
-    ui->alphaSlider->setValue(p.alpha);
-    ui->betaSlider->setValue(p.beta);
     ui->GLPanel2D->updateGL();
     ui->GLPanel3D->updateGL();
-}
-
-void MainWindow::updateGLWindows()
-{
     update();
-//    ui->GLPanel2D->updateGL();
-//    ui->GLPanel3D->updateGL();
 }
 
 void MainWindow::on_jitterButton_clicked()
@@ -120,6 +114,11 @@ bool MainWindow::showNetworkMesh()
     return ui->networkCheckBox->isChecked();
 }
 
+bool MainWindow::showNetworkSurface()
+{
+    return ui->networkSurfaceCheckBox->isChecked();
+}
+
 void MainWindow::on_resetButton_clicked()
 {
      c_.resetNetworkMesh();
@@ -128,4 +127,9 @@ void MainWindow::on_resetButton_clicked()
 void MainWindow::on_iterateButton_clicked()
 {
     c_.iterateNetwork();
+}
+
+void MainWindow::updateUI()
+{
+    updateGLWindows();
 }

@@ -10,6 +10,7 @@ public:
 
     void render3D();
     void render2D();
+    void renderSurface();
 };
 
 #endif // NETWORKMESHRENDERER_H

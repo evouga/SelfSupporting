@@ -135,20 +135,30 @@ double NetworkMesh::computeBestWeights()
     }
 
     SparseMatrix<double> M(Md);
-    cont_.getSolvers().solveBCLS(M, rhs, lb, ub, result);
+    int oldid = getMeshID();
+    releaseMesh();
 
-    for(int i=0; i<e; i++)
+    cont_.getSolvers().solveBCLS(M, rhs, lb, ub, result);
+    double residual = std::numeric_limits<double>::infinity();
+
+    lockMesh();
+    if(getMeshID() == oldid)
     {
-        if(result[i] < 0 || isnan(result[i]))
-            result[i] = 0;
-        MyMesh::EdgeHandle eh = mesh_.edge_handle(i);
-        if(mesh_.is_boundary(eh))
-            result[i] = 0;
-        mesh_.data(eh).set_weight(result[i]);
+        for(int i=0; i<e; i++)
+        {
+            if(result[i] < 0 || isnan(result[i]))
+                result[i] = 0;
+            MyMesh::EdgeHandle eh = mesh_.edge_handle(i);
+            if(mesh_.is_boundary(eh))
+                result[i] = 0;
+            mesh_.data(eh).set_weight(result[i]);
+        }
+
+        fixBadVertices();
+        residual = calculateEquilibriumViolation();
+        invalidateMesh();
     }
 
-    fixBadVertices();
-    double residual = calculateEquilibriumViolation();
     releaseMesh();
     return residual;
 }
@@ -236,19 +246,29 @@ double NetworkMesh::computeBestPositionsTangentLS(ReferenceMesh &rm, double alph
     Md += beta*CEd*CEd.transpose();
     SparseMatrix<double> M(Md);
 
-    cont_.getSolvers().linearSolveCG(M, rhs, result);
-
-    for(int i=0; i<n; i++)
-    {
-        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
-        MyMesh::Point &pt = mesh_.point(vh);
-        for(int j=0; j<3; j++)
-            pt[j] = result[3*i+j];
-    }
-
-    double residual = calculateEquilibriumViolation();
+    int oldid = getMeshID();
     releaseMesh();
     rm.releaseMesh();
+
+    cont_.getSolvers().linearSolveCG(M, rhs, result);
+    double residual = std::numeric_limits<double>::infinity();
+
+    lockMesh();
+    if(oldid == getMeshID())
+    {
+        for(int i=0; i<n; i++)
+        {
+            MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+            MyMesh::Point &pt = mesh_.point(vh);
+            for(int j=0; j<3; j++)
+                pt[j] = result[3*i+j];
+        }
+
+        residual = calculateEquilibriumViolation();
+        invalidateMesh();
+    }
+    releaseMesh();
+
     return residual;
 }
 
@@ -576,6 +596,7 @@ void NetworkMesh::subdivide()
     }
 
     mesh_ = newmesh;
+    invalidateMesh();
     releaseMesh();
 }
 
@@ -591,6 +612,7 @@ void NetworkMesh::projectOntoReference(ReferenceMesh &rm)
         for(int j=0; j<3; j++)
             pt[j] = newpos[j];
     }
+    invalidateMesh();
     releaseMesh();
     rm.releaseMesh();
 }

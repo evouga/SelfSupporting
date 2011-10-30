@@ -13,8 +13,8 @@ class NetworkThread;
 struct Params
 {
     QString statusmsg;
-    int alpha;
-    int beta;
+    double alpha;
+    double beta;
     int weightsum;
 };
 
@@ -49,6 +49,7 @@ public:
 
     void setAnchor(int vidx);
     void clearAnchor(int vidx);
+    void deleteFace(int fidx);
 
     void renderMesh3D();
     void renderPickMesh3D();
@@ -56,6 +57,8 @@ public:
 
     void updateGLWindows();
     const Params &getParams();
+
+    NetworkThread *getNT();
 
 private:
     void resetParams();

@@ -21,8 +21,7 @@ public:
 
     bool showReferenceMesh();
     bool showNetworkMesh();
-
-    void paintEvent(QPaintEvent *);
+    bool showNetworkSurface();
 
 private slots:
 
@@ -48,16 +47,14 @@ private slots:
 
     void on_iterateButton_clicked();
 
+    void updateUI();
+
 protected:
     void moveEvent(QMoveEvent *);
     void resizeEvent(QResizeEvent *);
     void keyPressEvent(QKeyEvent *);
 
 private:
-    //void loadMesh(const char *filename);
-    //void jitterMesh();
-    //void subdivideMesh();
-
     Ui::MainWindow *ui;
     Controller c_;
 };

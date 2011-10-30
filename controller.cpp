@@ -9,6 +9,7 @@
 #include "referencemeshrenderer.h"
 #include "solvers.h"
 #include "networkthread.h"
+#include "networkmeshrenderer.h"
 
 using namespace Eigen;
 
@@ -23,9 +24,17 @@ Controller::Controller(MainWindow &w) : w_(w)
 
 Controller::~Controller()
 {
+    nt_->stop();
+    nt_->wait(ULONG_MAX);
+    delete nt_;
     delete rm_;
     delete nm_;
     delete solvers_;
+}
+
+NetworkThread *Controller::getNT()
+{
+    return nt_;
 }
 
 void Controller::initialize()
@@ -76,15 +85,16 @@ void Controller::projectNetwork()
 
 void Controller::iterateNetwork()
 {
-    nm_->setPlaneAreaLoads();
-    //TODO fix
+    nm_->setSurfaceAreaLoads();
+
     double residualw = nm_->computeBestWeights();
-    double residualp = nm_->computeBestPositionsTangentLS(*rm_, 0.01*p_.alpha, 0.1*p_.beta);
+    double residualp = nm_->computeBestPositionsTangentLS(*rm_, p_.alpha, p_.beta);
     p_.statusmsg = "Projected onto best weights and positions. Residual after calculating best weights " + QString::number(residualw)
-            + ", and after adjusting position " + QString::number(residualp) + ".";
-    p_.alpha /= 2;
-    p_.beta *= 2;
-    w_.updateGLWindows();
+            + ", and after adjusting position " + QString::number(residualp) + "." + " Alpha: " + QString::number(p_.alpha) + " Beta: " + QString::number(p_.beta);
+    p_.alpha /= 2.;
+    p_.alpha = std::max(p_.alpha, 1e-15);
+    p_.beta *= 2.;
+    p_.beta = std::min(p_.beta, 1e15);
 }
 
 void Controller::jitterMesh()
@@ -97,7 +107,7 @@ void Controller::jitterMesh()
 void Controller::subdivideMesh()
 {
     nm_->subdivide();
-    p_.beta = 2;
+    p_.beta = .2;
     w_.updateGLWindows();
 }
 
@@ -149,10 +159,13 @@ void Controller::renderMesh2D()
 
 void Controller::renderMesh3D()
 {
+    if(w_.showNetworkSurface())
+        ((NetworkMeshRenderer &)nm_->getRenderer()).renderSurface();
     if(w_.showNetworkMesh())
         nm_->getRenderer().render3D();
     if(w_.showReferenceMesh())
         rm_->getRenderer().render3D();
+
 }
 
 void Controller::renderPickMesh3D()
@@ -193,11 +206,18 @@ void Controller::clearAnchor(int vidx)
     rm_->setAnchor(vidx, false);
 }
 
+void Controller::deleteFace(int fidx)
+{
+    rm_->deleteFace(fidx);
+    resetNetworkMesh();
+    w_.updateGLWindows();
+}
+
 void Controller::resetParams()
 {
     p_.statusmsg = "Ready";
-    p_.alpha = 10;
-    p_.beta = 2;
+    p_.alpha = 0.1;
+    p_.beta = 0.2;
     p_.weightsum = 50;
 }
 

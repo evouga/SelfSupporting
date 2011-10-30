@@ -98,6 +98,8 @@ OpenGLPanel3D::MouseAction OpenGLPanel3D::deduceAction(QMouseEvent *event)
     }
     else if(event->buttons() & Qt::RightButton)
     {
+        if(event->modifiers() & Qt::ShiftModifier)
+            return MA_DELETEFACE;
         return MA_ZOOM;
     }
     return MA_NONE;
@@ -133,6 +135,12 @@ void OpenGLPanel3D::mousePressEvent(QMouseEvent *event)
         {
             // queue pos for rendering
             selector_.startEditing(pos, Selector::SM_DRAG);
+            cont_->updateGLWindows();
+            break;
+        }
+        case MA_DELETEFACE:
+        {
+            selector_.startEditing(pos, Selector::SM_DELETEFACE);
             cont_->updateGLWindows();
             break;
         }

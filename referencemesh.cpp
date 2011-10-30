@@ -250,3 +250,14 @@ void ReferenceMesh::setAnchor(int vidx, bool state)
     mesh_.data(mesh_.vertex_handle(vidx)).set_anchored(state);
     releaseMesh();
 }
+
+void ReferenceMesh::deleteFace(int fidx)
+{
+    lockMesh();
+    int f = mesh_.n_faces();
+    assert(fidx >= 0 && fidx < f);
+    MyMesh::FaceHandle fh = mesh_.face_handle(fidx);
+    mesh_.delete_face(fh, true);
+    mesh_.garbage_collection();
+    releaseMesh();
+}

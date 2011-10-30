@@ -19,18 +19,18 @@
      <rect>
       <x>10</x>
       <y>50</y>
-      <width>600</width>
-      <height>600</height>
+      <width>681</width>
+      <height>681</height>
      </rect>
     </property>
    </widget>
    <widget class="OpenGLPanel2D" name="GLPanel2D" native="true">
     <property name="geometry">
      <rect>
-      <x>620</x>
+      <x>709</x>
       <y>50</y>
-      <width>600</width>
-      <height>600</height>
+      <width>511</width>
+      <height>501</height>
      </rect>
     </property>
    </widget>
@@ -108,8 +108,8 @@
    <widget class="QCheckBox" name="referenceCheckBox">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>660</y>
+      <x>710</x>
+      <y>650</y>
       <width>191</width>
       <height>22</height>
      </rect>
@@ -124,8 +124,8 @@
    <widget class="QCheckBox" name="networkCheckBox">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>680</y>
+      <x>710</x>
+      <y>670</y>
       <width>191</width>
       <height>22</height>
      </rect>
@@ -163,42 +163,20 @@
      <string>Project</string>
     </property>
    </widget>
-   <widget class="QSlider" name="betaSlider">
+   <widget class="QCheckBox" name="networkSurfaceCheckBox">
     <property name="geometry">
      <rect>
-      <x>440</x>
-      <y>650</y>
-      <width>160</width>
-      <height>29</height>
+      <x>710</x>
+      <y>690</y>
+      <width>231</width>
+      <height>22</height>
      </rect>
     </property>
-    <property name="maximum">
-     <number>1000</number>
+    <property name="text">
+     <string>Show thrust network surface</string>
     </property>
-    <property name="value">
-     <number>2</number>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
-   </widget>
-   <widget class="QSlider" name="alphaSlider">
-    <property name="geometry">
-     <rect>
-      <x>440</x>
-      <y>680</y>
-      <width>160</width>
-      <height>29</height>
-     </rect>
-    </property>
-    <property name="maximum">
-     <number>100</number>
-    </property>
-    <property name="value">
-     <number>10</number>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
+    <property name="checked">
+     <bool>false</bool>
     </property>
    </widget>
   </widget>

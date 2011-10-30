@@ -12,7 +12,7 @@
 using namespace std;
 using namespace Eigen;
 
-Mesh::Mesh(Controller &cont) : cont_(cont), meshMutex_(QMutex::Recursive)
+Mesh::Mesh(Controller &cont) : cont_(cont), meshMutex_(QMutex::Recursive), meshID_(0)
 {
 }
 
@@ -40,6 +40,7 @@ void Mesh::copyMesh(const MyMesh &m)
 {
     lockMesh();
     mesh_ = m;
+    invalidateMesh();
     releaseMesh();
 }
 
@@ -47,6 +48,7 @@ void Mesh::clearMesh()
 {
     lockMesh();
     mesh_ = MyMesh();
+    invalidateMesh();
     releaseMesh();
 }
 
@@ -143,6 +145,7 @@ void Mesh::translateVertex(int vidx, const Eigen::Vector3d &translation)
     MyMesh::Point &pt = mesh_.point(vh);
     for(int i=0; i<3; i++)
         pt[i] += translation[i];
+    invalidateMesh();
     releaseMesh();
 }
 
@@ -159,6 +162,7 @@ void Mesh::translateFace(int fidx, const Vector3d &translation)
         pt[1] += translation[1];
         pt[2] += translation[2];
     }
+    invalidateMesh();
     releaseMesh();
 }
 
@@ -211,6 +215,49 @@ double Mesh::vertexAreaOnPlane(MyMesh::VertexHandle vert)
     return ans;
 }
 
+double Mesh::vertexArea(MyMesh::VertexHandle vert)
+{
+    lockMesh();
+    double ans = 0;
+    for(MyMesh::VertexEdgeIter vei = mesh_.ve_iter(vert); vei; ++vei)
+    {
+        MyMesh::EdgeHandle eh = vei;
+        ans += 0.5 * edgeArea(eh);
+    }
+    releaseMesh();
+    return ans;
+}
+
+double Mesh::edgeArea(MyMesh::EdgeHandle edge)
+{
+    lockMesh();
+    double tot = 0;
+    for(int i=0; i<2; i++)
+    {
+        MyMesh::HalfedgeHandle heh = mesh_.halfedge_handle(edge, i);
+        if(heh.is_valid())
+        {
+            MyMesh::Point centroid;
+            MyMesh::FaceHandle fh = mesh_.face_handle(heh);
+            if(fh.is_valid())
+            {
+                mesh_.calc_face_centroid(fh, centroid);
+                MyMesh::Point pt1 = mesh_.point(mesh_.to_vertex_handle(heh));
+                MyMesh::Point pt2 = mesh_.point(mesh_.from_vertex_handle(heh));
+                Vector3d ab, ac;
+                for(int j=0; j<3; j++)
+                {
+                    ab[j] = pt1[j]-centroid[j];
+                    ac[j] = pt2[j]-centroid[j];
+                }
+                tot += 0.5 * sqrt( ab.dot(ab)*ac.dot(ac) - ab.dot(ac) * ab.dot(ac) );
+            }
+        }
+    }
+    releaseMesh();
+    return tot;
+}
+
 void Mesh::setPlaneAreaLoads()
 {
     lockMesh();
@@ -219,6 +266,21 @@ void Mesh::setPlaneAreaLoads()
         double area = vertexAreaOnPlane(vi);
         mesh_.data(vi).set_load(area);
     }
+    invalidateMesh();
+    releaseMesh();
+}
+
+void Mesh::setSurfaceAreaLoads()
+{
+    lockMesh();
+
+    for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
+    {
+        double area = vertexArea(vi);
+        mesh_.data(vi).set_load(area);
+    }
+
+    invalidateMesh();
     releaseMesh();
 }
 
@@ -308,4 +370,23 @@ Vector3d Mesh::approximateClosestPoint(const Vector3d &p)
     }
     releaseMesh();
     return p;
+}
+
+int Mesh::getMeshID()
+{
+    lockMesh();
+    idMutex_.lock();
+    int result = meshID_;
+    idMutex_.unlock();
+    releaseMesh();
+    return result;
+}
+
+void Mesh::invalidateMesh()
+{
+    lockMesh();
+    idMutex_.lock();
+    meshID_++;
+    idMutex_.unlock();
+    releaseMesh();
 }

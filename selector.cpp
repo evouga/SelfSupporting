@@ -58,6 +58,13 @@ void Selector::primitiveSelected(Mesh::PrimType primtype, int primidx)
             }
             break;
         }
+        case SM_DELETEFACE:
+        {
+            state_ = SS_NONE;
+            if(primtype == Mesh::PT_FACE)
+                cont_->deleteFace(primidx);
+            break;
+        }
         default:
             assert(!"Bad select mode");
     }
@@ -73,8 +80,6 @@ void Selector::updateEditing(const Vector2d &pos)
     c_.getSpanningSet(right, up, center);
 
     Vector3d translation3D = translation2D[0]*right + translation2D[1]*up;
-//    if(dragtype_ == Mesh::PT_FACE)
-//        cont_->translateFace(dragidx_, translation3D);
     if(dragtype_ == Mesh::PT_VERTEX)
         cont_->dragVertex(dragidx_, translation3D);
 

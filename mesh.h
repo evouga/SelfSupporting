@@ -73,6 +73,7 @@ public:
     void getNRing(int vidx, int n, std::set<int> &nring);
 
     void setPlaneAreaLoads();
+    void setSurfaceAreaLoads();
 
     Eigen::Vector3d projectToFace(MyMesh::FaceHandle fh, const Eigen::Vector3d &p);
     Eigen::Vector3d approximateClosestPoint(const Eigen::Vector3d &p);
@@ -84,12 +85,20 @@ protected:
 
     double faceAreaOnPlane(MyMesh::FaceHandle face);
     double vertexAreaOnPlane(MyMesh::VertexHandle vert);
+    double vertexArea(MyMesh::VertexHandle vert);
+    double edgeArea(MyMesh::EdgeHandle edge);
     int numFaceVerts(MyMesh::FaceHandle face);
     MyMesh::Point computeEdgeMidpoint(MyMesh::EdgeHandle edge);
 
     MyMesh mesh_;
     Controller &cont_;
     QMutex meshMutex_;
+
+    int getMeshID();
+    void invalidateMesh();
+    QMutex idMutex_;
+    int meshID_;
+
 
 
 private:
