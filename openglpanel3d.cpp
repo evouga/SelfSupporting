@@ -5,6 +5,7 @@
 #include "mesh.h"
 #include "controller.h"
 #include "meshrenderer.h"
+#include "YImage.hpp"
 
 using namespace Eigen;
 
@@ -76,6 +77,22 @@ void OpenGLPanel3D::paintGL()
 
     if(cont_)
         cont_->renderMesh3D();
+
+    if(takeScreenshot_)
+    {
+        takeScreenshot_ = false;
+        GLint view[4] ;
+        glGetIntegerv( GL_VIEWPORT, view ) ;
+
+        YImage img ;
+        img.resize( view[2], view[3] ) ;
+        //glReadBuffer( GL_FRONT );
+        glReadPixels( view[0], view[1], view[2], view[3], GL_RGBA, GL_UNSIGNED_BYTE, img.data() ) ;
+        //glReadBuffer( GL_BACK );
+
+        img.flip() ;
+        img.save( ssFilename_.c_str() ) ;
+    }
 }
 
 void OpenGLPanel3D::scaleMousePos(int x, int y, double &scaledx, double &scaledy) const
@@ -88,20 +105,51 @@ void OpenGLPanel3D::scaleMousePos(int x, int y, double &scaledx, double &scaledy
 
 OpenGLPanel3D::MouseAction OpenGLPanel3D::deduceAction(QMouseEvent *event)
 {
-    if(event->buttons() & Qt::LeftButton)
+    Controller::EditMode curmode = cont_->getEditMode();
+
+    if(curmode == Controller::EM_CAMERA)
     {
-        if(event->modifiers() & Qt::ShiftModifier)
-            return MA_TRANSLATE;
-        if(event->modifiers() & Qt::ControlModifier)
+        if(event->buttons() & Qt::LeftButton)
+        {
+            if(event->modifiers() & Qt::ShiftModifier)
+                return MA_TRANSLATE;
             return MA_ROTATE;
-        return MA_SELECT;
+        }
+        else if(event->buttons() & Qt::RightButton)
+            return MA_ZOOM;
+        return MA_NONE;
     }
-    else if(event->buttons() & Qt::RightButton)
+    else if(curmode == Controller::EM_FREEHANDLE)
     {
-        if(event->modifiers() & Qt::ShiftModifier)
-            return MA_DELETEFACE;
-        return MA_ZOOM;
+        if(event->buttons() & Qt::LeftButton)
+        {
+            return MA_ADDANCHORFREE;
+        }
+        else if(event->buttons() & Qt::RightButton)
+        {
+            return MA_DELETEANCHOR;
+        }
+        return MA_NONE;
     }
+    else if(curmode == Controller::EM_HEIGHTHANDLE)
+    {
+        if(event->buttons() & Qt::LeftButton)
+        {
+            return MA_ADDANCHORHEIGHT;
+        }
+        else if(event->buttons() & Qt::RightButton)
+        {
+            return MA_DELETEANCHOR;
+        }
+        return MA_NONE;
+    }
+    else if(curmode == Controller::EM_DELETEFACE)
+    {
+        if(event->buttons() & Qt::LeftButton)
+            return MA_DELETEFACE;
+        return MA_NONE;
+    }
+
     return MA_NONE;
 }
 
@@ -131,10 +179,22 @@ void OpenGLPanel3D::mousePressEvent(QMouseEvent *event)
             zoomer_.startZoom(pos);
             break;
         }
-        case MA_SELECT:
+        case MA_ADDANCHORFREE:
         {
             // queue pos for rendering
-            selector_.startEditing(pos, Selector::SM_DRAG);
+            selector_.startEditing(pos, Selector::SM_DRAGFREE);
+            cont_->updateGLWindows();
+            break;
+        }
+        case MA_ADDANCHORHEIGHT:
+        {
+            selector_.startEditing(pos, Selector::SM_DRAGHEIGHT);
+            cont_->updateGLWindows();
+            break;
+        }
+        case MA_DELETEANCHOR:
+        {
+            selector_.startEditing(pos, Selector::SM_CLEARANCHOR);
             cont_->updateGLWindows();
             break;
         }
@@ -182,4 +242,10 @@ void OpenGLPanel3D::centerCamera()
 
     c_.setDefault3D(2*radius);
     lightPos_ = c_.getEye();
+}
+
+void OpenGLPanel3D::saveScreenshot(const std::string &filename)
+{
+    takeScreenshot_ = true;
+    ssFilename_ = filename;
 }

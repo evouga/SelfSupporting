@@ -55,6 +55,10 @@ void MainWindow::updateGLWindows()
 {
     const Params &p = c_.getParams();
     ui->statusbar->showMessage(p.statusmsg);
+    if(isinf(p.nmresidual))
+        ui->residualEdit->setText("(unknown)");
+    else
+        ui->residualEdit->setText(QString::number(p.nmresidual));
     ui->GLPanel2D->updateGL();
     ui->GLPanel3D->updateGL();
     update();
@@ -131,5 +135,35 @@ void MainWindow::on_iterateButton_clicked()
 
 void MainWindow::updateUI()
 {
+    updateGLWindows();
+}
+
+void MainWindow::on_screenshotButton_clicked()
+{
+    c_.takeScreenshot();
+}
+
+void MainWindow::save3DScreenshot(const std::string &filename)
+{
+    ui->GLPanel3D->saveScreenshot(filename);
+    updateGLWindows();
+}
+
+Controller::EditMode MainWindow::getEditMode()
+{
+    if(ui->cameraButton->isChecked())
+        return Controller::EM_CAMERA;
+    else if(ui->freeformHandleButton->isChecked())
+        return Controller::EM_FREEHANDLE;
+    else if(ui->heightHandleButton->isChecked())
+        return Controller::EM_HEIGHTHANDLE;
+    else if(ui->deleteFaceButton->isChecked())
+        return Controller::EM_DELETEFACE;
+    assert(false);
+}
+
+void MainWindow::on_actionCenter_Cameras_triggered()
+{
+    centerCameras();
     updateGLWindows();
 }

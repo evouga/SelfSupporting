@@ -8,7 +8,7 @@ using namespace std;
 
 using namespace Eigen;
 
-Selector::Selector(Camera &c) : c_(c), cont_(NULL), state_(SS_NONE), mode_(SM_DRAG)
+Selector::Selector(Camera &c) : c_(c), cont_(NULL), state_(SS_NONE), mode_(SM_DRAGFREE)
 {
     startPos_.setZero();
 }
@@ -31,18 +31,10 @@ void Selector::primitiveSelected(Mesh::PrimType primtype, int primidx)
     dragidx_ = primidx;
     switch(mode_)
     {
-        case SM_DRAG:
+        case SM_DRAGHEIGHT:
+        case SM_DRAGFREE:
         {
             state_ = SS_DRAGGING;
-            if(primtype == Mesh::PT_VERTEX)
-            {
-                cont_->setAnchor(primidx);
-            }
-            break;
-        }
-        case SM_SETANCHOR:
-        {
-            state_ = SS_NONE;
             if(primtype == Mesh::PT_VERTEX)
             {
                 cont_->setAnchor(primidx);
@@ -80,8 +72,10 @@ void Selector::updateEditing(const Vector2d &pos)
     c_.getSpanningSet(right, up, center);
 
     Vector3d translation3D = translation2D[0]*right + translation2D[1]*up;
-    if(dragtype_ == Mesh::PT_VERTEX)
+    if(mode_ == SM_DRAGFREE && dragtype_ == Mesh::PT_VERTEX)
         cont_->dragVertex(dragidx_, translation3D);
+    else if(mode_ == SM_DRAGHEIGHT && dragtype_ == Mesh::PT_VERTEX)
+        cont_->dragVertexHeight(dragidx_, translation3D);
 
     startPos_ = pos;
 }

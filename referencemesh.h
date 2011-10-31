@@ -23,6 +23,7 @@ public:
     void buildTriMesh(int w, int h);
 
     void applyLaplacianDeformation(int vidx, const Eigen::Vector3d &delta);
+    void applyLaplacianDeformationHeight(int vidx, const Eigen::Vector3d &delta);
 
     void setAnchor(int vidx, bool state);
     void deleteFace(int fidx);

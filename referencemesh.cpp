@@ -162,7 +162,75 @@ void ReferenceMesh::jitterOnPlane()
     releaseMesh();
 }
 
-void ReferenceMesh::applyLaplacianDeformation(int vidx, const Eigen::Vector3d &delta)
+void ReferenceMesh::applyLaplacianDeformationHeight(int vidx, const Vector3d &delta)
+{
+    lockMesh();
+
+    int n = mesh_.n_vertices();
+    DynamicSparseMatrix<double> L(n,n);
+    for(int i=0; i<n; i++)
+    {
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+        int valence = mesh_.valence(vh);
+        L.coeffRef(i,i) = 1.0;
+        for(MyMesh::VertexVertexIter vv = mesh_.vv_iter(vh); vv; ++vv)
+        {
+            MyMesh::VertexHandle adj = vv;
+            int adjidx = adj.idx();
+            L.coeffRef(i, adjidx) = -1.0/valence;
+        }
+    }
+
+    DynamicSparseMatrix<double> LTL(L.transpose()*L);
+    VectorXd v0(n);
+    for(int i=0; i<n; i++)
+    {
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+        MyMesh::Point pt = mesh_.point(vh);
+        v0[i] = pt[1];
+    }
+
+
+    VectorXd rhs = LTL*v0;
+
+    for(int i=0; i<n; i++)
+    {
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+        if(i==vidx)
+        {
+            MyMesh::Point movedpt = mesh_.point(mesh_.vertex_handle(vidx));
+            rhs[vidx] += (movedpt[1] + delta[1]);
+            LTL.coeffRef(vidx,vidx) += 1.0;
+        }
+        else if(mesh_.data(vh).anchored())
+        {
+            rhs[i] += mesh_.point(vh)[1];
+            LTL.coeffRef(i,i) += 1.0;
+        }
+        else if(mesh_.is_boundary(vh))
+        {
+            LTL.coeffRef(i, i) += 1.0;
+            rhs[i] += mesh_.point(vh)[1];
+        }
+    }
+
+    SparseMatrix<double> M(LTL);
+
+    cont_.getSolvers().linearSolveCG(M, rhs, v0);
+
+    for(int i=0; i<n; i++)
+    {
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+        MyMesh::Point &pt = mesh_.point(vh);
+        if(!mesh_.is_boundary(vh))
+            pt[1] = v0[i];
+    }
+
+    releaseMesh();
+
+}
+
+void ReferenceMesh::applyLaplacianDeformation(int vidx, const Vector3d &delta)
 {
     lockMesh();
 

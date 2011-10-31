@@ -105,38 +105,6 @@
      <string>Subdivide</string>
     </property>
    </widget>
-   <widget class="QCheckBox" name="referenceCheckBox">
-    <property name="geometry">
-     <rect>
-      <x>710</x>
-      <y>650</y>
-      <width>191</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Show reference surface</string>
-    </property>
-    <property name="checked">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="networkCheckBox">
-    <property name="geometry">
-     <rect>
-      <x>710</x>
-      <y>670</y>
-      <width>191</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Show thrust network</string>
-    </property>
-    <property name="checked">
-     <bool>true</bool>
-    </property>
-   </widget>
    <widget class="QPushButton" name="resetButton">
     <property name="geometry">
      <rect>
@@ -163,20 +131,175 @@
      <string>Project</string>
     </property>
    </widget>
-   <widget class="QCheckBox" name="networkSurfaceCheckBox">
+   <widget class="QPushButton" name="screenshotButton">
     <property name="geometry">
      <rect>
-      <x>710</x>
-      <y>690</y>
-      <width>231</width>
-      <height>22</height>
+      <x>270</x>
+      <y>10</y>
+      <width>97</width>
+      <height>27</height>
      </rect>
     </property>
     <property name="text">
-     <string>Show thrust network surface</string>
+     <string>Screenshot</string>
     </property>
-    <property name="checked">
+   </widget>
+   <widget class="QGroupBox" name="editModeBox">
+    <property name="geometry">
+     <rect>
+      <x>710</x>
+      <y>560</y>
+      <width>171</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Edit Mode</string>
+    </property>
+    <property name="flat">
      <bool>false</bool>
+    </property>
+    <widget class="QRadioButton" name="cameraButton">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>20</y>
+       <width>116</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Camera</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="freeformHandleButton">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>40</y>
+       <width>161</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Handle (freeform)</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="heightHandleButton">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>60</y>
+       <width>141</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Handle (height)</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="deleteFaceButton">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>80</y>
+       <width>116</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Delete Faces</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="renderOptionsBox">
+    <property name="geometry">
+     <rect>
+      <x>890</x>
+      <y>560</y>
+      <width>221</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Render Options</string>
+    </property>
+    <widget class="QCheckBox" name="referenceCheckBox">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>20</y>
+       <width>191</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Show reference surface</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="networkCheckBox">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>40</y>
+       <width>191</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Show thrust network</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="networkSurfaceCheckBox">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>60</y>
+       <width>231</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Show thrust network surface</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QLabel" name="residualLabel">
+    <property name="geometry">
+     <rect>
+      <x>710</x>
+      <y>710</y>
+      <width>231</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Current thrust network residual:</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="residualEdit">
+    <property name="geometry">
+     <rect>
+      <x>940</x>
+      <y>710</y>
+      <width>151</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="readOnly">
+     <bool>true</bool>
     </property>
    </widget>
   </widget>
@@ -197,7 +320,14 @@
     <addaction name="actionLoad_Mesh"/>
     <addaction name="actionQuit"/>
    </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="actionCenter_Cameras"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuView"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
@@ -224,6 +354,11 @@
   <action name="actionNew_Mesh">
    <property name="text">
     <string>New Mesh</string>
+   </property>
+  </action>
+  <action name="actionCenter_Cameras">
+   <property name="text">
+    <string>Center Cameras</string>
    </property>
   </action>
  </widget>

@@ -8,6 +8,7 @@
 #include "zoomer.h"
 #include "selector.h"
 #include <Eigen/Core>
+#include <string>
 
 class Controller;
 
@@ -18,9 +19,10 @@ public:
     explicit OpenGLPanel3D(QWidget *parent = 0);
     void setController(Controller &c);
     void centerCamera();
+    void saveScreenshot(const std::string &filename);
 
 protected:
-    enum MouseAction { MA_NONE, MA_TRANSLATE, MA_ROTATE, MA_ZOOM, MA_SELECT, MA_DELETEFACE };
+    enum MouseAction { MA_NONE, MA_TRANSLATE, MA_ROTATE, MA_ZOOM, MA_ADDANCHORFREE, MA_ADDANCHORHEIGHT, MA_DELETEANCHOR, MA_DELETEFACE };
 
     void initializeGL();
     void resizeGL(int w, int h);
@@ -41,6 +43,9 @@ private:
     Zoomer zoomer_;
     Selector selector_;
     Eigen::Vector3d lightPos_;
+
+    bool takeScreenshot_;
+    std::string ssFilename_;
 
 signals:
 

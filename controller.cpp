@@ -10,8 +10,13 @@
 #include "solvers.h"
 #include "networkthread.h"
 #include "networkmeshrenderer.h"
+#include <QDateTime>
+#include <fstream>
+#include <string>
+#include <sstream>
 
 using namespace Eigen;
+using namespace std;
 
 Controller::Controller(MainWindow &w) : w_(w)
 {
@@ -56,6 +61,7 @@ void Controller::loadMesh(const char *filename)
         QMessageBox::warning(&w_, "Couldn't Read File", msg, QMessageBox::Ok);
         return;
     }
+    p_.statusmsg = "Loaded mesh " + QString(filename) + ".";
     resetNetworkMesh();
     //computeWeightsFromTopView();
     w_.centerCameras();
@@ -74,6 +80,7 @@ void Controller::resetNetworkMesh()
 {
     nm_->copyFromReferenceMesh(*rm_);
     resetParams();
+    p_.statusmsg = "Reset network mesh to reference mesh.";
     w_.updateGLWindows();
 }
 
@@ -87,20 +94,22 @@ void Controller::iterateNetwork()
 {
     nm_->setSurfaceAreaLoads();
 
-    double residualw = nm_->computeBestWeights();
+    nm_->computeBestWeights();
     double residualp = nm_->computeBestPositionsTangentLS(*rm_, p_.alpha, p_.beta);
-    p_.statusmsg = "Projected onto best weights and positions. Residual after calculating best weights " + QString::number(residualw)
-            + ", and after adjusting position " + QString::number(residualp) + "." + " Alpha: " + QString::number(p_.alpha) + " Beta: " + QString::number(p_.beta);
+//    p_.statusmsg = "Projected onto best weights and positions. Residual after calculating best weights " + QString::number(residualw)
+//            + ", and after adjusting position " + QString::number(residualp) + "." + " Alpha: " + QString::number(p_.alpha) + " Beta: " + QString::number(p_.beta);
     p_.alpha /= 2.;
     p_.alpha = std::max(p_.alpha, 1e-15);
     p_.beta *= 2.;
     p_.beta = std::min(p_.beta, 1e15);
+    p_.nmresidual = residualp;
 }
 
 void Controller::jitterMesh()
 {
     rm_->jitterOnPlane();
     resetNetworkMesh();
+    p_.statusmsg = "Randomly perturbed reference mesh.";
     w_.updateGLWindows();
 }
 
@@ -108,6 +117,8 @@ void Controller::subdivideMesh()
 {
     nm_->subdivide();
     p_.beta = .2;
+    p_.nmresidual = std::numeric_limits<double>::infinity();
+    p_.statusmsg = "Subdivided thrust network.";
     w_.updateGLWindows();
 }
 
@@ -143,6 +154,13 @@ void Controller::translateFace(int fidx, const Vector3d &translation)
 void Controller::dragVertex(int vidx, const Vector3d &translation)
 {
     rm_->applyLaplacianDeformation(vidx, translation);
+    resetNetworkMesh();
+    updateGLWindows();
+}
+
+void Controller::dragVertexHeight(int vidx, const Vector3d &translation)
+{
+    rm_->applyLaplacianDeformationHeight(vidx, translation);
     resetNetworkMesh();
     updateGLWindows();
 }
@@ -219,9 +237,24 @@ void Controller::resetParams()
     p_.alpha = 0.1;
     p_.beta = 0.2;
     p_.weightsum = 50;
+    p_.nmresidual = std::numeric_limits<double>::infinity();
 }
 
 const Params &Controller::getParams()
 {
     return p_;
+}
+
+void Controller::takeScreenshot()
+{
+    qint64 secs = QDateTime::currentMSecsSinceEpoch()/1000;
+    stringstream ss;
+    ss << "screen-" << secs << ".png";
+    w_.save3DScreenshot(ss.str());
+    p_.statusmsg = "Took screenshot " + QString::fromStdString(ss.str()) + ".";
+}
+
+Controller::EditMode Controller::getEditMode()
+{
+    return w_.getEditMode();
 }

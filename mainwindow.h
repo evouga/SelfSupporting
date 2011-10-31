@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QApplication>
 #include "controller.h"
+#include <string>
 
 namespace Ui {
     class MainWindow;
@@ -22,6 +23,10 @@ public:
     bool showReferenceMesh();
     bool showNetworkMesh();
     bool showNetworkSurface();
+
+    void save3DScreenshot(const std::string &filename);
+
+    Controller::EditMode getEditMode();
 
 private slots:
 
@@ -48,6 +53,10 @@ private slots:
     void on_iterateButton_clicked();
 
     void updateUI();
+
+    void on_screenshotButton_clicked();
+
+    void on_actionCenter_Cameras_triggered();
 
 protected:
     void moveEvent(QMoveEvent *);

@@ -16,6 +16,7 @@ struct Params
     double alpha;
     double beta;
     int weightsum;
+    double nmresidual;
 };
 
 class Controller
@@ -23,6 +24,8 @@ class Controller
 public:
     Controller(MainWindow &w);
     ~Controller();
+
+    enum EditMode {EM_CAMERA, EM_FREEHANDLE, EM_HEIGHTHANDLE, EM_DELETEFACE};
 
     void initialize();
 
@@ -44,6 +47,7 @@ public:
     void translateVertex(int vidx, const Eigen::Vector3d &translation);
     void translateFace(int fidx, const Eigen::Vector3d &translation);
     void dragVertex(int vidx, const Eigen::Vector3d &translation);
+    void dragVertexHeight(int vidx, const Eigen::Vector3d &translation);
     void buildQuadMesh(int w, int h);
     void buildTriMesh(int w, int h);
 
@@ -51,9 +55,13 @@ public:
     void clearAnchor(int vidx);
     void deleteFace(int fidx);
 
+    EditMode getEditMode();
+
     void renderMesh3D();
     void renderPickMesh3D();
     void renderMesh2D();
+
+    void takeScreenshot();
 
     void updateGLWindows();
     const Params &getParams();

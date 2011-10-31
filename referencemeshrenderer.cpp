@@ -106,6 +106,7 @@ void ReferenceMeshRenderer::renderSurface3D(int renderFlags)
     }
     if(renderFlags & RF_WIREFRAME)
     {
+
         assert(!(renderFlags & RF_PICKING)); //TODO
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glLineWidth(1.0);
