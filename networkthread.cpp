@@ -2,31 +2,51 @@
 #include "controller.h"
 
 NetworkThread::NetworkThread(Controller &c) :
-    QThread(NULL), c_(c), stop_(false)
+    QThread(NULL), c_(c), state_(TS_RUNNING)
 {
 }
 
 void NetworkThread::run()
 {
-    while(!isStopped())
+    while(getState() != TS_STOPPED)
     {
-        c_.iterateNetwork();
-        emit updateUI();
+        if(getState() == TS_RUNNING)
+        {
+            c_.iterateNetwork();
+            emit updateUI();
+        }
         msleep(20);
     }
 }
 
-void NetworkThread::stop()
+NetworkThread::ThreadState NetworkThread::getState()
 {
-    stopMutex_.lock();
-    stop_ = true;
-    stopMutex_.unlock();
+    ThreadState result;
+    stateMutex_.lock();
+    result = state_;
+    stateMutex_.unlock();
+    return result;
 }
 
-bool NetworkThread::isStopped()
+void NetworkThread::stop()
 {
-    stopMutex_.lock();
-    bool result = stop_;
-    stopMutex_.unlock();
-    return result;
+    stateMutex_.lock();
+    state_ = TS_STOPPED;
+    stateMutex_.unlock();
+}
+
+void NetworkThread::pause()
+{
+    stateMutex_.lock();
+    if(state_ == TS_RUNNING)
+        state_ = TS_PAUSED;
+    stateMutex_.unlock();
+}
+
+void NetworkThread::unpause()
+{
+    stateMutex_.lock();
+    if(state_ == TS_PAUSED)
+        state_ = TS_RUNNING;
+    stateMutex_.unlock();
 }

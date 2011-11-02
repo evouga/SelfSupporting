@@ -17,6 +17,9 @@ struct Params
     double beta;
     int weightsum;
     double nmresidual;
+
+    bool enforceMaxWeight;
+    double maxWeight;
 };
 
 class Controller
@@ -36,7 +39,9 @@ public:
     void iterateNetwork();
     void projectNetwork();
     void loadMesh(const char *filename);
+    void saveMesh(const char *filename);
     void jitterMesh();
+    void copyThrustNetwork();
     void subdivideMesh();
     Eigen::Vector3d computeMeshCentroid();
     double computeMeshBoundingSphere(const Eigen::Vector3d &center);
@@ -50,6 +55,7 @@ public:
     void dragVertexHeight(int vidx, const Eigen::Vector3d &translation);
     void buildQuadMesh(int w, int h);
     void buildTriMesh(int w, int h);
+    void buildHexMesh(int w, int h);
 
     void setAnchor(int vidx);
     void clearAnchor(int vidx);
@@ -62,6 +68,9 @@ public:
     void renderMesh2D();
 
     void takeScreenshot();
+    void setAutoIterate(bool state);
+    void enforceMaxWeight(bool state);
+    void setMaxWeight(double weight);
 
     void updateGLWindows();
     const Params &getParams();

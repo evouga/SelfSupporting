@@ -27,13 +27,13 @@ MeshRenderer &NetworkMesh::getRenderer()
 
 void NetworkMesh::copyFromReferenceMesh(ReferenceMesh &rm)
 {
+    auto_ptr<MeshLock> rml = rm.acquireMesh();
     copyMesh(rm.getMesh());
-    rm.releaseMesh();
 }
 
 double NetworkMesh::calculateEquilibriumViolation()
 {
-    lockMesh();
+    auto_ptr<MeshLock> ml = acquireMesh();
     double result = 0;
     int n = mesh_.n_vertices();
     for(int i=0; i<n; i++)
@@ -56,13 +56,13 @@ double NetworkMesh::calculateEquilibriumViolation()
         sum[1] += mesh_.data(vh).load();
         result += sum[0]*sum[0] + sum[1]*sum[1] + sum[2]*sum[2];
     }
-    releaseMesh();
     return sqrt(result);
 }
 
-double NetworkMesh::computeBestWeights()
+double NetworkMesh::computeBestWeights(double maxweight)
 {
-    lockMesh();
+    auto_ptr<MeshLock> ml = acquireMesh();
+
     int n = mesh_.n_vertices();
     int e = mesh_.n_edges();
 
@@ -129,19 +129,19 @@ double NetworkMesh::computeBestWeights()
     lb.setZero();
     for(int i=0; i<e; i++)
     {
-        ub[i] = std::numeric_limits<double>::infinity();
+        ub[i] = maxweight;
         MyMesh::EdgeHandle eh = mesh_.edge_handle(i);
         result[i] = mesh_.data(eh).weight();
     }
 
     SparseMatrix<double> M(Md);
     int oldid = getMeshID();
-    releaseMesh();
+    ml.reset();
 
     cont_.getSolvers().solveBCLS(M, rhs, lb, ub, result);
     double residual = std::numeric_limits<double>::infinity();
 
-    lockMesh();
+    ml = acquireMesh();
     if(getMeshID() == oldid)
     {
         for(int i=0; i<e; i++)
@@ -159,14 +159,13 @@ double NetworkMesh::computeBestWeights()
         invalidateMesh();
     }
 
-    releaseMesh();
     return residual;
 }
 
 double NetworkMesh::computeBestPositionsTangentLS(ReferenceMesh &rm, double alpha, double beta)
 {
-    rm.lockMesh();
-    lockMesh();
+    auto_ptr<MeshLock> rml = rm.acquireMesh();
+    auto_ptr<MeshLock> ml = acquireMesh();
     int n = mesh_.n_vertices();
 
     VectorXd q0(3*n);
@@ -247,13 +246,13 @@ double NetworkMesh::computeBestPositionsTangentLS(ReferenceMesh &rm, double alph
     SparseMatrix<double> M(Md);
 
     int oldid = getMeshID();
-    releaseMesh();
-    rm.releaseMesh();
+    ml.reset();
+    rml.reset();
 
     cont_.getSolvers().linearSolveCG(M, rhs, result);
     double residual = std::numeric_limits<double>::infinity();
 
-    lockMesh();
+    ml = acquireMesh();
     if(oldid == getMeshID())
     {
         for(int i=0; i<n; i++)
@@ -267,16 +266,14 @@ double NetworkMesh::computeBestPositionsTangentLS(ReferenceMesh &rm, double alph
         residual = calculateEquilibriumViolation();
         invalidateMesh();
     }
-    releaseMesh();
-
     return residual;
 }
 
 
 double NetworkMesh::computeWeightsOnPlane(ReferenceMesh &rm, double sum)
 {
-    rm.lockMesh();
-    lockMesh();
+    auto_ptr<MeshLock> rml = rm.acquireMesh();
+    auto_ptr<MeshLock> ml = acquireMesh();
 
     copyFromReferenceMesh(rm);
     int n = mesh_.n_vertices();
@@ -400,19 +397,15 @@ double NetworkMesh::computeWeightsOnPlane(ReferenceMesh &rm, double sum)
         mesh_.data(eh).set_weight(weight);
     }
 
-    releaseMesh();
-    rm.releaseMesh();
-
     return residual;
 }
 
 double NetworkMesh::updateHeights()
 {
-    lockMesh();
+    auto_ptr<MeshLock> ml = acquireMesh();
     int n = mesh_.n_vertices();
     if(n == 0)
     {
-        releaseMesh();
         return 0;
     }
 
@@ -458,16 +451,14 @@ double NetworkMesh::updateHeights()
         mesh_.point(vh)[1] = -heights[i];
     }
 
-    releaseMesh();
     return residual;
 }
 
 bool NetworkMesh::isBadVertex(MyMesh::VertexHandle vert)
 {
-    lockMesh();
+    auto_ptr<MeshLock> ml = acquireMesh();
     if(mesh_.is_boundary(vert))
     {
-        releaseMesh();
         return false;
     }
 
@@ -477,17 +468,15 @@ bool NetworkMesh::isBadVertex(MyMesh::VertexHandle vert)
         MyMesh::EdgeHandle eh = mesh_.edge_handle(heh);
         if(mesh_.data(eh).weight() > 1e-6)
         {
-            releaseMesh();
             return false;
         }
     }
-    releaseMesh();
     return true;
 }
 
 void NetworkMesh::subdivide()
 {
-    lockMesh();
+    auto_ptr<MeshLock> ml = acquireMesh();
     int e = mesh_.n_edges();
     int n = mesh_.n_vertices();
     int f = mesh_.n_faces();
@@ -597,13 +586,12 @@ void NetworkMesh::subdivide()
 
     mesh_ = newmesh;
     invalidateMesh();
-    releaseMesh();
 }
 
 void NetworkMesh::projectOntoReference(ReferenceMesh &rm)
 {
-    rm.lockMesh();
-    lockMesh();
+    auto_ptr<MeshLock> rml = rm.acquireMesh();
+    auto_ptr<MeshLock> ml = acquireMesh();
     for(MyMesh::VertexIter v = mesh_.vertices_begin(); v != mesh_.vertices_end(); ++v)
     {
         MyMesh::Point &pt = mesh_.point(v);
@@ -613,13 +601,11 @@ void NetworkMesh::projectOntoReference(ReferenceMesh &rm)
             pt[j] = newpos[j];
     }
     invalidateMesh();
-    releaseMesh();
-    rm.releaseMesh();
 }
 
 void NetworkMesh::fixBadVertices()
 {
-    lockMesh();
+    auto_ptr<MeshLock> ml = acquireMesh();
     for(MyMesh::VertexIter v = mesh_.vertices_begin(); v != mesh_.vertices_end(); ++v)
     {
         if(isBadVertex(v))
@@ -628,5 +614,4 @@ void NetworkMesh::fixBadVertices()
         }
     }
     mesh_.garbage_collection();
-    releaseMesh();
 }

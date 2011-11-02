@@ -24,7 +24,6 @@ Controller::Controller(MainWindow &w) : w_(w)
     nm_ = new NetworkMesh(*this);
     solvers_ = new Solvers();
     nt_ = new NetworkThread(*this);
-    resetParams();
 }
 
 Controller::~Controller()
@@ -44,6 +43,7 @@ NetworkThread *Controller::getNT()
 
 void Controller::initialize()
 {
+    resetParams();
     buildQuadMesh(10,10);
     nt_->start();
 }
@@ -57,7 +57,7 @@ void Controller::loadMesh(const char *filename)
 {
     if(!rm_->loadMesh(filename))
     {
-        QString msg = "Could't read file " + QString(filename) + ". No mesh was loaded.";
+        QString msg = "Couldn't read file " + QString(filename) + ". No mesh was loaded.";
         QMessageBox::warning(&w_, "Couldn't Read File", msg, QMessageBox::Ok);
         return;
     }
@@ -65,6 +65,17 @@ void Controller::loadMesh(const char *filename)
     resetNetworkMesh();
     //computeWeightsFromTopView();
     w_.centerCameras();
+}
+
+void Controller::saveMesh(const char *filename)
+{
+    if(!rm_->saveMesh(filename))
+    {
+        QString msg = "Couldn't write file " + QString(filename) + ". Save failed.";
+        QMessageBox::warning(&w_, "Couldn't Write File", msg, QMessageBox::Ok);
+        return;
+    }
+    p_.statusmsg = "Saved mesh " + QString(filename) + ".";
 }
 
 void Controller::computeWeightsFromTopView()
@@ -93,9 +104,12 @@ void Controller::projectNetwork()
 void Controller::iterateNetwork()
 {
     nm_->setSurfaceAreaLoads();
-
-    nm_->computeBestWeights();
+    double maxweight = p_.maxWeight;
+    if(!p_.enforceMaxWeight)
+        maxweight = std::numeric_limits<double>::infinity();
+    nm_->computeBestWeights(maxweight);
     double residualp = nm_->computeBestPositionsTangentLS(*rm_, p_.alpha, p_.beta);
+
 //    p_.statusmsg = "Projected onto best weights and positions. Residual after calculating best weights " + QString::number(residualw)
 //            + ", and after adjusting position " + QString::number(residualp) + "." + " Alpha: " + QString::number(p_.alpha) + " Beta: " + QString::number(p_.beta);
     p_.alpha /= 2.;
@@ -173,6 +187,7 @@ void Controller::computeClosestPointOnPlane(const Vector2d &pos, int &closestidx
 void Controller::renderMesh2D()
 {
     rm_->getRenderer().render2D();
+    nm_->getRenderer().render2D();
 }
 
 void Controller::renderMesh3D()
@@ -183,7 +198,6 @@ void Controller::renderMesh3D()
         nm_->getRenderer().render3D();
     if(w_.showReferenceMesh())
         rm_->getRenderer().render3D();
-
 }
 
 void Controller::renderPickMesh3D()
@@ -195,7 +209,6 @@ void Controller::buildQuadMesh(int w, int h)
 {
     rm_->buildQuadMesh(w,h);
     resetNetworkMesh();
-    //computeWeightsFromTopView();
     w_.centerCameras();
     w_.updateGLWindows();
 }
@@ -204,7 +217,14 @@ void Controller::buildTriMesh(int w, int h)
 {
     rm_->buildTriMesh(w, h);
     resetNetworkMesh();
-    //computeWeightsFromTopView();
+    w_.centerCameras();
+    w_.updateGLWindows();
+}
+
+void Controller::buildHexMesh(int w, int h)
+{
+    rm_->buildHexMesh(w,h);
+    resetNetworkMesh();
     w_.centerCameras();
     w_.updateGLWindows();
 }
@@ -238,6 +258,7 @@ void Controller::resetParams()
     p_.beta = 0.2;
     p_.weightsum = 50;
     p_.nmresidual = std::numeric_limits<double>::infinity();
+    w_.reportParams();
 }
 
 const Params &Controller::getParams()
@@ -257,4 +278,29 @@ void Controller::takeScreenshot()
 Controller::EditMode Controller::getEditMode()
 {
     return w_.getEditMode();
+}
+
+void Controller::setAutoIterate(bool state)
+{
+    if(state)
+        nt_->unpause();
+    else
+        nt_->pause();
+}
+
+void Controller::enforceMaxWeight(bool state)
+{
+    p_.enforceMaxWeight = state;
+}
+
+void Controller::setMaxWeight(double weight)
+{
+    p_.maxWeight = 0.1*weight;
+}
+
+void Controller::copyThrustNetwork()
+{
+    rm_->copyFromNetworkMesh(*nm_);
+    resetNetworkMesh();
+    updateGLWindows();
 }

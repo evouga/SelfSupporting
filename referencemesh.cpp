@@ -2,6 +2,7 @@
 #include "referencemeshrenderer.h"
 #include "controller.h"
 #include "solvers.h"
+#include "networkmesh.h"
 
 #include <vector>
 
@@ -25,22 +26,29 @@ MeshRenderer &ReferenceMesh::getRenderer()
     return *renderer_;
 }
 
+void ReferenceMesh::copyFromNetworkMesh(NetworkMesh &nm)
+{
+    auto_ptr<MeshLock> nml = nm.acquireMesh();
+    copyMesh(nm.getMesh());
+}
+
 bool ReferenceMesh::loadMesh(const char *name)
 {
-    lockMesh();
+    auto_ptr<MeshLock> ml = acquireMesh();
     OpenMesh::IO::Options opt;
-    if(!OpenMesh::IO::read_mesh(mesh_, name, opt))
-    {
-        releaseMesh();
-        return false;
-    }
-    releaseMesh();
-    return true;
+    return OpenMesh::IO::read_mesh(mesh_, name, opt);
+}
+
+bool ReferenceMesh::saveMesh(const char *name)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    OpenMesh::IO::Options opt;
+    return OpenMesh::IO::write_mesh(mesh_, name, opt);
 }
 
 void ReferenceMesh::buildQuadMesh(int w, int h)
 {
-    lockMesh();
+    auto_ptr<MeshLock> ml = acquireMesh();
     if(w<2)
         w=2;
     if(h<2)
@@ -65,13 +73,83 @@ void ReferenceMesh::buildQuadMesh(int w, int h)
             face_vhandles.push_back(MyMesh::VertexHandle(i*w+j+w));
             mesh_.add_face(face_vhandles);
         }
+}
 
-    releaseMesh();
+void ReferenceMesh::buildHexMesh(int w, int h)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    if(w<2) w=2;
+    if(h<3) h=3;
+
+    mesh_.clear();
+    for(int i=0; i<h; i++)
+    {
+        double width = (3*w-2)/2.0;
+        if( (i%2) == 0)
+        {
+            double x = 0.5;
+            for(int j=0; j<w; j++)
+            {
+                double sx = -1.0 + 2.0*x/width;
+                double y = -1.0 + 2.0*i/(h-1);
+                mesh_.add_vertex(MyMesh::Point(sx,0,y));
+                if( (j%2) == 0)
+                    x += 1.0;
+                else
+                    x += 2.0;
+            }
+        }
+        else
+        {
+            double x = 0;
+            for(int j=0; j<w; j++)
+            {
+                double sx = -1.0 + 2.0*x/width;
+                double y = -1.0 + 2.0*i/(h-1);
+                mesh_.add_vertex(MyMesh::Point(sx,0,y));
+                if( (j%2) == 0)
+                    x += 2.0;
+                else
+                    x += 1.0;
+            }
+        }
+    }
+    for(int i=0; i<h-2; i++)
+    {
+        if( (i%2) == 0)
+        {
+            for(int j=0; j<w/2; j++)
+            {
+                std::vector<MyMesh::VertexHandle>  face_vhandles;
+                face_vhandles.push_back(MyMesh::VertexHandle(i*w+2*j));
+                face_vhandles.push_back(MyMesh::VertexHandle(i*w+2*j+1));
+                face_vhandles.push_back(MyMesh::VertexHandle((i+1)*w + 2*j + 1));
+                face_vhandles.push_back(MyMesh::VertexHandle((i+2)*w + 2*j + 1));
+                face_vhandles.push_back(MyMesh::VertexHandle((i+2)*w + 2*j));
+                face_vhandles.push_back(MyMesh::VertexHandle((i+1)*w + 2*j));
+                mesh_.add_face(face_vhandles);
+            }
+        }
+        else
+        {
+            for(int j=0; j<(w-1)/2; j++)
+            {
+                std::vector<MyMesh::VertexHandle>  face_vhandles;
+                face_vhandles.push_back(MyMesh::VertexHandle(i*w+2*j+1));
+                face_vhandles.push_back(MyMesh::VertexHandle(i*w+2*j+2));
+                face_vhandles.push_back(MyMesh::VertexHandle((i+1)*w + 2*j + 2));
+                face_vhandles.push_back(MyMesh::VertexHandle((i+2)*w + 2*j + 2));
+                face_vhandles.push_back(MyMesh::VertexHandle((i+2)*w + 2*j+1));
+                face_vhandles.push_back(MyMesh::VertexHandle((i+1)*w + 2*j+1));
+                mesh_.add_face(face_vhandles);
+            }
+        }
+    }
 }
 
 void ReferenceMesh::buildTriMesh(int w, int h)
 {
-    lockMesh();
+    auto_ptr<MeshLock> ml = acquireMesh();
     if(w<2)
         w=2;
     if(h<2)
@@ -99,13 +177,11 @@ void ReferenceMesh::buildTriMesh(int w, int h)
             face_vhandles[2] = MyMesh::VertexHandle(i*w+j+w);
             mesh_.add_face(face_vhandles);
         }
-
-    releaseMesh();
 }
 
 void ReferenceMesh::computeClosestPointOnPlane(const Vector2d &pos, int &closestidx, double &closestdist)
 {
-    lockMesh();
+    auto_ptr<MeshLock> ml = acquireMesh();
     closestdist = std::numeric_limits<double>::infinity();
     closestidx = -1;
 
@@ -123,16 +199,14 @@ void ReferenceMesh::computeClosestPointOnPlane(const Vector2d &pos, int &closest
     }
 
     closestdist = sqrt(closestdist);
-    releaseMesh();
 }
 
 void ReferenceMesh::jitterOnPlane()
 {
-    lockMesh();
+    auto_ptr<MeshLock> ml = acquireMesh();
     int n = mesh_.n_vertices();
     if(n == 0)
     {
-        releaseMesh();
         return;
     }
     VectorXd lens(n);
@@ -159,12 +233,11 @@ void ReferenceMesh::jitterOnPlane()
         pt[0] += scale*(2.0*randomDouble()-1.0);
         pt[2] += scale*(2.0*randomDouble()-1.0);
     }
-    releaseMesh();
 }
 
 void ReferenceMesh::applyLaplacianDeformationHeight(int vidx, const Vector3d &delta)
 {
-    lockMesh();
+    auto_ptr<MeshLock> ml = acquireMesh();
 
     int n = mesh_.n_vertices();
     DynamicSparseMatrix<double> L(n,n);
@@ -225,14 +298,11 @@ void ReferenceMesh::applyLaplacianDeformationHeight(int vidx, const Vector3d &de
         if(!mesh_.is_boundary(vh))
             pt[1] = v0[i];
     }
-
-    releaseMesh();
-
 }
 
 void ReferenceMesh::applyLaplacianDeformation(int vidx, const Vector3d &delta)
 {
-    lockMesh();
+    auto_ptr<MeshLock> ml = acquireMesh();
 
     int n = mesh_.n_vertices();
 
@@ -305,27 +375,23 @@ void ReferenceMesh::applyLaplacianDeformation(int vidx, const Vector3d &delta)
             pt[1] = v0[3*i+1];
         pt[2] = v0[3*i+2];
     }
-
-    releaseMesh();
 }
 
 void ReferenceMesh::setAnchor(int vidx, bool state)
 {
-    lockMesh();
+    auto_ptr<MeshLock> ml = acquireMesh();
     int n = mesh_.n_vertices();
     assert(vidx >= 0 && vidx < n);
 
     mesh_.data(mesh_.vertex_handle(vidx)).set_anchored(state);
-    releaseMesh();
 }
 
 void ReferenceMesh::deleteFace(int fidx)
 {
-    lockMesh();
+    auto_ptr<MeshLock> ml = acquireMesh();
     int f = mesh_.n_faces();
     assert(fidx >= 0 && fidx < f);
     MyMesh::FaceHandle fh = mesh_.face_handle(fidx);
     mesh_.delete_face(fh, true);
     mesh_.garbage_collection();
-    releaseMesh();
 }

@@ -12,7 +12,8 @@ class NetworkThread : public QThread
 public:
     explicit NetworkThread(Controller &c);
     void stop();
-    bool isStopped();
+    void pause();
+    void unpause();
 
 protected:
     void run();
@@ -23,10 +24,14 @@ signals:
 public slots:
 
 private:
-    Controller &c_;
+    enum ThreadState {TS_RUNNING, TS_PAUSED, TS_STOPPED};
 
-    QMutex stopMutex_;
-    bool stop_;
+    ThreadState getState();
+    void setState(ThreadState state);
+
+    Controller &c_;
+    QMutex stateMutex_;
+    ThreadState state_;
 
 };
 

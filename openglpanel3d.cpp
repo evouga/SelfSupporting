@@ -107,7 +107,7 @@ OpenGLPanel3D::MouseAction OpenGLPanel3D::deduceAction(QMouseEvent *event)
 {
     Controller::EditMode curmode = cont_->getEditMode();
 
-    if(curmode == Controller::EM_CAMERA)
+    if( (curmode == Controller::EM_CAMERA) || (event->modifiers() & Qt::ControlModifier) )
     {
         if(event->buttons() & Qt::LeftButton)
         {

@@ -5,6 +5,7 @@
 #include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
 #include <set>
 #include <QMutex>
+#include <memory>
 
 #include <Eigen/Core>
 
@@ -46,6 +47,20 @@ struct MyTraits : public OpenMesh::DefaultTraits
 
 typedef OpenMesh::PolyMesh_ArrayKernelT<MyTraits> MyMesh;
 
+class Mesh;
+
+class MeshLock
+{
+public:
+    MeshLock(Mesh &m);
+    ~MeshLock();
+
+private:
+    Mesh &m_;
+    MeshLock(const MeshLock &other);
+    MeshLock &operator=(const MeshLock &other);
+};
+
 class Mesh
 {
 public:
@@ -55,10 +70,10 @@ public:
     enum PrimType {PT_NONE, PT_VERTEX, PT_EDGE, PT_FACE};
 
     const MyMesh &getMesh();
-    void lockMesh();
-    void releaseMesh();
 
-    void copyMesh(const MyMesh &m);
+    std::auto_ptr<MeshLock> acquireMesh();
+
+    //void copyMesh(const MyMesh &m);
     void clearMesh();
 
     virtual MeshRenderer &getRenderer()=0;
@@ -80,7 +95,9 @@ public:
     void edgeEndpoints(MyMesh::EdgeHandle edge, MyMesh::Point &p1, MyMesh::Point &p2);
 
 
+    friend class MeshLock;
 protected:
+    void copyMesh(const MyMesh &m);
     static double randomDouble();
 
     double faceAreaOnPlane(MyMesh::FaceHandle face);
@@ -92,16 +109,18 @@ protected:
 
     MyMesh mesh_;
     Controller &cont_;
-    QMutex meshMutex_;
 
     int getMeshID();
     void invalidateMesh();
-    QMutex idMutex_;
-    int meshID_;
-
-
 
 private:
+    void lockMesh();
+    void unlockMesh();
+
+    QMutex meshMutex_;
+
+    QMutex idMutex_;
+    int meshID_;
 
 };
 

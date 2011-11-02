@@ -263,7 +263,7 @@ void Solvers::linearSolveCG(const SparseMatrix<double> &A, const VectorXd &rhs, 
         double rnorm = residual.dot(residual);
         if(sqrt(rnorm) < 1e-8)
         {
-            cout << "Converged after " << i << " iterations" << endl;
+            //cout << "Converged after " << i << " iterations" << endl;
             return;
         }
         tmp = A*p;

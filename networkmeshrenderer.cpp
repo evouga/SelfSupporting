@@ -1,6 +1,8 @@
 #include "networkmeshrenderer.h"
 #include "networkmesh.h"
 
+using namespace std;
+
 NetworkMeshRenderer::NetworkMeshRenderer(Mesh &m) : MeshRenderer(m)
 {
 
@@ -8,6 +10,7 @@ NetworkMeshRenderer::NetworkMeshRenderer(Mesh &m) : MeshRenderer(m)
 
 void NetworkMeshRenderer::render3D()
 {
+    auto_ptr<MeshLock> ml = m_.acquireMesh();
     const MyMesh &mesh_ = m_.getMesh();
     glDisable(GL_LIGHTING);
     glEnable(GL_DITHER);
@@ -26,11 +29,11 @@ void NetworkMeshRenderer::render3D()
         glVertex3f(p2[0],p2[1],p2[2]);
     }
     glEnd();
-    m_.releaseMesh();
 }
 
 void NetworkMeshRenderer::renderSurface()
 {
+    auto_ptr<MeshLock> ml = m_.acquireMesh();
     const MyMesh &mesh_ = m_.getMesh();
 
     glEnable(GL_LIGHTING);
@@ -60,10 +63,37 @@ void NetworkMeshRenderer::renderSurface()
     }
     glDisable(GL_POLYGON_OFFSET_FILL);
 
-    m_.releaseMesh();
 }
 
 void NetworkMeshRenderer::render2D()
 {
+    auto_ptr<MeshLock> ml = m_.acquireMesh();
 
+    const MyMesh &mesh = m_.getMesh();
+    glColor4f(0.4, 0.1, 0.0, 1.0);
+    double maxweight = 0;
+    for(MyMesh::ConstEdgeIter e = mesh.edges_begin(); e != mesh.edges_end(); ++e)
+        maxweight = std::max(maxweight, mesh.data(e).weight());
+    if(maxweight < 1e-8)
+    {
+        return;
+    }
+    for(MyMesh::ConstEdgeIter e = mesh.edges_begin(); e != mesh.edges_end(); ++e)
+    {
+        MyMesh::HalfedgeHandle heh = mesh.halfedge_handle(e,0);
+        if(!heh.is_valid())
+            heh = mesh.halfedge_handle(e,1);
+        assert(heh.is_valid());
+        MyMesh::Point pt1 = mesh.point(mesh.to_vertex_handle(heh));
+        MyMesh::Point pt2 = mesh.point(mesh.from_vertex_handle(heh));
+
+        double weight = mesh.data(e).weight();
+        weight *= 4.0/maxweight;
+        glLineWidth(weight);
+
+        glBegin(GL_LINES);
+        glVertex2d(pt1[0], pt1[2]);
+        glVertex2d(pt2[0], pt2[2]);
+        glEnd();
+    }
 }

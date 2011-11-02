@@ -24,17 +24,22 @@ void NewMeshDialog::buildNewMesh(Controller &c)
     int h = std::max(2,ui->vertEdit->text().toInt());
     switch(ui->TypeBox->currentIndex())
     {
-    case 0:
-    {
-        c.buildTriMesh(w,h);
-        break;
-    }
-    case 1:
-    {
-        c.buildQuadMesh(w,h);
-        break;
-    }
-    default:
-        break;
+        case 0:
+        {
+            c.buildTriMesh(w,h);
+            break;
+        }
+        case 1:
+        {
+            c.buildQuadMesh(w,h);
+            break;
+        }
+        case 2:
+        {
+            c.buildHexMesh(w,h);
+            break;
+        }
+        default:
+            break;
     }
 }

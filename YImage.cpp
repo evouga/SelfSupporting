@@ -385,14 +385,14 @@ bool YImage::load(const char* fname)
 	png_ptr = png_create_read_struct( PNG_LIBPNG_VER_STRING, NULL, NULL, NULL ) ;
 	if( !png_ptr )
 	{
-		fprintf( stderr, liberr ) ;
+                fprintf( stderr, "%s", liberr ) ;
 		rval = false;
 		goto YImage_load_cleanup ;
 	}
 	info_ptr = png_create_info_struct( png_ptr ) ;
 	if( !info_ptr )
 	{
-		fprintf( stderr, liberr ) ;
+                fprintf( stderr, "%s", liberr ) ;
 		rval = false;
 		goto YImage_load_cleanup ;
     }

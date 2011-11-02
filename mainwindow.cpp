@@ -30,10 +30,28 @@ void MainWindow::centerCameras()
 
 void MainWindow::on_actionLoad_Mesh_triggered()
 {
-    QString filename = QFileDialog::getOpenFileName(this, "Load Mesh", ".", "Mesh Files (*.obj)");
+    QString filename = QFileDialog::getOpenFileName(this, "Load Reference Mesh", ".", "Mesh Files (*.obj)");
     if(!filename.isNull())
     {
         c_.loadMesh(filename.toStdString().c_str());
+    }
+}
+
+void MainWindow::on_actionSave_Mesh_triggered()
+{
+    QFileDialog savedialog(this, "Save Reference Mesh", ".", "Mesh Files (*.obj)");
+    savedialog.setFileMode(QFileDialog::AnyFile);
+    savedialog.setDefaultSuffix("obj");
+    savedialog.setViewMode(QFileDialog::List);
+    savedialog.setAcceptMode(QFileDialog::AcceptSave);
+    if(savedialog.exec())
+    {
+        QStringList filenames = savedialog.selectedFiles();
+        if(filenames.size() > 0)
+        {
+            QString filename = filenames[0];
+            c_.saveMesh(filename.toStdString().c_str());
+        }
     }
 }
 
@@ -64,11 +82,6 @@ void MainWindow::updateGLWindows()
     update();
 }
 
-void MainWindow::on_jitterButton_clicked()
-{
-    c_.jitterMesh();
-}
-
 void MainWindow::on_weightSumSlider_valueChanged(int )
 {
 }
@@ -86,16 +99,6 @@ void MainWindow::on_actionNew_Mesh_triggered()
 void MainWindow::on_computeHeightButton_clicked()
 {
     c_.computeWeightsFromTopView();
-}
-
-void MainWindow::on_projectButton_clicked()
-{
-    c_.projectNetwork();
-}
-
-void MainWindow::on_subdivideButton_clicked()
-{
-    c_.subdivideMesh();
 }
 
 void MainWindow::on_referenceCheckBox_clicked()
@@ -123,24 +126,9 @@ bool MainWindow::showNetworkSurface()
     return ui->networkSurfaceCheckBox->isChecked();
 }
 
-void MainWindow::on_resetButton_clicked()
-{
-     c_.resetNetworkMesh();
-}
-
-void MainWindow::on_iterateButton_clicked()
-{
-    c_.iterateNetwork();
-}
-
 void MainWindow::updateUI()
 {
     updateGLWindows();
-}
-
-void MainWindow::on_screenshotButton_clicked()
-{
-    c_.takeScreenshot();
 }
 
 void MainWindow::save3DScreenshot(const std::string &filename)
@@ -166,4 +154,65 @@ void MainWindow::on_actionCenter_Cameras_triggered()
 {
     centerCameras();
     updateGLWindows();
+}
+
+void MainWindow::on_fitCheckBox_stateChanged(int arg1)
+{
+    if(arg1 == Qt::Checked)
+        c_.setAutoIterate(true);
+    else
+        c_.setAutoIterate(false);
+}
+
+void MainWindow::on_actionIterate_Fit_triggered()
+{
+    c_.iterateNetwork();
+}
+
+void MainWindow::on_actionProject_Onto_Reference_triggered()
+{
+    c_.projectNetwork();
+}
+
+void MainWindow::on_actionTake_Screenshot_triggered()
+{
+    c_.takeScreenshot();
+}
+
+void MainWindow::on_actionReset_triggered()
+{
+    c_.resetNetworkMesh();
+}
+
+void MainWindow::on_actionJitter_triggered()
+{
+    c_.jitterMesh();
+}
+
+void MainWindow::on_maxWeightCheckBox_stateChanged(int arg1)
+{
+    c_.enforceMaxWeight(arg1 == Qt::Checked);
+    c_.resetNetworkMesh();
+}
+
+void MainWindow::on_maxWeightHorizontalSlider_valueChanged(int value)
+{
+    c_.setMaxWeight(value);
+    c_.resetNetworkMesh();
+}
+
+void MainWindow::reportParams()
+{
+    c_.enforceMaxWeight(ui->maxWeightCheckBox->isChecked());
+    c_.setMaxWeight(ui->maxWeightHorizontalSlider->value());
+}
+
+void MainWindow::on_actionSubdivide_triggered()
+{
+    c_.subdivideMesh();
+}
+
+void MainWindow::on_actionCopy_Thrust_Network_triggered()
+{
+    c_.copyThrustNetwork();
 }

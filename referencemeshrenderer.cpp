@@ -1,47 +1,27 @@
 #include "referencemeshrenderer.h"
 
+using namespace std;
+
 ReferenceMeshRenderer::ReferenceMeshRenderer(Mesh &m) : MeshRenderer(m)
 {
 }
 
 void ReferenceMeshRenderer::render2D()
 {
+    auto_ptr<MeshLock> ml = m_.acquireMesh();
     const MyMesh &mesh_ = m_.getMesh();
-    double maxweight = 0;
-    glColor3d(0,0,0);
-    for(MyMesh::ConstEdgeIter ei = mesh_.edges_begin(); ei != mesh_.edges_end(); ++ei)
-    {
-        double weight = mesh_.data(ei).weight();
-        if(weight > maxweight)
-            maxweight = weight;
-    }
+    glColor3d(0,0,1);
+    glLineWidth(1.0);
     glBegin(GL_LINES);
     for(MyMesh::ConstEdgeIter ei = mesh_.edges_begin(); ei != mesh_.edges_end(); ++ei)
     {
         MyMesh::HalfedgeHandle heh = mesh_.halfedge_handle(ei, 0);
-        double weight = mesh_.data(ei).weight();
-        double intensity = (maxweight-weight)/maxweight;
-        glColor3d(intensity, 0, 0);
         MyMesh::Point pt1 = mesh_.point(mesh_.to_vertex_handle(heh));
         MyMesh::Point pt2 = mesh_.point(mesh_.from_vertex_handle(heh));
         glVertex2d(pt1[0], pt1[2]);
         glVertex2d(pt2[0], pt2[2]);
     }
     glEnd();
-
-    glPointSize(5.0);
-    glBegin(GL_POINTS);
-    for(MyMesh::ConstVertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
-    {
-        //if(m_.isBadVertex(vi))
-        //    glColor3f(1.0,0,0);
-        //else
-            glColor3f(0.0, 1.0, 0.0);
-        MyMesh::Point pt = mesh_.point(vi);
-        glVertex2d(pt[0], pt[2]);
-    }
-    glEnd();
-    m_.releaseMesh();
 }
 
 void ReferenceMeshRenderer::render3D()
@@ -56,6 +36,7 @@ void ReferenceMeshRenderer::renderPick3D()
 
 void ReferenceMeshRenderer::renderSurface3D(int renderFlags)
 {
+    auto_ptr<MeshLock> ml = m_.acquireMesh();
     const MyMesh &mesh_ = m_.getMesh();
     if(renderFlags & RF_PICKING)
     {
@@ -156,7 +137,4 @@ void ReferenceMeshRenderer::renderSurface3D(int renderFlags)
         glPopMatrix();
     }
     gluDeleteQuadric(sphere);
-
-    m_.releaseMesh();
-
 }

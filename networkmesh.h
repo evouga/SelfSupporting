@@ -21,7 +21,7 @@ public:
 
     // Given a (possibly non-self-supporting) 3D mesh, finds non-negative weights that come as close as possible to
     // satisfying the force-equilibrium constraints
-    double computeBestWeights();
+    double computeBestWeights(double maxweight);
 
     // Given non-negative weights, finds the closest mesh to the given mesh that is self-supporting with those weights
     double computeBestPositionsTangentLS(ReferenceMesh &rm, double alpha, double beta);

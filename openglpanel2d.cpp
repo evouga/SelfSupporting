@@ -61,6 +61,7 @@ void OpenGLPanel2D::centerCamera()
 
 void OpenGLPanel2D::mousePressEvent(QMouseEvent *event)
 {
+    return;
     if(!cont_)
         return;
     scaleMousePos(event->pos().x(),event->pos().y(), dragPos_[0], dragPos_[1]);

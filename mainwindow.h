@@ -26,13 +26,13 @@ public:
 
     void save3DScreenshot(const std::string &filename);
 
+    void reportParams();
+
     Controller::EditMode getEditMode();
 
 private slots:
 
     void on_actionLoad_Mesh_triggered();
-
-    void on_jitterButton_clicked();
 
     void on_weightSumSlider_valueChanged(int value);
 
@@ -40,23 +40,35 @@ private slots:
 
     void on_computeHeightButton_clicked();
 
-    void on_projectButton_clicked();
-
-    void on_subdivideButton_clicked();
-
     void on_referenceCheckBox_clicked();
 
     void on_networkCheckBox_clicked();
 
-    void on_resetButton_clicked();
-
-    void on_iterateButton_clicked();
-
     void updateUI();
 
-    void on_screenshotButton_clicked();
-
     void on_actionCenter_Cameras_triggered();
+
+    void on_fitCheckBox_stateChanged(int arg1);
+
+    void on_actionIterate_Fit_triggered();
+
+    void on_actionProject_Onto_Reference_triggered();
+
+    void on_actionTake_Screenshot_triggered();
+
+    void on_actionReset_triggered();
+
+    void on_actionJitter_triggered();
+
+    void on_maxWeightCheckBox_stateChanged(int arg1);
+
+    void on_maxWeightHorizontalSlider_valueChanged(int value);
+
+    void on_actionSubdivide_triggered();
+
+    void on_actionSave_Mesh_triggered();
+
+    void on_actionCopy_Thrust_Network_triggered();
 
 protected:
     void moveEvent(QMoveEvent *);
