@@ -22,7 +22,7 @@ public:
     void saveScreenshot(const std::string &filename);
 
 protected:
-    enum MouseAction { MA_NONE, MA_TRANSLATE, MA_ROTATE, MA_ZOOM, MA_ADDANCHORFREE, MA_ADDANCHORHEIGHT, MA_DELETEANCHOR, MA_DELETEFACE };
+    enum MouseAction { MA_NONE, MA_TRANSLATE, MA_ROTATE, MA_ZOOM, MA_ADDANCHORFREE, MA_ADDANCHORHEIGHT, MA_DELETEANCHOR, MA_DELETEFACE, MA_ADDPIN, MA_DELETEPIN, MA_TOGGLECREASE };
 
     void initializeGL();
     void resizeGL(int w, int h);

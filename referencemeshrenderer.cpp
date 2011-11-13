@@ -31,7 +31,7 @@ void ReferenceMeshRenderer::render3D()
 
 void ReferenceMeshRenderer::renderPick3D()
 {
-    renderSurface3D(RF_FACES | RF_VERTICES | RF_PICKING);
+    renderSurface3D(RF_FACES | RF_VERTICES | RF_WIREFRAME | RF_PICKING);
 }
 
 void ReferenceMeshRenderer::renderSurface3D(int renderFlags)
@@ -87,11 +87,33 @@ void ReferenceMeshRenderer::renderSurface3D(int renderFlags)
     }
     if(renderFlags & RF_WIREFRAME)
     {
-
-        assert(!(renderFlags & RF_PICKING)); //TODO
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        glLineWidth(1.0);
-        MyMesh::ConstFaceIter f, fEnd = mesh_.faces_end();
+        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        if(renderFlags & RF_PICKING)
+            glLineWidth(4.0);
+        else
+            glLineWidth(1.0);
+        glBegin(GL_LINES);
+        for(MyMesh::ConstEdgeIter ei = mesh_.edges_begin(); ei != mesh_.edges_end(); ++ei)
+        {
+            if(renderFlags & RF_PICKING)
+            {
+                float r,g,b;
+                encodeAsColor(ei.handle().idx(), Mesh::PT_EDGE, r, g, b);;
+                glColor3f(r,g,b);
+            }
+            else if(m_.edgePinned(ei.handle()))
+                glColor4f(1.0, 0.0, 0.0, 0.8);
+            else if(mesh_.data(ei).is_crease())
+                glColor4f(0.0, 1.0, 0.0, 0.8);
+            else
+                glColor4f(0.0, 0.0, 0.0, 0.8);
+            MyMesh::Point pt1, pt2;
+            m_.edgeEndpoints(ei.handle(), pt1, pt2);
+            glVertex3d(pt1[0], pt1[1], pt1[2]);
+            glVertex3d(pt2[0], pt2[1], pt2[2]);
+        }
+        glEnd();
+        /*MyMesh::ConstFaceIter f, fEnd = mesh_.faces_end();
         int i=0;
         for (f = mesh_.faces_begin(); f != fEnd; ++f,i++) {
             glColor4f(0.0, 0.0, 0.0, 0.8);
@@ -102,7 +124,7 @@ void ReferenceMeshRenderer::renderSurface3D(int renderFlags)
 
             }
             glEnd();
-        }
+        }*/
     }
     GLUquadricObj *sphere = gluNewQuadric();
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -120,9 +142,17 @@ void ReferenceMeshRenderer::renderSurface3D(int renderFlags)
             else
                 continue;
         }
+        else if(mesh_.data(v).anchored() && mesh_.data(v).pinned())
+        {
+            glColor3f(1.0, 0.4, 0.0);
+        }
         else if(mesh_.data(v).anchored())
         {
             glColor3f(0, .4, 0);
+        }
+        else if(mesh_.data(v).pinned())
+        {
+            glColor3f(1.0, 0.0, 0.0);
         }
         else if(renderFlags & RF_VERTICES)
         {

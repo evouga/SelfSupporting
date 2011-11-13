@@ -19,8 +19,10 @@ void NetworkMeshRenderer::render3D()
     glBegin(GL_LINES);
     for(MyMesh::ConstEdgeIter e = mesh_.edges_begin(); e != mesh_.edges_end(); ++e)
     {
-        if(mesh_.data(e).weight() < 1e-6)
-            glColor4f(1.0,0.0,0.0,1.0);
+        if(m_.edgePinned(e.handle()))
+            glColor4f(1.0, 0.0, 0.0, 1.0);
+        else if(mesh_.data(e).is_crease())
+            glColor4f(0.4, 1.0, 0.0, 1.0);
         else
             glColor4f(0.4, 0.1, 0.0, 1.0);
         MyMesh::Point p1, p2;
@@ -68,7 +70,7 @@ void NetworkMeshRenderer::renderSurface()
 void NetworkMeshRenderer::render2D()
 {
     auto_ptr<MeshLock> ml = m_.acquireMesh();
-
+    glEnable(GL_LINE_SMOOTH);
     const MyMesh &mesh = m_.getMesh();
     glColor4f(0.4, 0.1, 0.0, 1.0);
     double maxweight = 0;
@@ -89,11 +91,14 @@ void NetworkMeshRenderer::render2D()
 
         double weight = mesh.data(e).weight();
         weight *= 4.0/maxweight;
-        glLineWidth(weight);
+        if(weight != 0)
+        {
+            glLineWidth(weight);
 
-        glBegin(GL_LINES);
-        glVertex2d(pt1[0], pt1[2]);
-        glVertex2d(pt2[0], pt2[2]);
-        glEnd();
+            glBegin(GL_LINES);
+            glVertex2d(pt1[0], pt1[2]);
+            glVertex2d(pt2[0], pt2[2]);
+            glEnd();
+        }
     }
 }

@@ -70,6 +70,16 @@ private slots:
 
     void on_actionCopy_Thrust_Network_triggered();
 
+    void on_pushButton_clicked();
+
+    void on_actionSubdivideRM_triggered();
+
+    void on_actionTriangulate_triggered();
+
+    void on_actionExport_OBJ_triggered();
+
+    void on_actionImport_OBJ_triggered();
+
 protected:
     void moveEvent(QMoveEvent *);
     void resizeEvent(QResizeEvent *);

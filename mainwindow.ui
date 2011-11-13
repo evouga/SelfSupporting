@@ -72,7 +72,7 @@
       <x>710</x>
       <y>560</y>
       <width>171</width>
-      <height>121</height>
+      <height>151</height>
      </rect>
     </property>
     <property name="title">
@@ -134,6 +134,32 @@
      </property>
      <property name="text">
       <string>Delete Faces</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="pinButton">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>100</y>
+       <width>116</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Pin</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="creaseButton">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>120</y>
+       <width>116</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Crease</string>
      </property>
     </widget>
    </widget>
@@ -227,8 +253,8 @@
    <widget class="QCheckBox" name="fitCheckBox">
     <property name="geometry">
      <rect>
-      <x>710</x>
-      <y>670</y>
+      <x>890</x>
+      <y>660</y>
       <width>201</width>
       <height>22</height>
      </rect>
@@ -269,6 +295,19 @@
      <string>Constrain Max Weight</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="pushButton">
+    <property name="geometry">
+     <rect>
+      <x>280</x>
+      <y>10</y>
+      <width>111</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Laplacian Test</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -300,6 +339,7 @@
     <addaction name="actionIterate_Fit"/>
     <addaction name="actionProject_Onto_Reference"/>
     <addaction name="actionSubdivide"/>
+    <addaction name="actionTriangulate"/>
    </widget>
    <widget class="QMenu" name="menuReference_Mesh">
     <property name="title">
@@ -308,9 +348,12 @@
     <addaction name="actionNew_Mesh"/>
     <addaction name="actionLoad_Mesh"/>
     <addaction name="actionSave_Mesh"/>
+    <addaction name="actionImport_OBJ"/>
+    <addaction name="actionExport_OBJ"/>
     <addaction name="separator"/>
     <addaction name="actionJitter"/>
     <addaction name="actionCopy_Thrust_Network"/>
+    <addaction name="actionSubdivideRM"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -387,6 +430,26 @@
   <action name="actionCopy_Thrust_Network">
    <property name="text">
     <string>Copy Thrust Network</string>
+   </property>
+  </action>
+  <action name="actionSubdivideRM">
+   <property name="text">
+    <string>Subdivide</string>
+   </property>
+  </action>
+  <action name="actionTriangulate">
+   <property name="text">
+    <string>Triangulate</string>
+   </property>
+  </action>
+  <action name="actionExport_OBJ">
+   <property name="text">
+    <string>Export OBJ</string>
+   </property>
+  </action>
+  <action name="actionImport_OBJ">
+   <property name="text">
+    <string>Import OBJ</string>
    </property>
   </action>
  </widget>

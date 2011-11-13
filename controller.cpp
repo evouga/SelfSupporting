@@ -53,6 +53,19 @@ Solvers &Controller::getSolvers()
     return *solvers_;
 }
 
+void Controller::importOBJ(const char *filename)
+{
+    if(!rm_->importOBJ(filename))
+    {
+        QString msg = "Couldn't read file " + QString(filename) + ". No mesh was imported.";
+        QMessageBox::warning(&w_, "Couldn't Read File", msg, QMessageBox::Ok);
+        return;
+    }
+    p_.statusmsg = "Imported geometry from " + QString(filename) + ".";
+    resetNetworkMesh();
+    w_.centerCameras();
+}
+
 void Controller::loadMesh(const char *filename)
 {
     if(!rm_->loadMesh(filename))
@@ -63,7 +76,6 @@ void Controller::loadMesh(const char *filename)
     }
     p_.statusmsg = "Loaded mesh " + QString(filename) + ".";
     resetNetworkMesh();
-    //computeWeightsFromTopView();
     w_.centerCameras();
 }
 
@@ -76,6 +88,17 @@ void Controller::saveMesh(const char *filename)
         return;
     }
     p_.statusmsg = "Saved mesh " + QString(filename) + ".";
+}
+
+void Controller::exportOBJ(const char *filename)
+{
+    if(!rm_->exportOBJ(filename))
+    {
+        QString msg = "Couldn't write file " + QString(filename) + ". Save failed.";
+        QMessageBox::warning(&w_, "Couldn't Write File", msg, QMessageBox::Ok);
+        return;
+    }
+    p_.statusmsg = "Exported geometry to " + QString(filename) + ".";
 }
 
 void Controller::computeWeightsFromTopView()
@@ -95,6 +118,17 @@ void Controller::resetNetworkMesh()
     w_.updateGLWindows();
 }
 
+void Controller::laplacianTest()
+{
+    nm_->copyFromReferenceMesh(*rm_);
+    nm_->triangulate();
+    resetParams();
+    nm_->computeCotanWeights();
+    nm_->setPlaneAreaLoads();
+    nm_->updateHeights();
+    w_.updateGLWindows();
+}
+
 void Controller::projectNetwork()
 {
     nm_->projectOntoReference(*rm_);
@@ -108,7 +142,7 @@ void Controller::iterateNetwork()
     if(!p_.enforceMaxWeight)
         maxweight = std::numeric_limits<double>::infinity();
     nm_->computeBestWeights(maxweight);
-    double residualp = nm_->computeBestPositionsTangentLS(*rm_, p_.alpha, p_.beta);
+    double residualp = nm_->computeBestPositionsTangentLS(p_.alpha, p_.beta);
 
 //    p_.statusmsg = "Projected onto best weights and positions. Residual after calculating best weights " + QString::number(residualw)
 //            + ", and after adjusting position " + QString::number(residualp) + "." + " Alpha: " + QString::number(p_.alpha) + " Beta: " + QString::number(p_.beta);
@@ -130,9 +164,19 @@ void Controller::jitterMesh()
 void Controller::subdivideMesh()
 {
     nm_->subdivide();
+    nm_->saveSubdivisionReference();
+    p_.alpha = 0.1;
     p_.beta = .2;
     p_.nmresidual = std::numeric_limits<double>::infinity();
     p_.statusmsg = "Subdivided thrust network.";
+    w_.updateGLWindows();
+}
+
+void Controller::subdivideReferenceMesh()
+{
+    rm_->subdivide();
+    resetParams();
+    p_.statusmsg = "Subdivided reference mesh.";
     w_.updateGLWindows();
 }
 
@@ -244,9 +288,30 @@ void Controller::clearAnchor(int vidx)
     rm_->setAnchor(vidx, false);
 }
 
+void Controller::setPin(int vidx)
+{
+    rm_->setPin(vidx, true);
+    resetNetworkMesh();
+    w_.updateGLWindows();
+}
+
+void Controller::clearPin(int vidx)
+{
+    rm_->setPin(vidx, false);
+    resetNetworkMesh();
+    w_.updateGLWindows();
+}
+
 void Controller::deleteFace(int fidx)
 {
     rm_->deleteFace(fidx);
+    resetNetworkMesh();
+    w_.updateGLWindows();
+}
+
+void Controller::toggleCrease(int eidx)
+{
+    rm_->setCrease(eidx, !rm_->isCrease(eidx));
     resetNetworkMesh();
     w_.updateGLWindows();
 }
@@ -303,4 +368,13 @@ void Controller::copyThrustNetwork()
     rm_->copyFromNetworkMesh(*nm_);
     resetNetworkMesh();
     updateGLWindows();
+}
+
+void Controller::triangulateThrustNetwork()
+{
+    nm_->triangulate();
+    p_.beta = .2;
+    p_.nmresidual = std::numeric_limits<double>::infinity();
+    p_.statusmsg = "Triangulated thrust network.";
+    w_.updateGLWindows();
 }

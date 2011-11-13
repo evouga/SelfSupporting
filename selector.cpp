@@ -50,11 +50,36 @@ void Selector::primitiveSelected(Mesh::PrimType primtype, int primidx)
             }
             break;
         }
+        case SM_ADDPIN:
+        {
+            state_ = SS_NONE;
+            if(primtype == Mesh::PT_VERTEX)
+            {
+                cont_->setPin(primidx);
+            }
+            break;
+        }
+        case SM_DELETEPIN:
+        {
+            state_ = SS_NONE;
+            if(primtype == Mesh::PT_VERTEX)
+            {
+                cont_->clearPin(primidx);
+            }
+            break;
+        }
         case SM_DELETEFACE:
         {
             state_ = SS_NONE;
             if(primtype == Mesh::PT_FACE)
                 cont_->deleteFace(primidx);
+            break;
+        }
+        case SM_TOGGLECREASE:
+        {
+            state_ = SS_NONE;
+            if(primtype == Mesh::PT_EDGE)
+                cont_->toggleCrease(primidx);
             break;
         }
         default:

@@ -23,11 +23,21 @@ struct MyTraits : public OpenMesh::DefaultTraits
     {
       private:
         double weight_;
+
+        bool iscrease_;
+        double creaseang_;
+
       public:
-        EdgeT() : weight_(0) {}
+        EdgeT() : weight_(0), iscrease_(false), creaseang_(0) {}
 
         double weight() const {return weight_; }
         void set_weight(double weight) {weight_ = weight;}
+
+        bool is_crease() const {return iscrease_; }
+        void set_is_crease(bool status) {iscrease_ = status; }
+
+        double crease_value() const {return creaseang_; }
+        void set_crease_value(double angle) {creaseang_ = angle; }
     };
 
     VertexTraits
@@ -35,13 +45,17 @@ struct MyTraits : public OpenMesh::DefaultTraits
       private:
         double load_;
         bool anchored_;
-      public:
-        VertexT() : load_(0), anchored_(false) {}
+        bool pinned_;
+        public:
+        VertexT() : load_(0), anchored_(false), pinned_(false) {}
 
         bool anchored() const {return anchored_; }
         void set_anchored(bool anchored) {anchored_ = anchored;}
         double load() const {return load_; }
         void set_load(double load) {load_ = load;}
+
+        bool pinned() const {return pinned_;}
+        void set_pinned(bool status) {pinned_ = status; }
     };
 };
 
@@ -90,9 +104,13 @@ public:
     void setPlaneAreaLoads();
     void setSurfaceAreaLoads();
 
-    Eigen::Vector3d projectToFace(MyMesh::FaceHandle fh, const Eigen::Vector3d &p);
-    Eigen::Vector3d approximateClosestPoint(const Eigen::Vector3d &p);
+    void subdivide();
+    void triangulate();
+
+    static Eigen::Vector3d projectToFace(const MyMesh &mesh, MyMesh::FaceHandle fh, const Eigen::Vector3d &p);
+    static Eigen::Vector3d approximateClosestPoint(const MyMesh &mesh, const Eigen::Vector3d &p);
     void edgeEndpoints(MyMesh::EdgeHandle edge, MyMesh::Point &p1, MyMesh::Point &p2);
+    bool edgePinned(MyMesh::EdgeHandle edge);
 
 
     friend class MeshLock;
@@ -106,6 +124,8 @@ protected:
     double edgeArea(MyMesh::EdgeHandle edge);
     int numFaceVerts(MyMesh::FaceHandle face);
     MyMesh::Point computeEdgeMidpoint(MyMesh::EdgeHandle edge);
+
+    void removeVertex(MyMesh::VertexHandle vert);
 
     MyMesh mesh_;
     Controller &cont_;

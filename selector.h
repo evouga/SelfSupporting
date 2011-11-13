@@ -12,7 +12,7 @@ class Selector
 public:
     Selector(Camera &c);
 
-    enum SelectMode {SM_DRAGFREE, SM_DRAGHEIGHT, SM_CLEARANCHOR, SM_DELETEFACE};
+    enum SelectMode {SM_DRAGFREE, SM_DRAGHEIGHT, SM_CLEARANCHOR, SM_DELETEFACE, SM_ADDPIN, SM_DELETEPIN, SM_TOGGLECREASE};
 
     void setController(Controller &c);
 

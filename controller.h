@@ -28,7 +28,7 @@ public:
     Controller(MainWindow &w);
     ~Controller();
 
-    enum EditMode {EM_CAMERA, EM_FREEHANDLE, EM_HEIGHTHANDLE, EM_DELETEFACE};
+    enum EditMode {EM_CAMERA, EM_FREEHANDLE, EM_HEIGHTHANDLE, EM_DELETEFACE, EM_PIN, EM_CREASE};
 
     void initialize();
 
@@ -40,9 +40,13 @@ public:
     void projectNetwork();
     void loadMesh(const char *filename);
     void saveMesh(const char *filename);
+    void importOBJ(const char *filename);
+    void exportOBJ(const char *filename);
     void jitterMesh();
     void copyThrustNetwork();
     void subdivideMesh();
+    void subdivideReferenceMesh();
+    void triangulateThrustNetwork();
     Eigen::Vector3d computeMeshCentroid();
     double computeMeshBoundingSphere(const Eigen::Vector3d &center);
     double computeMeshBoundingCircle(const Eigen::Vector3d &center);
@@ -59,7 +63,10 @@ public:
 
     void setAnchor(int vidx);
     void clearAnchor(int vidx);
+    void setPin(int vidx);
+    void clearPin(int vidx);
     void deleteFace(int fidx);
+    void toggleCrease(int eidx);
 
     EditMode getEditMode();
 
@@ -71,6 +78,7 @@ public:
     void setAutoIterate(bool state);
     void enforceMaxWeight(bool state);
     void setMaxWeight(double weight);
+    void laplacianTest();
 
     void updateGLWindows();
     const Params &getParams();

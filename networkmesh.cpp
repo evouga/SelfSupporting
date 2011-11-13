@@ -28,7 +28,15 @@ MeshRenderer &NetworkMesh::getRenderer()
 void NetworkMesh::copyFromReferenceMesh(ReferenceMesh &rm)
 {
     auto_ptr<MeshLock> rml = rm.acquireMesh();
+    auto_ptr<MeshLock> ml = acquireMesh();
     copyMesh(rm.getMesh());
+    subdreference_ = rm.getMesh();
+}
+
+void NetworkMesh::saveSubdivisionReference()
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    subdreference_ = mesh_;
 }
 
 double NetworkMesh::calculateEquilibriumViolation()
@@ -39,7 +47,7 @@ double NetworkMesh::calculateEquilibriumViolation()
     for(int i=0; i<n; i++)
     {
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
-        if(mesh_.is_boundary(vh))
+        if(mesh_.data(vh).pinned())
             continue;
 
         MyMesh::Point center = mesh_.point(vh);
@@ -66,17 +74,20 @@ double NetworkMesh::computeBestWeights(double maxweight)
     int n = mesh_.n_vertices();
     int e = mesh_.n_edges();
 
+    if(n == 0 || e == 0)
+        return 0;
+
     int interiorn=0;
     for(MyMesh::VertexIter it = mesh_.vertices_begin(); it != mesh_.vertices_end(); ++it)
     {
-        if(!mesh_.is_boundary(it))
+        if(!mesh_.data(it.handle()).pinned())
             interiorn++;
     }
 
     int boundarye=0;
     for(MyMesh::EdgeIter it = mesh_.edges_begin(); it != mesh_.edges_end(); ++it)
     {
-        if(mesh_.is_boundary(it))
+        if(edgePinned(it.handle()) || mesh_.data(it).is_crease())
             boundarye++;
     }
 
@@ -90,7 +101,7 @@ double NetworkMesh::computeBestWeights(double maxweight)
     for(int i=0; i<n; i++)
     {
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
-        if(mesh_.is_boundary(vh))
+        if(mesh_.data(vh).pinned())
             continue;
 
         MyMesh::Point center = mesh_.point(vh);
@@ -115,9 +126,15 @@ double NetworkMesh::computeBestWeights(double maxweight)
     for(int i=0; i<e; i++)
     {
         MyMesh::EdgeHandle eh = mesh_.edge_handle(i);
-        if(mesh_.is_boundary(eh))
+        if(edgePinned(eh))
         {
             Md.coeffRef(row, i) = 1.0;
+            row++;
+        }
+        else if(mesh_.data(eh).is_crease())
+        {
+            Md.coeffRef(row, i) = 1.0;
+            rhs[row] = mesh_.data(eh).crease_value();
             row++;
         }
     }
@@ -149,8 +166,10 @@ double NetworkMesh::computeBestWeights(double maxweight)
             if(result[i] < 0 || isnan(result[i]))
                 result[i] = 0;
             MyMesh::EdgeHandle eh = mesh_.edge_handle(i);
-            if(mesh_.is_boundary(eh))
+            if(edgePinned(eh))
                 result[i] = 0;
+            else if(mesh_.data(eh).is_crease())
+                result[i] = mesh_.data(eh).crease_value();
             mesh_.data(eh).set_weight(result[i]);
         }
 
@@ -162,9 +181,8 @@ double NetworkMesh::computeBestWeights(double maxweight)
     return residual;
 }
 
-double NetworkMesh::computeBestPositionsTangentLS(ReferenceMesh &rm, double alpha, double beta)
+double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta)
 {
-    auto_ptr<MeshLock> rml = rm.acquireMesh();
     auto_ptr<MeshLock> ml = acquireMesh();
     int n = mesh_.n_vertices();
 
@@ -197,7 +215,7 @@ double NetworkMesh::computeBestPositionsTangentLS(ReferenceMesh &rm, double alph
     {
         MyMesh::Point pt = mesh_.point(mesh_.vertex_handle(i));
         Vector3d ptv(pt[0],pt[1],pt[2]);
-        Vector3d projpt = rm.approximateClosestPoint(ptv);
+        Vector3d projpt = approximateClosestPoint(subdreference_, ptv);
         for(int j=0; j<3; j++)
         {
             rhs[3*i+j] += alpha*(projpt[j]);
@@ -212,7 +230,7 @@ double NetworkMesh::computeBestPositionsTangentLS(ReferenceMesh &rm, double alph
     for(int i=0; i<n; i++)
     {
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
-        if(mesh_.is_boundary(vh))
+        if(mesh_.data(vh).pinned())
         {
             for(int j=0; j<3; j++)
             {
@@ -247,7 +265,6 @@ double NetworkMesh::computeBestPositionsTangentLS(ReferenceMesh &rm, double alph
 
     int oldid = getMeshID();
     ml.reset();
-    rml.reset();
 
     cont_.getSolvers().linearSolveCG(M, rhs, result);
     double residual = std::numeric_limits<double>::infinity();
@@ -284,7 +301,7 @@ double NetworkMesh::computeWeightsOnPlane(ReferenceMesh &rm, double sum)
     for(int i=0; i<n; i++)
     {
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
-        if(!mesh_.is_boundary(vh))
+        if(!mesh_.data(vh).pinned())
             interiorn++;
     }
 
@@ -294,7 +311,7 @@ double NetworkMesh::computeWeightsOnPlane(ReferenceMesh &rm, double sum)
     for(int i=0; i<e; i++)
     {
         MyMesh::EdgeHandle eh = mesh_.edge_handle(i);
-        if(mesh_.is_boundary(eh))
+        if(edgePinned(eh))
             boundarye++;
     }
 
@@ -314,7 +331,7 @@ double NetworkMesh::computeWeightsOnPlane(ReferenceMesh &rm, double sum)
     for(int i=0; i<n; i++)
     {
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
-        if(mesh_.is_boundary(vh))
+        if(mesh_.data(vh).pinned())
             continue;
 
         MyMesh::Point center = mesh_.point(vh);
@@ -335,7 +352,7 @@ double NetworkMesh::computeWeightsOnPlane(ReferenceMesh &rm, double sum)
     for(int i=0; i<e; i++)
     {
         MyMesh::EdgeHandle eh = mesh_.edge_handle(i);
-        if(mesh_.is_boundary(eh))
+        if(edgePinned(eh))
         {
             M(row,i) = 1.0;
             row++;
@@ -373,7 +390,7 @@ double NetworkMesh::computeWeightsOnPlane(ReferenceMesh &rm, double sum)
     for(int i=0; i<e; i++)
     {
         MyMesh::EdgeHandle eh = mesh_.edge_handle(i);
-        if(!mesh_.is_boundary(eh))
+        if(!edgePinned(eh))
             g0[i] = initialweight;
     }
 
@@ -420,7 +437,7 @@ double NetworkMesh::updateHeights()
     for(int i=0; i<n; i++)
     {
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
-        if(mesh_.is_boundary(vh) || isBadVertex(vh))
+        if(mesh_.data(vh).pinned() || isBadVertex(vh))
         {
             M(i, i) = 1.0;
         }
@@ -457,7 +474,7 @@ double NetworkMesh::updateHeights()
 bool NetworkMesh::isBadVertex(MyMesh::VertexHandle vert)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
-    if(mesh_.is_boundary(vert))
+    if(mesh_.data(vert).pinned())
     {
         return false;
     }
@@ -474,133 +491,24 @@ bool NetworkMesh::isBadVertex(MyMesh::VertexHandle vert)
     return true;
 }
 
-void NetworkMesh::subdivide()
+void NetworkMesh::projectOnto(const MyMesh &m)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
-    int e = mesh_.n_edges();
-    int n = mesh_.n_vertices();
-    int f = mesh_.n_faces();
-
-    MyMesh newmesh;
-
-    // add new face vertices
-    for(int i=0; i<f; i++)
+    for(MyMesh::VertexIter v = mesh_.vertices_begin(); v != mesh_.vertices_end(); ++v)
     {
-        MyMesh::FaceHandle fh = mesh_.face_handle(i);
-        MyMesh::Point centroid;
-        mesh_.calc_face_centroid(fh, centroid);
-        newmesh.add_vertex(centroid);
+        MyMesh::Point &pt = mesh_.point(v);
+        Vector3d curpos(pt[0],pt[1],pt[2]);
+        Vector3d newpos = approximateClosestPoint(m, curpos);
+        for(int j=0; j<3; j++)
+            pt[j] = newpos[j];
     }
-
-    // add new edge vertices
-    for(int i=0; i<e; i++)
-    {
-        MyMesh::EdgeHandle eh = mesh_.edge_handle(i);
-        //TODO Fix boundary case
-        MyMesh::Point midp = computeEdgeMidpoint(eh);
-        if(!mesh_.is_boundary(eh))
-        {
-            MyMesh::HalfedgeHandle heh1 = mesh_.halfedge_handle(eh, 0);
-            MyMesh::HalfedgeHandle heh2 = mesh_.halfedge_handle(eh, 1);
-            MyMesh::FaceHandle fh1 = mesh_.face_handle(heh1);
-            MyMesh::FaceHandle fh2 = mesh_.face_handle(heh2);
-            MyMesh::Point facept1 = newmesh.point(newmesh.vertex_handle(fh1.idx()));
-            MyMesh::Point facept2 = newmesh.point(newmesh.vertex_handle(fh2.idx()));
-            midp += (facept1+facept2)*0.5;
-            midp *= 0.5;
-        }
-        newmesh.add_vertex(midp);
-    }
-
-    // add (modified) original vertices
-    for(int i=0; i<n; i++)
-    {
-        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
-        MyMesh::Point newpt(0,0,0);
-        if(mesh_.is_boundary(vh))
-        {
-            //TODO fix boundary case
-            for(MyMesh::VertexEdgeIter ve = mesh_.ve_iter(vh); ve; ++ve)
-            {
-                if(mesh_.is_boundary(ve))
-                {
-                    newpt += computeEdgeMidpoint(ve);
-                }
-            }
-            newpt *= 0.5;
-            newpt += mesh_.point(vh);
-            newpt *= 0.5;
-        }
-        else
-        {
-            int valence = mesh_.valence(vh);
-            MyMesh::Point F(0,0,0);
-            MyMesh::Point R(0,0,0);
-            for(MyMesh::VertexEdgeIter ve = mesh_.ve_iter(vh); ve; ++ve)
-            {
-                R += computeEdgeMidpoint(ve);
-            }
-            for(MyMesh::VertexFaceIter vf = mesh_.vf_iter(vh); vf; ++vf)
-            {
-                MyMesh::FaceHandle fh = vf;
-                F += newmesh.point(newmesh.vertex_handle(fh.idx()));
-            }
-            R /= valence;
-            F /= valence;
-            newpt = mesh_.point(vh)*(valence-3);
-            newpt += R*2.0;
-            newpt += F;
-            newpt /= valence;
-        }
-        newmesh.add_vertex(newpt);
-    }
-
-    assert((int)newmesh.n_vertices() == f + e + n);
-
-    // Now rebuilt mesh combinatorics
-    for(int i=0; i<f; i++)
-    {
-        MyMesh::FaceHandle fh = mesh_.face_handle(i);
-        MyMesh::VertexHandle center = newmesh.vertex_handle(i);
-        // each face is now several quad faces
-        for(MyMesh::FaceHalfedgeIter fhe = mesh_.fh_iter(fh); fhe; ++fhe)
-        {
-            vector<MyMesh::VertexHandle> newface;
-            MyMesh::VertexHandle tovert = mesh_.to_vertex_handle(fhe);
-            MyMesh::HalfedgeHandle heh = fhe;
-            MyMesh::EdgeHandle edge1 = mesh_.edge_handle(heh);
-            MyMesh::FaceHalfedgeIter fhe2 = fhe;
-            if(!++fhe2)
-                fhe2 = mesh_.fh_iter(fh);
-            MyMesh::HalfedgeHandle heh2 = fhe2;
-            MyMesh::EdgeHandle edge2 = mesh_.edge_handle(heh2);
-
-            // some nice gymnastics
-            newface.push_back(center);
-            newface.push_back(newmesh.vertex_handle(f+edge1.idx()));
-            newface.push_back(newmesh.vertex_handle(f+e+tovert.idx()));
-            newface.push_back(newmesh.vertex_handle(f+edge2.idx()));
-            newmesh.add_face(newface);
-        }
-    }
-
-    mesh_ = newmesh;
     invalidateMesh();
 }
 
 void NetworkMesh::projectOntoReference(ReferenceMesh &rm)
 {
     auto_ptr<MeshLock> rml = rm.acquireMesh();
-    auto_ptr<MeshLock> ml = acquireMesh();
-    for(MyMesh::VertexIter v = mesh_.vertices_begin(); v != mesh_.vertices_end(); ++v)
-    {
-        MyMesh::Point &pt = mesh_.point(v);
-        Vector3d curpos(pt[0],pt[1],pt[2]);
-        Vector3d newpos = rm.approximateClosestPoint(curpos);
-        for(int j=0; j<3; j++)
-            pt[j] = newpos[j];
-    }
-    invalidateMesh();
+    projectOnto(rm.getMesh());
 }
 
 void NetworkMesh::fixBadVertices()
@@ -610,8 +518,52 @@ void NetworkMesh::fixBadVertices()
     {
         if(isBadVertex(v))
         {
+                //removeVertex(v);
             mesh_.delete_vertex(v, true);
         }
     }
     mesh_.garbage_collection();
+}
+
+double NetworkMesh::computeCotanWeights()
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    for(MyMesh::EdgeIter ei = mesh_.edges_begin(); ei != mesh_.edges_end(); ++ei)
+    {
+        if(edgePinned(ei.handle()))
+        {
+            mesh_.data(ei).set_weight(0);
+            continue;
+        }
+        MyMesh::HalfedgeHandle heh[2];
+        heh[0] = mesh_.halfedge_handle(ei,0);
+        heh[1] = mesh_.halfedge_handle(ei,1);
+        assert(heh[0].is_valid() && heh[1].is_valid());
+        double tot = 0;
+        for(int i=0; i<2; i++)
+        {
+            MyMesh::HalfedgeHandle next = mesh_.next_halfedge_handle(heh[i]);
+            MyMesh::HalfedgeHandle prev = mesh_.prev_halfedge_handle(heh[i]);
+            MyMesh::Point a1 = mesh_.point(mesh_.to_vertex_handle(next));
+            MyMesh::Point a2 = mesh_.point(mesh_.from_vertex_handle(next));
+            MyMesh::Point b1 = mesh_.point(mesh_.from_vertex_handle(prev));
+            MyMesh::Point b2 = mesh_.point(mesh_.to_vertex_handle(prev));
+            Vector2d a;
+            Vector2d b;
+            a[0] = a2[0] - a1[0];
+            a[1] = a2[2] - a1[2];
+            b[0] = b2[0] - b1[0];
+            b[1] = b2[2] - b1[2];
+            Matrix2d Lambda;
+            double x = a1[0];
+            double y = a1[2];
+            Lambda << 1.0/(y*y),0, 0, 1.0/(x*x);
+            double num = a.dot(Lambda * b);
+            double denom = fabs(a[0]*b[1]- a[1]*b[0]);
+            tot += num/denom;
+        }
+        tot /= 10*2.0;
+        mesh_.data(ei).set_weight(tot);
+    }
+    return 0;
 }

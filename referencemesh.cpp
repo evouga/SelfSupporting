@@ -3,6 +3,7 @@
 #include "controller.h"
 #include "solvers.h"
 #include "networkmesh.h"
+#include <fstream>
 
 #include <vector>
 
@@ -28,22 +29,157 @@ MeshRenderer &ReferenceMesh::getRenderer()
 
 void ReferenceMesh::copyFromNetworkMesh(NetworkMesh &nm)
 {
+    auto_ptr<MeshLock> ml = acquireMesh();
     auto_ptr<MeshLock> nml = nm.acquireMesh();
     copyMesh(nm.getMesh());
 }
 
-bool ReferenceMesh::loadMesh(const char *name)
+bool ReferenceMesh::importOBJ(const char *name)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
     OpenMesh::IO::Options opt;
     return OpenMesh::IO::read_mesh(mesh_, name, opt);
 }
 
-bool ReferenceMesh::saveMesh(const char *name)
+bool ReferenceMesh::exportOBJ(const char *name)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
     OpenMesh::IO::Options opt;
     return OpenMesh::IO::write_mesh(mesh_, name, opt);
+}
+
+bool ReferenceMesh::loadMesh(const char *name)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    ifstream ifs(name);
+    if(!ifs)
+        return false;
+
+    MyMesh newmesh;
+    while(ifs)
+    {
+        char code;
+        ifs >> code;
+        if(ifs.eof())
+        {
+            mesh_ = newmesh;
+            return true;
+        }
+        switch(code)
+        {
+            case 'v':
+            {
+                MyMesh::Point pt;
+                ifs >> pt[0];
+                ifs >> pt[1];
+                ifs >> pt[2];
+                double load;
+                bool pinned;
+                bool anchored;
+                ifs >> load;
+                ifs >> pinned;
+                ifs >> anchored;
+                MyMesh::VertexHandle vh = newmesh.add_vertex(pt);
+                newmesh.data(vh).set_load(load);
+                newmesh.data(vh).set_pinned(pinned);
+                newmesh.data(vh).set_anchored(anchored);
+                break;
+            }
+            case 'f':
+            {
+                int numpts;
+                ifs >> numpts;
+                vector<MyMesh::VertexHandle> toadd;
+                for(int i=0; i<numpts; i++)
+                {
+                    int vid;
+                    ifs >> vid;
+                    if(vid >= (int)newmesh.n_vertices())
+                        return false;
+                    toadd.push_back(newmesh.vertex_handle(vid));
+                }
+                newmesh.add_face(toadd);
+                break;
+            }
+            case 'e':
+            {
+                int v1, v2;
+                ifs >> v1 >> v2;
+                if(v1 >= (int)newmesh.n_vertices() || v2 >= (int)newmesh.n_vertices())
+                    return false;
+                bool found = false;
+                for(MyMesh::HalfedgeIter hei = newmesh.halfedges_begin(); hei != newmesh.halfedges_end(); ++hei)
+                {
+                    if(newmesh.from_vertex_handle(hei.handle()).idx() == v1 && newmesh.to_vertex_handle(hei.handle()).idx() == v2)
+                    {
+                        bool crease;
+                        double creaseval;
+                        ifs >> crease;
+                        ifs >> creaseval;
+                        MyMesh::EdgeHandle eh = newmesh.edge_handle(hei.handle());
+                        newmesh.data(eh).set_is_crease(crease);
+                        newmesh.data(eh).set_crease_value(creaseval);
+                        found = true;
+                        break;
+                    }
+                }
+                if(!found)
+                    return false;
+                break;
+            }
+            default:
+                return false;
+        }
+    }
+
+    return false;
+}
+
+bool ReferenceMesh::saveMesh(const char *name)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    ofstream ofs(name);
+    if(!ofs)
+        return false;
+
+    for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
+    {
+        MyMesh::Point pt = mesh_.point(vi.handle());
+        double load = mesh_.data(vi.handle()).load();
+        bool pinned = mesh_.data(vi.handle()).pinned();
+        bool anchored = mesh_.data(vi.handle()).anchored();
+        ofs << "v " << pt[0] << " " << pt[1] << " " << pt[2] << " " << load << " " << pinned << " " << anchored << endl;
+        if(!ofs)
+            return false;
+    }
+
+    for(MyMesh::FaceIter fi = mesh_.faces_begin(); fi != mesh_.faces_end(); ++fi)
+    {
+        ofs << "f ";
+        int numverts = this->numFaceVerts(fi.handle());
+        ofs << numverts << " ";
+        for(MyMesh::FaceVertexIter fvi = mesh_.fv_iter(fi.handle()); fvi; ++fvi)
+        {
+            ofs << fvi.handle().idx() << " ";
+        }
+        ofs << endl;
+        if(!ofs)
+            return false;
+    }
+
+    for(MyMesh::EdgeIter ei = mesh_.edges_begin(); ei != mesh_.edges_end(); ++ei)
+    {
+        MyMesh::HalfedgeHandle heh = mesh_.halfedge_handle(ei.handle(), 0);
+        assert(heh.is_valid());
+        ofs << "e " << mesh_.from_vertex_handle(heh).idx() << " " << mesh_.to_vertex_handle(heh).idx();
+        bool creased = mesh_.data(ei.handle()).is_crease();
+        double creaseval = mesh_.data(ei.handle()).crease_value();
+        ofs << " " << creased << " " << creaseval << endl;
+        if(!ofs)
+            return false;
+    }
+
+    return ofs;
 }
 
 void ReferenceMesh::buildQuadMesh(int w, int h)
@@ -73,6 +209,7 @@ void ReferenceMesh::buildQuadMesh(int w, int h)
             face_vhandles.push_back(MyMesh::VertexHandle(i*w+j+w));
             mesh_.add_face(face_vhandles);
         }
+    pinBoundary();
 }
 
 void ReferenceMesh::buildHexMesh(int w, int h)
@@ -145,6 +282,7 @@ void ReferenceMesh::buildHexMesh(int w, int h)
             }
         }
     }
+    pinBoundary();
 }
 
 void ReferenceMesh::buildTriMesh(int w, int h)
@@ -177,6 +315,7 @@ void ReferenceMesh::buildTriMesh(int w, int h)
             face_vhandles[2] = MyMesh::VertexHandle(i*w+j+w);
             mesh_.add_face(face_vhandles);
         }
+    pinBoundary();
 }
 
 void ReferenceMesh::computeClosestPointOnPlane(const Vector2d &pos, int &closestidx, double &closestdist)
@@ -235,7 +374,7 @@ void ReferenceMesh::jitterOnPlane()
     }
 }
 
-void ReferenceMesh::applyLaplacianDeformationHeight(int vidx, const Vector3d &delta)
+void ReferenceMesh::applyLaplacianDeformationHeight(int, const Vector3d &delta)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
 
@@ -269,18 +408,13 @@ void ReferenceMesh::applyLaplacianDeformationHeight(int vidx, const Vector3d &de
     for(int i=0; i<n; i++)
     {
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
-        if(i==vidx)
+        if(mesh_.data(vh).anchored())
         {
-            MyMesh::Point movedpt = mesh_.point(mesh_.vertex_handle(vidx));
-            rhs[vidx] += (movedpt[1] + delta[1]);
-            LTL.coeffRef(vidx,vidx) += 1.0;
+            MyMesh::Point movedpt = mesh_.point(vh);
+            rhs[i] += (movedpt[1]+delta[1]);
+            LTL.coeffRef(i, i) += 1.0;
         }
-        else if(mesh_.data(vh).anchored())
-        {
-            rhs[i] += mesh_.point(vh)[1];
-            LTL.coeffRef(i,i) += 1.0;
-        }
-        else if(mesh_.is_boundary(vh))
+        else if(mesh_.data(vh).pinned())
         {
             LTL.coeffRef(i, i) += 1.0;
             rhs[i] += mesh_.point(vh)[1];
@@ -295,12 +429,12 @@ void ReferenceMesh::applyLaplacianDeformationHeight(int vidx, const Vector3d &de
     {
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
         MyMesh::Point &pt = mesh_.point(vh);
-        if(!mesh_.is_boundary(vh))
+        if(!mesh_.data(vh).pinned())
             pt[1] = v0[i];
     }
 }
 
-void ReferenceMesh::applyLaplacianDeformation(int vidx, const Vector3d &delta)
+void ReferenceMesh::applyLaplacianDeformation(int, const Vector3d &delta)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
 
@@ -338,24 +472,16 @@ void ReferenceMesh::applyLaplacianDeformation(int vidx, const Vector3d &delta)
     for(int i=0; i<n; i++)
     {
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
-        if(i==vidx)
+        if(mesh_.data(vh).anchored())
         {
-            MyMesh::Point movedpt = mesh_.point(mesh_.vertex_handle(vidx));
+            MyMesh::Point movedpt = mesh_.point(vh);
             for(int j=0; j<3; j++)
             {
-                rhs[3*vidx+j] += (movedpt[j] + delta[j]);
-                LTL.coeffRef(3*vidx+j,3*vidx+j) += 1.0;
-            }
-        }
-        else if(mesh_.data(vh).anchored())
-        {
-            for(int j=0; j<3; j++)
-            {
-                rhs[3*i+j] += mesh_.point(vh)[j];
+                rhs[3*i+j] += (movedpt[j] + delta[j]);
                 LTL.coeffRef(3*i+j,3*i+j) += 1.0;
             }
         }
-        else if(mesh_.is_boundary(vh))
+        else if(mesh_.data(vh).pinned())
         {
             LTL.coeffRef(3*i + 1, 3*i + 1) += 1.0;
             rhs[3*i+1] += mesh_.point(vh)[1];
@@ -371,7 +497,7 @@ void ReferenceMesh::applyLaplacianDeformation(int vidx, const Vector3d &delta)
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
         MyMesh::Point &pt = mesh_.point(vh);
         pt[0] = v0[3*i];
-        if(!mesh_.is_boundary(vh))
+        if(!mesh_.data(vh).pinned())
             pt[1] = v0[3*i+1];
         pt[2] = v0[3*i+2];
     }
@@ -386,6 +512,14 @@ void ReferenceMesh::setAnchor(int vidx, bool state)
     mesh_.data(mesh_.vertex_handle(vidx)).set_anchored(state);
 }
 
+void ReferenceMesh::setPin(int vidx, bool state)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    int n = mesh_.n_vertices();
+    assert(vidx >= 0 && vidx < n);
+    mesh_.data(mesh_.vertex_handle(vidx)).set_pinned(state);
+}
+
 void ReferenceMesh::deleteFace(int fidx)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
@@ -394,4 +528,33 @@ void ReferenceMesh::deleteFace(int fidx)
     MyMesh::FaceHandle fh = mesh_.face_handle(fidx);
     mesh_.delete_face(fh, true);
     mesh_.garbage_collection();
+}
+
+void ReferenceMesh::setCrease(int eidx, bool state)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    int e = mesh_.n_edges();
+    assert(eidx >= 0 && eidx < e);
+    MyMesh::EdgeHandle eh = mesh_.edge_handle(eidx);
+    mesh_.data(eh).set_is_crease(state);
+    if(state)
+        mesh_.data(eh).set_crease_value(1.0);
+}
+
+bool ReferenceMesh::isCrease(int eidx)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    int e = mesh_.n_edges();
+    assert(eidx >= 0 && eidx < e);
+    MyMesh::EdgeHandle eh = mesh_.edge_handle(eidx);
+    return mesh_.data(eh).is_crease();
+}
+
+void ReferenceMesh::pinBoundary()
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
+    {
+        mesh_.data(vi.handle()).set_pinned( mesh_.is_boundary(vi.handle()) );
+    }
 }

@@ -23,6 +23,8 @@ public:
 
     bool loadMesh(const char *name);
     bool saveMesh(const char *name);
+    bool importOBJ(const char *name);
+    bool exportOBJ(const char *name);
     void buildQuadMesh(int w, int h);
     void buildTriMesh(int w, int h);
     void buildHexMesh(int w, int h);
@@ -33,7 +35,13 @@ public:
     void setAnchor(int vidx, bool state);
     void deleteFace(int fidx);
 
+    void setCrease(int eidx, bool state);
+    bool isCrease(int eidx);
+    void setPin(int vidx, bool state);
+
 private:
+    void pinBoundary();
+
     ReferenceMeshRenderer *renderer_;
 };
 

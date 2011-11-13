@@ -7,6 +7,7 @@
 #include <Eigen/Sparse>
 #include "meshrenderer.h"
 #include "controller.h"
+#include <list>
 
 
 using namespace std;
@@ -46,6 +47,13 @@ void Mesh::clearMesh()
 {
     auto_ptr<MeshLock> ml = acquireMesh();
     mesh_ = MyMesh();
+    invalidateMesh();
+}
+
+void Mesh::triangulate()
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    mesh_.triangulate();
     invalidateMesh();
 }
 
@@ -297,18 +305,17 @@ void Mesh::getNRing(int vidx, int n, set<int> &nring)
     nring = *result;
 }
 
-Vector3d Mesh::projectToFace(MyMesh::FaceHandle fh, const Vector3d &p)
+Vector3d Mesh::projectToFace(const MyMesh &mesh, MyMesh::FaceHandle fh, const Vector3d &p)
 {
-    auto_ptr<MeshLock> ml = acquireMesh();
     MyMesh::Point centroid;
-    mesh_.calc_face_centroid(fh, centroid);
+    mesh.calc_face_centroid(fh, centroid);
 
     MyMesh::Point n(0,0,0);
-    for(MyMesh::ConstFaceVertexIter fv = mesh_.cfv_iter(fh); fv; ++fv)
+    for(MyMesh::ConstFaceVertexIter fv = mesh.cfv_iter(fh); fv; ++fv)
     {
         MyMesh::VertexHandle vh = fv;
         MyMesh::Point tmp;
-        mesh_.calc_vertex_normal_correct(vh, tmp);
+        mesh.calc_vertex_normal_correct(vh, tmp);
         n += tmp;
     }
     Eigen::Vector3d normal(n[0], n[1], n[2]);
@@ -321,17 +328,16 @@ Vector3d Mesh::projectToFace(MyMesh::FaceHandle fh, const Vector3d &p)
     return result;
 }
 
-Vector3d Mesh::approximateClosestPoint(const Vector3d &p)
+Vector3d Mesh::approximateClosestPoint(const MyMesh &mesh, const Vector3d &p)
 {
-    auto_ptr<MeshLock> ml = acquireMesh();
     int closestface = -1;
     double closestdist = std::numeric_limits<double>::infinity();
 
-    for(MyMesh::ConstFaceIter f = mesh_.faces_begin(); f != mesh_.faces_end(); ++f)
+    for(MyMesh::ConstFaceIter f = mesh.faces_begin(); f != mesh.faces_end(); ++f)
     {
         MyMesh::FaceHandle fh = f;
         MyMesh::Point centroid;
-        mesh_.calc_face_centroid(fh, centroid);
+        mesh.calc_face_centroid(fh, centroid);
         double dist = 0;
         for(int j=0; j<3; j++)
             dist += (p[j]-centroid[j])*(p[j]-centroid[j]);
@@ -344,8 +350,8 @@ Vector3d Mesh::approximateClosestPoint(const Vector3d &p)
 
     if(closestface != -1)
     {
-        MyMesh::FaceHandle fh = mesh_.face_handle(closestface);
-        Vector3d newpos = projectToFace(fh, p);
+        MyMesh::FaceHandle fh = mesh.face_handle(closestface);
+        Vector3d newpos = projectToFace(mesh, fh, p);
         return newpos;
     }
     return p;
@@ -386,3 +392,235 @@ MeshLock::~MeshLock()
     m_.unlockMesh();
 }
 
+void Mesh::subdivide()
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    int e = mesh_.n_edges();
+    int n = mesh_.n_vertices();
+    int f = mesh_.n_faces();
+
+    MyMesh newmesh;
+
+    // add new face vertices
+    for(int i=0; i<f; i++)
+    {
+        MyMesh::FaceHandle fh = mesh_.face_handle(i);
+        MyMesh::Point centroid;
+        mesh_.calc_face_centroid(fh, centroid);
+        newmesh.add_vertex(centroid);
+    }
+
+    // add new edge vertices
+    for(int i=0; i<e; i++)
+    {
+        MyMesh::EdgeHandle eh = mesh_.edge_handle(i);
+        bool pinned = edgePinned(eh);
+        //TODO Fix boundary case
+        MyMesh::Point midp = computeEdgeMidpoint(eh);
+        if(!mesh_.is_boundary(eh))
+        {
+            MyMesh::HalfedgeHandle heh1 = mesh_.halfedge_handle(eh, 0);
+            MyMesh::HalfedgeHandle heh2 = mesh_.halfedge_handle(eh, 1);
+            MyMesh::FaceHandle fh1 = mesh_.face_handle(heh1);
+            MyMesh::FaceHandle fh2 = mesh_.face_handle(heh2);
+            MyMesh::Point facept1 = newmesh.point(newmesh.vertex_handle(fh1.idx()));
+            MyMesh::Point facept2 = newmesh.point(newmesh.vertex_handle(fh2.idx()));
+            midp += (facept1+facept2)*0.5;
+            midp *= 0.5;
+        }
+        MyMesh::VertexHandle newv = newmesh.add_vertex(midp);
+        newmesh.data(newv).set_pinned(pinned);
+    }
+
+    // add (modified) original vertices
+    for(int i=0; i<n; i++)
+    {
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+        bool pinned = mesh_.data(vh).pinned();
+        MyMesh::Point newpt(0,0,0);
+        if(mesh_.is_boundary(vh))
+        {
+            //TODO fix boundary case
+            for(MyMesh::VertexEdgeIter ve = mesh_.ve_iter(vh); ve; ++ve)
+            {
+                if(mesh_.is_boundary(ve))
+                {
+                    newpt += computeEdgeMidpoint(ve);
+                }
+            }
+            newpt *= 0.5;
+            newpt += mesh_.point(vh);
+            newpt *= 0.5;
+        }
+        else
+        {
+            int valence = mesh_.valence(vh);
+            MyMesh::Point F(0,0,0);
+            MyMesh::Point R(0,0,0);
+            for(MyMesh::VertexEdgeIter ve = mesh_.ve_iter(vh); ve; ++ve)
+            {
+                R += computeEdgeMidpoint(ve);
+            }
+            for(MyMesh::VertexFaceIter vf = mesh_.vf_iter(vh); vf; ++vf)
+            {
+                MyMesh::FaceHandle fh = vf;
+                F += newmesh.point(newmesh.vertex_handle(fh.idx()));
+            }
+            R /= valence;
+            F /= valence;
+            newpt = mesh_.point(vh)*(valence-3);
+            newpt += R*2.0;
+            newpt += F;
+            newpt /= valence;
+        }
+        MyMesh::VertexHandle newv = newmesh.add_vertex(newpt);
+        newmesh.data(newv).set_pinned(pinned);
+    }
+
+    assert((int)newmesh.n_vertices() == f + e + n);
+
+    // Now rebuilt mesh combinatorics
+    for(int i=0; i<f; i++)
+    {
+        MyMesh::FaceHandle fh = mesh_.face_handle(i);
+        MyMesh::VertexHandle center = newmesh.vertex_handle(i);
+        // each face is now several quad faces
+        for(MyMesh::FaceHalfedgeIter fhe = mesh_.fh_iter(fh); fhe; ++fhe)
+        {
+            vector<MyMesh::VertexHandle> newface;
+            MyMesh::VertexHandle tovert = mesh_.to_vertex_handle(fhe);
+            MyMesh::HalfedgeHandle heh = fhe;
+            MyMesh::EdgeHandle edge1 = mesh_.edge_handle(heh);
+            MyMesh::FaceHalfedgeIter fhe2 = fhe;
+            if(!++fhe2)
+                fhe2 = mesh_.fh_iter(fh);
+            MyMesh::HalfedgeHandle heh2 = fhe2;
+            MyMesh::EdgeHandle edge2 = mesh_.edge_handle(heh2);
+
+            // some nice gymnastics
+            newface.push_back(center);
+            newface.push_back(newmesh.vertex_handle(f+edge1.idx()));
+            newface.push_back(newmesh.vertex_handle(f+e+tovert.idx()));
+            newface.push_back(newmesh.vertex_handle(f+edge2.idx()));
+            MyMesh::FaceHandle fh = newmesh.add_face(newface);
+            for(MyMesh::FaceEdgeIter fei = newmesh.fe_iter(fh); fei; ++fei)
+            {
+                MyMesh::HalfedgeHandle heh = newmesh.halfedge_handle(fei.handle(),0);
+                int vidx = f+e+tovert.idx();
+                if(newmesh.to_vertex_handle(heh).idx() == vidx || newmesh.from_vertex_handle(heh).idx() == vidx)
+                {
+                    if(newmesh.to_vertex_handle(heh).idx() == f+edge1.idx() || newmesh.from_vertex_handle(heh).idx() == f+edge1.idx())
+                    {
+                        newmesh.data(fei.handle()).set_is_crease(mesh_.data(edge1).is_crease());
+                        newmesh.data(fei.handle()).set_crease_value(mesh_.data(edge1).crease_value());
+                    }
+                    else if(newmesh.to_vertex_handle(heh).idx() == f+edge2.idx() || newmesh.from_vertex_handle(heh).idx() == f+edge2.idx())
+                    {
+                        newmesh.data(fei.handle()).set_is_crease(mesh_.data(edge2).is_crease());
+                        newmesh.data(fei.handle()).set_crease_value(mesh_.data(edge2).crease_value());
+                    }
+                }
+            }
+        }
+    }
+
+    mesh_ = newmesh;
+    invalidateMesh();
+}
+
+bool Mesh::edgePinned(MyMesh::EdgeHandle edge)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    MyMesh::HalfedgeHandle heh = mesh_.halfedge_handle(edge, 0);
+    if(!heh.is_valid())
+        heh = mesh_.halfedge_handle(edge, 1);
+    assert(heh.is_valid());
+
+    return mesh_.data(mesh_.from_vertex_handle(heh)).pinned() && mesh_.data(mesh_.to_vertex_handle(heh)).pinned();
+}
+
+void Mesh::removeVertex(MyMesh::VertexHandle vert)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+
+    MyMesh::HalfedgeHandle startheh = mesh_.voh_iter(vert).handle();
+
+    int numboundary = 0;
+    for(MyMesh::VertexOHalfedgeIter voh = mesh_.voh_iter(vert); voh; ++voh)
+    {
+        if(mesh_.is_boundary(mesh_.opposite_halfedge_handle(voh.handle())))
+        {
+            numboundary++;
+            startheh = voh.handle();
+            cout << "start on boundary" << endl;
+        }
+    }
+    assert(numboundary <= 1);
+    assert(startheh.is_valid());
+
+    vector<int> neighbors;
+    set<int> nbset;
+    set<int> visitedset;
+    visitedset.insert(vert.idx());
+
+    set<int> adjfaces;
+    for(MyMesh::VertexFaceIter vfi = mesh_.vf_iter(vert); vfi; ++vfi)
+        adjfaces.insert(vfi.handle().idx());
+
+    MyMesh::HalfedgeHandle curheh = startheh;
+    while(true)
+    {
+        assert(curheh.is_valid());
+        assert(!mesh_.is_boundary(curheh));
+        assert(adjfaces.count(mesh_.face_handle(curheh).idx()) > 0);
+
+        //if the to vertex is a bona fide one-ring boundary vertex
+        int idx = mesh_.to_vertex_handle(curheh).idx();
+        if(mesh_.is_boundary(mesh_.opposite_halfedge_handle(curheh)) || adjfaces.count(mesh_.opposite_face_handle(curheh).idx()) == 0)
+        {
+            cout << "next " << idx << endl;
+            neighbors.push_back(idx);
+            nbset.insert(idx);
+        }
+        visitedset.insert(idx);
+
+        curheh = mesh_.next_halfedge_handle(curheh);
+        //if we've arrived back at the start, flip
+        if(mesh_.to_vertex_handle(curheh) == vert)
+        {
+            curheh = mesh_.opposite_halfedge_handle(curheh);
+            cout << "flip" << endl;
+        }
+
+        if(curheh == startheh)
+            break;
+        if(mesh_.is_boundary(curheh))
+        {
+            cout << "stop due to bdry" << endl;
+            break;
+        }
+    }
+
+    for(set<int>::iterator it = visitedset.begin(); it != visitedset.end(); ++it)
+    {
+        if(!nbset.count(*it))
+            mesh_.delete_vertex(mesh_.vertex_handle(*it), false);
+    }
+
+    vector<MyMesh::VertexHandle> nbhandles;
+    for(vector<int>::iterator it = neighbors.begin(); it != neighbors.end(); ++it)
+    {
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(*it);
+        assert(vh.is_valid());
+        nbhandles.push_back(vh);
+    }
+
+    if(nbhandles.size() > 2)
+    {
+        mesh_.add_face(nbhandles);
+    }
+
+    mesh_.garbage_collection();
+
+    invalidateMesh();
+}

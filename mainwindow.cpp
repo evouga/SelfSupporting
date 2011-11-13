@@ -30,16 +30,44 @@ void MainWindow::centerCameras()
 
 void MainWindow::on_actionLoad_Mesh_triggered()
 {
-    QString filename = QFileDialog::getOpenFileName(this, "Load Reference Mesh", ".", "Mesh Files (*.obj)");
+    QString filename = QFileDialog::getOpenFileName(this, "Load Reference Mesh", ".", "SSS Files (*.sss)");
     if(!filename.isNull())
     {
         c_.loadMesh(filename.toStdString().c_str());
     }
 }
 
+void MainWindow::on_actionImport_OBJ_triggered()
+{
+    QString filename = QFileDialog::getOpenFileName(this, "Import Reference Geometry", ".", "OBJ Files (*.obj)");
+    if(!filename.isNull())
+    {
+        c_.importOBJ(filename.toStdString().c_str());
+    }
+}
+
 void MainWindow::on_actionSave_Mesh_triggered()
 {
-    QFileDialog savedialog(this, "Save Reference Mesh", ".", "Mesh Files (*.obj)");
+    QFileDialog savedialog(this, "Save Reference Mesh", ".", "SSS Files (*.sss)");
+    savedialog.setFileMode(QFileDialog::AnyFile);
+    savedialog.setDefaultSuffix("sss");
+    savedialog.setViewMode(QFileDialog::List);
+    savedialog.setAcceptMode(QFileDialog::AcceptSave);
+    if(savedialog.exec())
+    {
+        QStringList filenames = savedialog.selectedFiles();
+        if(filenames.size() > 0)
+        {
+            QString filename = filenames[0];
+            c_.saveMesh(filename.toStdString().c_str());
+        }
+    }
+}
+
+
+void MainWindow::on_actionExport_OBJ_triggered()
+{
+    QFileDialog savedialog(this, "Export Reference Geometry", ".", "Mesh Files (*.obj)");
     savedialog.setFileMode(QFileDialog::AnyFile);
     savedialog.setDefaultSuffix("obj");
     savedialog.setViewMode(QFileDialog::List);
@@ -50,7 +78,7 @@ void MainWindow::on_actionSave_Mesh_triggered()
         if(filenames.size() > 0)
         {
             QString filename = filenames[0];
-            c_.saveMesh(filename.toStdString().c_str());
+            c_.exportOBJ(filename.toStdString().c_str());
         }
     }
 }
@@ -147,6 +175,10 @@ Controller::EditMode MainWindow::getEditMode()
         return Controller::EM_HEIGHTHANDLE;
     else if(ui->deleteFaceButton->isChecked())
         return Controller::EM_DELETEFACE;
+    else if(ui->pinButton->isChecked())
+        return Controller::EM_PIN;
+    else if(ui->creaseButton->isChecked())
+        return Controller::EM_CREASE;
     assert(false);
 }
 
@@ -167,6 +199,7 @@ void MainWindow::on_fitCheckBox_stateChanged(int arg1)
 void MainWindow::on_actionIterate_Fit_triggered()
 {
     c_.iterateNetwork();
+    updateGLWindows();
 }
 
 void MainWindow::on_actionProject_Onto_Reference_triggered()
@@ -215,4 +248,19 @@ void MainWindow::on_actionSubdivide_triggered()
 void MainWindow::on_actionCopy_Thrust_Network_triggered()
 {
     c_.copyThrustNetwork();
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    c_.laplacianTest();
+}
+
+void MainWindow::on_actionSubdivideRM_triggered()
+{
+    c_.subdivideReferenceMesh();
+}
+
+void MainWindow::on_actionTriangulate_triggered()
+{
+    c_.triangulateThrustNetwork();
 }

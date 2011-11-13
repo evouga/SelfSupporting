@@ -143,6 +143,24 @@ OpenGLPanel3D::MouseAction OpenGLPanel3D::deduceAction(QMouseEvent *event)
         }
         return MA_NONE;
     }
+    else if(curmode == Controller::EM_PIN)
+    {
+        if(event->buttons() & Qt::LeftButton)
+        {
+            return MA_ADDPIN;
+        }
+        else if(event->buttons() & Qt::RightButton)
+        {
+            return MA_DELETEPIN;
+        }
+    }
+    else if(curmode == Controller::EM_CREASE)
+    {
+        if(event->buttons() & Qt::LeftButton)
+        {
+            return MA_TOGGLECREASE;
+        }
+    }
     else if(curmode == Controller::EM_DELETEFACE)
     {
         if(event->buttons() & Qt::LeftButton)
@@ -198,9 +216,27 @@ void OpenGLPanel3D::mousePressEvent(QMouseEvent *event)
             cont_->updateGLWindows();
             break;
         }
+        case MA_ADDPIN:
+        {
+            selector_.startEditing(pos, Selector::SM_ADDPIN);
+            cont_->updateGLWindows();
+            break;
+        }
+        case MA_DELETEPIN:
+        {
+            selector_.startEditing(pos, Selector::SM_DELETEPIN);
+            cont_->updateGLWindows();
+            break;
+        }
         case MA_DELETEFACE:
         {
             selector_.startEditing(pos, Selector::SM_DELETEFACE);
+            cont_->updateGLWindows();
+            break;
+        }
+        case MA_TOGGLECREASE:
+        {
+            selector_.startEditing(pos, Selector::SM_TOGGLECREASE);
             cont_->updateGLWindows();
             break;
         }
