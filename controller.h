@@ -9,6 +9,7 @@ class ReferenceMesh;
 class NetworkMesh;
 class Solvers;
 class NetworkThread;
+class StressMesh;
 
 struct Params
 {
@@ -20,6 +21,7 @@ struct Params
 
     bool enforceMaxWeight;
     double maxWeight;
+    double density;
 };
 
 class Controller
@@ -38,10 +40,13 @@ public:
     void resetNetworkMesh();
     void iterateNetwork();
     void projectNetwork();
+    void planarizeThrustNetwork();
     void loadMesh(const char *filename);
     void saveMesh(const char *filename);
+    void saveNetwork(const char *filename);
     void importOBJ(const char *filename);
     void exportOBJ(const char *filename);
+    void exportNetworkOBJ(const char *filename);
     void jitterMesh();
     void copyThrustNetwork();
     void subdivideMesh();
@@ -78,7 +83,11 @@ public:
     void setAutoIterate(bool state);
     void enforceMaxWeight(bool state);
     void setMaxWeight(double weight);
+    void setDensity(double density);
     void laplacianTest();
+
+    void pinReferenceBoundary();
+    void unpinReferenceBoundary();
 
     void updateGLWindows();
     const Params &getParams();
@@ -91,6 +100,7 @@ private:
     MainWindow &w_;
     ReferenceMesh *rm_;
     NetworkMesh *nm_;
+    StressMesh *sm_;
     Solvers *solvers_;
     NetworkThread *nt_;
 

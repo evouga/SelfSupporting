@@ -20,8 +20,6 @@ public:
     double computeWeightsOnPlane(ReferenceMesh &rm, double sum);
     double updateHeights();
 
-    double computeCotanWeights();
-
     // Given a (possibly non-self-supporting) 3D mesh, finds non-negative weights that come as close as possible to
     // satisfying the force-equilibrium constraints
     double computeBestWeights(double maxweight);
@@ -29,16 +27,22 @@ public:
     // Given non-negative weights, finds the closest mesh to the given mesh that is self-supporting with those weights
     double computeBestPositionsTangentLS(double alpha, double beta);
 
+    double enforcePlanarity();
+
     void projectOntoReference(ReferenceMesh &rm);
     void projectOnto(const MyMesh &m);
 
     bool isBadVertex(MyMesh::VertexHandle vert);
 
     double calculateEquilibriumViolation();
+    void computeRelativePrincipalDirections();
 
+    void setupVFProperties();
 
 private:
+    Eigen::Matrix2d approximateStressHessian(MyMesh::FaceHandle face);
     void fixBadVertices();
+
     MyMesh subdreference_;
 
     NetworkMeshRenderer *renderer_;

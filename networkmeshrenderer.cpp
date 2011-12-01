@@ -2,6 +2,7 @@
 #include "networkmesh.h"
 
 using namespace std;
+using namespace Eigen;
 
 NetworkMeshRenderer::NetworkMeshRenderer(Mesh &m) : MeshRenderer(m)
 {
@@ -67,6 +68,38 @@ void NetworkMeshRenderer::renderSurface()
 
 }
 
+void NetworkMeshRenderer::renderConjugateVectors3D()
+{
+    auto_ptr<MeshLock> ml = m_.acquireMesh();
+    //glEnable(GL_LINE_SMOOTH);
+    const MyMesh &mesh = m_.getMesh();
+
+    for(MyMesh::ConstFaceIter f = mesh.faces_begin(); f != mesh.faces_end(); ++f)
+    {
+        const double PI = 3.1415926535898;
+        MyMesh::Point pt;
+        mesh.calc_face_centroid(f.handle(), pt);
+        Vector3d u = mesh.data(f.handle()).rel_principal_u();
+        Vector3d v = mesh.data(f.handle()).rel_principal_v();
+        double area = m_.faceAreaOnPlane(f.handle());
+        double radius = 0.8*sqrt(area/PI);
+        double radiusu = radius / sqrt(u[0]*u[0]+u[2]*u[2]);
+        double radiusv = radius / sqrt(v[0]*v[0]+v[2]*v[2]);
+        glLineWidth(0.1);
+
+        glBegin(GL_LINES);
+        glColor3f(1.0, 0.0, 0.0);
+        glVertex3d(pt[0]-0.5*radiusu*u[0], pt[1] - 0.5*radiusu*u[1], pt[2]-0.5*radiusu*u[2]);
+        glVertex3d(pt[0]+radiusu*u[0], pt[1] + radiusu*u[1], pt[2]+radiusu*u[2]);
+        glColor3f(0.0, 0.5, 0.0);
+        glVertex3d(pt[0]-0.5*radiusv*v[0], pt[1] - 0.5*radiusv*v[1], pt[2]-0.5*radiusv*v[2]);
+        glVertex3d(pt[0]+radiusv*v[0], pt[1] + radiusv*v[1], pt[2]+radiusv*v[2]);
+        glEnd();
+    }
+
+}
+
+
 void NetworkMeshRenderer::render2D()
 {
     auto_ptr<MeshLock> ml = m_.acquireMesh();
@@ -100,5 +133,33 @@ void NetworkMeshRenderer::render2D()
             glVertex2d(pt2[0], pt2[2]);
             glEnd();
         }
+    }
+}
+
+void NetworkMeshRenderer::renderConjugateVectors2D()
+{
+    auto_ptr<MeshLock> ml = m_.acquireMesh();
+    glEnable(GL_LINE_SMOOTH);
+    const MyMesh &mesh = m_.getMesh();
+
+    for(MyMesh::ConstFaceIter f = mesh.faces_begin(); f != mesh.faces_end(); ++f)
+    {
+        const double PI = 3.1415926535898;
+        MyMesh::Point pt;
+        mesh.calc_face_centroid(f.handle(), pt);
+        Vector3d u = mesh.data(f.handle()).rel_principal_u();
+        Vector3d v = mesh.data(f.handle()).rel_principal_v();
+        double area = m_.faceAreaOnPlane(f.handle());
+        double radius = 0.8*sqrt(area/PI);
+        glLineWidth(0.1);
+
+        glBegin(GL_LINES);
+        glColor3f(1.0, 0.0, 0.0);
+        glVertex2d(pt[0]-0.5*radius*u[0], pt[2]-0.5*radius*u[2]);
+        glVertex2d(pt[0]+radius*u[0], pt[2]+radius*u[2]);
+        glColor3f(0.0, 0.5, 0.0);
+        glVertex2d(pt[0]-0.5*radius*v[0], pt[2]-0.5*radius*v[2]);
+        glVertex2d(pt[0]+radius*v[0], pt[2]+radius*v[2]);
+        glEnd();
     }
 }

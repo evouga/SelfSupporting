@@ -30,7 +30,9 @@ SOURCES += main.cpp\
     networkmeshrenderer.cpp \
     referencemeshrenderer.cpp \
     networkthread.cpp \
-    YImage.cpp
+    YImage.cpp \
+    stressmesh.cpp \
+    stressmeshrenderer.cpp
 
 HEADERS  += \
     eiquadprog.hpp \
@@ -53,7 +55,10 @@ HEADERS  += \
     networkmeshrenderer.h \
     referencemeshrenderer.h \
     networkthread.h \
-    YImage.hpp
+    YImage.hpp \
+    function.h \
+    stressmesh.h \
+    stressmeshrenderer.h
 
 FORMS    += \
     mainwindow.ui \
@@ -113,6 +118,13 @@ QMAKE_CXXFLAGS += -g
 unix:!macx:!symbian: LIBS += -lbcls
 
 unix|win32: LIBS += -lcblas
+
+
+
+
+
+
+
 
 
 

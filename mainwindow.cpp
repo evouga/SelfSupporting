@@ -83,6 +83,43 @@ void MainWindow::on_actionExport_OBJ_triggered()
     }
 }
 
+
+void MainWindow::on_actionExport_OM_triggered()
+{
+    QFileDialog savedialog(this, "Export Thrust Network Geometry", ".", "Mesh Files (*.om)");
+    savedialog.setFileMode(QFileDialog::AnyFile);
+    savedialog.setDefaultSuffix("om");
+    savedialog.setViewMode(QFileDialog::List);
+    savedialog.setAcceptMode(QFileDialog::AcceptSave);
+    if(savedialog.exec())
+    {
+        QStringList filenames = savedialog.selectedFiles();
+        if(filenames.size() > 0)
+        {
+            QString filename = filenames[0];
+            c_.exportNetworkOBJ(filename.toStdString().c_str());
+        }
+    }
+}
+
+void MainWindow::on_actionExport_Network_triggered()
+{
+    QFileDialog savedialog(this, "Save Thrust Network", ".", "STN Files (*.stn)");
+    savedialog.setFileMode(QFileDialog::AnyFile);
+    savedialog.setDefaultSuffix("stn");
+    savedialog.setViewMode(QFileDialog::List);
+    savedialog.setAcceptMode(QFileDialog::AcceptSave);
+    if(savedialog.exec())
+    {
+        QStringList filenames = savedialog.selectedFiles();
+        if(filenames.size() > 0)
+        {
+            QString filename = filenames[0];
+            c_.saveNetwork(filename.toStdString().c_str());
+        }
+    }
+}
+
 void MainWindow::moveEvent(QMoveEvent *)
 {
 }
@@ -152,6 +189,16 @@ bool MainWindow::showNetworkMesh()
 bool MainWindow::showNetworkSurface()
 {
     return ui->networkSurfaceCheckBox->isChecked();
+}
+
+bool MainWindow::showStressSurface()
+{
+    return ui->stressCheckBox->isChecked();
+}
+
+bool MainWindow::showConjugateVectors()
+{
+    return ui->conjugateVectorsCheckBox->isChecked();
 }
 
 void MainWindow::updateUI()
@@ -238,6 +285,7 @@ void MainWindow::reportParams()
 {
     c_.enforceMaxWeight(ui->maxWeightCheckBox->isChecked());
     c_.setMaxWeight(ui->maxWeightHorizontalSlider->value());
+    c_.setDensity(ui->densitySlider->value());
 }
 
 void MainWindow::on_actionSubdivide_triggered()
@@ -263,4 +311,31 @@ void MainWindow::on_actionSubdivideRM_triggered()
 void MainWindow::on_actionTriangulate_triggered()
 {
     c_.triangulateThrustNetwork();
+}
+
+void MainWindow::on_actionMake_Planar_triggered()
+{
+    c_.planarizeThrustNetwork();
+}
+
+void MainWindow::on_densitySlider_valueChanged(int value)
+{
+    c_.setDensity(value);
+    c_.resetNetworkMesh();
+}
+
+
+void MainWindow::on_conjugateVectorsCheckBox_clicked()
+{
+    c_.updateGLWindows();
+}
+
+void MainWindow::on_actionPin_Boundary_triggered()
+{
+    c_.pinReferenceBoundary();
+}
+
+void MainWindow::on_actionUnpin_Boundary_triggered()
+{
+    c_.unpinReferenceBoundary();
 }

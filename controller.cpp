@@ -9,6 +9,7 @@
 #include "referencemeshrenderer.h"
 #include "solvers.h"
 #include "networkthread.h"
+#include "stressmesh.h"
 #include "networkmeshrenderer.h"
 #include <QDateTime>
 #include <fstream>
@@ -22,6 +23,7 @@ Controller::Controller(MainWindow &w) : w_(w)
 {
     rm_ = new ReferenceMesh(*this);
     nm_ = new NetworkMesh(*this);
+    sm_ = new StressMesh(*this);
     solvers_ = new Solvers();
     nt_ = new NetworkThread(*this);
 }
@@ -33,6 +35,7 @@ Controller::~Controller()
     delete nt_;
     delete rm_;
     delete nm_;
+    delete sm_;
     delete solvers_;
 }
 
@@ -90,6 +93,18 @@ void Controller::saveMesh(const char *filename)
     p_.statusmsg = "Saved mesh " + QString(filename) + ".";
 }
 
+void Controller::saveNetwork(const char *filename)
+{
+    if(!nm_->saveMesh(filename))
+    {
+        QString msg = "Couldn't write file " + QString(filename) + ". Save failed.";
+        QMessageBox::warning(&w_, "Couldn't Write File", msg, QMessageBox::Ok);
+        return;
+    }
+    p_.statusmsg = "Saved thrust network " + QString(filename) + ".";
+}
+
+
 void Controller::exportOBJ(const char *filename)
 {
     if(!rm_->exportOBJ(filename))
@@ -101,9 +116,22 @@ void Controller::exportOBJ(const char *filename)
     p_.statusmsg = "Exported geometry to " + QString(filename) + ".";
 }
 
+void Controller::exportNetworkOBJ(const char *filename)
+{
+    nm_->setupVFProperties();
+    if(!nm_->exportOBJ(filename))
+    {
+        QString msg = "Couldn't write file " + QString(filename) + ". Save failed.";
+        QMessageBox::warning(&w_, "Couldn't Write File", msg, QMessageBox::Ok);
+        return;
+    }
+    p_.statusmsg = "Exported network geometry to " + QString(filename) + ".";
+}
+
+
 void Controller::computeWeightsFromTopView()
 {
-    rm_->setPlaneAreaLoads();
+    rm_->setPlaneAreaLoads(p_.density);
     double wresidual = nm_->computeWeightsOnPlane(*rm_, p_.weightsum);
     double hresidual = nm_->updateHeights();
     p_.statusmsg = "Computed weights, with residual " + QString::number(wresidual) + ", heights with residual " + QString::number(hresidual) + ".";
@@ -120,12 +148,8 @@ void Controller::resetNetworkMesh()
 
 void Controller::laplacianTest()
 {
-    nm_->copyFromReferenceMesh(*rm_);
-    nm_->triangulate();
-    resetParams();
-    nm_->computeCotanWeights();
-    nm_->setPlaneAreaLoads();
-    nm_->updateHeights();
+    sm_->buildFromThrustNetwork(*nm_);
+    nm_->computeRelativePrincipalDirections();
     w_.updateGLWindows();
 }
 
@@ -137,7 +161,7 @@ void Controller::projectNetwork()
 
 void Controller::iterateNetwork()
 {
-    nm_->setSurfaceAreaLoads();
+    nm_->setSurfaceAreaLoads(p_.density);
     double maxweight = p_.maxWeight;
     if(!p_.enforceMaxWeight)
         maxweight = std::numeric_limits<double>::infinity();
@@ -230,8 +254,15 @@ void Controller::computeClosestPointOnPlane(const Vector2d &pos, int &closestidx
 
 void Controller::renderMesh2D()
 {
-    rm_->getRenderer().render2D();
-    nm_->getRenderer().render2D();
+    if(w_.showReferenceMesh())
+        rm_->getRenderer().render2D();
+    if(w_.showNetworkMesh())
+    {
+        nm_->getRenderer().render2D();
+        if(w_.showConjugateVectors())
+            ((NetworkMeshRenderer &)nm_->getRenderer()).renderConjugateVectors2D();
+    }
+
 }
 
 void Controller::renderMesh3D()
@@ -239,9 +270,15 @@ void Controller::renderMesh3D()
     if(w_.showNetworkSurface())
         ((NetworkMeshRenderer &)nm_->getRenderer()).renderSurface();
     if(w_.showNetworkMesh())
+    {
         nm_->getRenderer().render3D();
+        if(w_.showConjugateVectors())
+            ((NetworkMeshRenderer &)nm_->getRenderer()).renderConjugateVectors3D();
+    }
     if(w_.showReferenceMesh())
         rm_->getRenderer().render3D();
+    if(w_.showStressSurface())
+        sm_->getRenderer().render3D();
 }
 
 void Controller::renderPickMesh3D()
@@ -363,6 +400,11 @@ void Controller::setMaxWeight(double weight)
     p_.maxWeight = 0.1*weight;
 }
 
+void Controller::setDensity(double density)
+{
+    p_.density = 0.1*density;
+}
+
 void Controller::copyThrustNetwork()
 {
     rm_->copyFromNetworkMesh(*nm_);
@@ -376,5 +418,25 @@ void Controller::triangulateThrustNetwork()
     p_.beta = .2;
     p_.nmresidual = std::numeric_limits<double>::infinity();
     p_.statusmsg = "Triangulated thrust network.";
+    w_.updateGLWindows();
+}
+
+void Controller::planarizeThrustNetwork()
+{
+    nm_->enforcePlanarity();
+    w_.updateGLWindows();
+}
+
+void Controller::pinReferenceBoundary()
+{
+    rm_->pinBoundary();
+    resetNetworkMesh();
+    w_.updateGLWindows();
+}
+
+void Controller::unpinReferenceBoundary()
+{
+    rm_->unpinBoundary();
+    resetNetworkMesh();
     w_.updateGLWindows();
 }

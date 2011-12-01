@@ -23,6 +23,8 @@ public:
     bool showReferenceMesh();
     bool showNetworkMesh();
     bool showNetworkSurface();
+    bool showStressSurface();
+    bool showConjugateVectors();
 
     void save3DScreenshot(const std::string &filename);
 
@@ -79,6 +81,20 @@ private slots:
     void on_actionExport_OBJ_triggered();
 
     void on_actionImport_OBJ_triggered();
+
+    void on_actionMake_Planar_triggered();
+
+    void on_densitySlider_valueChanged(int value);
+
+    void on_actionExport_OM_triggered();
+
+    void on_actionExport_Network_triggered();
+
+    void on_conjugateVectorsCheckBox_clicked();
+
+    void on_actionPin_Boundary_triggered();
+
+    void on_actionUnpin_Boundary_triggered();
 
 protected:
     void moveEvent(QMoveEvent *);

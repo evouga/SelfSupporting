@@ -19,6 +19,22 @@ struct MyTraits : public OpenMesh::DefaultTraits
     FaceAttributes(OpenMesh::Attributes::Status);
     EdgeAttributes(OpenMesh::Attributes::Status);
 
+    FaceTraits
+    {
+      private:
+        bool integrated_;
+        Eigen::Vector3d u_, v_;
+
+      public:
+        FaceT() : integrated_(false) {}
+
+        bool integrated() const {return integrated_;}
+        Eigen::Vector3d rel_principal_u() const {return u_;}
+        Eigen::Vector3d rel_principal_v() const {return v_;}
+        void set_integrated(bool status) {integrated_ = status;}
+        void set_rel_principal_dirs(const Eigen::Vector3d &u, const Eigen::Vector3d &v) {u_ = u; v_ = v;}
+    };
+
     EdgeTraits
     {
       private:
@@ -87,8 +103,13 @@ public:
 
     std::auto_ptr<MeshLock> acquireMesh();
 
-    //void copyMesh(const MyMesh &m);
     void clearMesh();
+
+    bool loadMesh(const char *name);
+    bool saveMesh(const char *name);
+    bool importOBJ(const char *name);
+    bool exportOBJ(const char *name);
+
 
     virtual MeshRenderer &getRenderer()=0;
 
@@ -101,8 +122,8 @@ public:
 
     void getNRing(int vidx, int n, std::set<int> &nring);
 
-    void setPlaneAreaLoads();
-    void setSurfaceAreaLoads();
+    void setPlaneAreaLoads(double density);
+    void setSurfaceAreaLoads(double density);
 
     void subdivide();
     void triangulate();
@@ -111,14 +132,21 @@ public:
     static Eigen::Vector3d approximateClosestPoint(const MyMesh &mesh, const Eigen::Vector3d &p);
     void edgeEndpoints(MyMesh::EdgeHandle edge, MyMesh::Point &p1, MyMesh::Point &p2);
     bool edgePinned(MyMesh::EdgeHandle edge);
+    bool faceContainsPinnedVert(MyMesh::FaceHandle face);
 
+    // Finds z = ax + by + c for a given face
+    void computeFacePlane(MyMesh::FaceHandle face, double &a, double &b, double &c);
+    double isotropicDihedralAngle(MyMesh::EdgeHandle edge);
+    double dihedralAngle(MyMesh::EdgeHandle edge);
+
+    Eigen::Matrix2d approximateHessian(MyMesh::FaceHandle face);
+    double faceAreaOnPlane(MyMesh::FaceHandle face);
 
     friend class MeshLock;
 protected:
     void copyMesh(const MyMesh &m);
     static double randomDouble();
 
-    double faceAreaOnPlane(MyMesh::FaceHandle face);
     double vertexAreaOnPlane(MyMesh::VertexHandle vert);
     double vertexArea(MyMesh::VertexHandle vert);
     double edgeArea(MyMesh::EdgeHandle edge);

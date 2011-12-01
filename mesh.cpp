@@ -8,7 +8,8 @@
 #include "meshrenderer.h"
 #include "controller.h"
 #include <list>
-
+#include "function.h"
+#include <fstream>
 
 using namespace std;
 using namespace Eigen;
@@ -251,25 +252,25 @@ double Mesh::edgeArea(MyMesh::EdgeHandle edge)
     return tot;
 }
 
-void Mesh::setPlaneAreaLoads()
+void Mesh::setPlaneAreaLoads(double density)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
     for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
     {
         double area = vertexAreaOnPlane(vi);
-        mesh_.data(vi).set_load(area);
+        mesh_.data(vi).set_load(density*area);
     }
     invalidateMesh();
 }
 
-void Mesh::setSurfaceAreaLoads()
+void Mesh::setSurfaceAreaLoads(double density)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
 
     for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
     {
         double area = vertexArea(vi);
-        mesh_.data(vi).set_load(area);
+        mesh_.data(vi).set_load(density*area);
     }
 
     invalidateMesh();
@@ -539,6 +540,17 @@ bool Mesh::edgePinned(MyMesh::EdgeHandle edge)
     return mesh_.data(mesh_.from_vertex_handle(heh)).pinned() && mesh_.data(mesh_.to_vertex_handle(heh)).pinned();
 }
 
+bool Mesh::faceContainsPinnedVert(MyMesh::FaceHandle face)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    for(MyMesh::FaceVertexIter fvi = mesh_.fv_iter(face); fvi; ++fvi)
+    {
+        if(mesh_.data(fvi.handle()).pinned())
+            return true;
+    }
+    return false;
+}
+
 void Mesh::removeVertex(MyMesh::VertexHandle vert)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
@@ -623,4 +635,245 @@ void Mesh::removeVertex(MyMesh::VertexHandle vert)
     mesh_.garbage_collection();
 
     invalidateMesh();
+}
+
+void Mesh::computeFacePlane(MyMesh::FaceHandle face, double &a, double &b, double &c)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    int numv = numFaceVerts(face);
+
+    MatrixXd M(numv,3);
+    VectorXd rhs(numv);
+    int row = 0;
+    for(MyMesh::FaceVertexIter fvi = mesh_.fv_iter(face); fvi; ++fvi)
+    {
+        MyMesh::Point pt = mesh_.point(fvi.handle());
+        M(row,0) = pt[0];
+        M(row,1) = pt[2];
+        M(row,2) = 1.0;
+        rhs[row] = pt[1];
+        row++;
+    }
+    assert(row == numv);
+    Vector3d sol = (M.transpose()*M).fullPivLu().solve(M.transpose()*rhs);
+    a = sol[0];
+    b = sol[1];
+    c = sol[2];
+}
+
+double Mesh::isotropicDihedralAngle(MyMesh::EdgeHandle edge)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    assert(!mesh_.is_boundary(edge));
+    MyMesh::HalfedgeHandle heh = mesh_.halfedge_handle(edge,0);
+    MyMesh::FaceHandle fh1 = mesh_.face_handle(heh);
+    assert(fh1.is_valid());
+    double a1,b1,c;
+    computeFacePlane(fh1, a1, b1, c);
+    MyMesh::FaceHandle fh2 = mesh_.opposite_face_handle(heh);
+    assert(fh2.is_valid());
+    double a2,b2;
+    computeFacePlane(fh2, a2, b2, c);
+    return sqrt((a2-a1)*(a2-a1) + (b2-b1)*(b2-b1));
+}
+
+Matrix2d Mesh::approximateHessian(MyMesh::FaceHandle face)
+{
+    int numpts = 0;
+    numpts += numFaceVerts(face);
+    for(MyMesh::FaceFaceIter ffi = mesh_.ff_iter(face); ffi; ++ffi)
+    {
+        numpts += numFaceVerts(ffi.handle());
+    }
+
+    MatrixXd LS(numpts, 6);
+    VectorXd rhs(numpts);
+
+    int curpt = 0;
+    for(MyMesh::FaceVertexIter fvi = mesh_.fv_iter(face); fvi; ++fvi)
+    {
+        MyMesh::Point pt = mesh_.point(fvi.handle());
+        LS(curpt, 0) = pt[0]*pt[0];
+        LS(curpt, 1) = pt[0]*pt[2];
+        LS(curpt, 2) = pt[2]*pt[2];
+        LS(curpt, 3) = pt[0];
+        LS(curpt, 4) = pt[2];
+        LS(curpt, 5) = 1;
+        rhs[curpt] = pt[1];
+        curpt++;
+    }
+
+    for(MyMesh::FaceFaceIter ffi = mesh_.ff_iter(face); ffi; ++ffi)
+    {
+        for(MyMesh::FaceVertexIter fvi = mesh_.fv_iter(ffi.handle()); fvi; ++fvi)
+        {
+            MyMesh::Point pt = mesh_.point(fvi.handle());
+            LS(curpt, 0) = pt[0]*pt[0];
+            LS(curpt, 1) = pt[0]*pt[2];
+            LS(curpt, 2) = pt[2]*pt[2];
+            LS(curpt, 3) = pt[0];
+            LS(curpt, 4) = pt[2];
+            LS(curpt, 5) = 1;
+            rhs[curpt] = pt[1];
+            curpt++;
+        }
+    }
+    assert(curpt == numpts);
+
+    VectorXd sol = (LS.transpose()*LS).ldlt().solve(LS.transpose()*rhs);
+    Matrix2d hess;
+    hess << 2*sol[0], sol[1], sol[1], 2*sol[2];
+    return hess;
+}
+
+bool Mesh::loadMesh(const char *name)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    ifstream ifs(name);
+    if(!ifs)
+        return false;
+
+    MyMesh newmesh;
+    while(ifs)
+    {
+        char code;
+        ifs >> code;
+        if(ifs.eof())
+        {
+            mesh_ = newmesh;
+            return true;
+        }
+        switch(code)
+        {
+            case 'v':
+            {
+                MyMesh::Point pt;
+                ifs >> pt[0];
+                ifs >> pt[1];
+                ifs >> pt[2];
+                double load;
+                bool pinned;
+                bool anchored;
+                ifs >> load;
+                ifs >> pinned;
+                ifs >> anchored;
+                MyMesh::VertexHandle vh = newmesh.add_vertex(pt);
+                newmesh.data(vh).set_load(load);
+                newmesh.data(vh).set_pinned(pinned);
+                newmesh.data(vh).set_anchored(anchored);
+                break;
+            }
+            case 'f':
+            {
+                int numpts;
+                ifs >> numpts;
+                vector<MyMesh::VertexHandle> toadd;
+                for(int i=0; i<numpts; i++)
+                {
+                    int vid;
+                    ifs >> vid;
+                    if(vid >= (int)newmesh.n_vertices())
+                        return false;
+                    toadd.push_back(newmesh.vertex_handle(vid));
+                }
+                newmesh.add_face(toadd);
+                break;
+            }
+            case 'e':
+            {
+                int v1, v2;
+                ifs >> v1 >> v2;
+                if(v1 >= (int)newmesh.n_vertices() || v2 >= (int)newmesh.n_vertices())
+                    return false;
+                bool found = false;
+                for(MyMesh::HalfedgeIter hei = newmesh.halfedges_begin(); hei != newmesh.halfedges_end(); ++hei)
+                {
+                    if(newmesh.from_vertex_handle(hei.handle()).idx() == v1 && newmesh.to_vertex_handle(hei.handle()).idx() == v2)
+                    {
+                        bool crease;
+                        double creaseval;
+                        double weight;
+                        ifs >> crease;
+                        ifs >> creaseval;
+                        ifs >> weight;
+                        MyMesh::EdgeHandle eh = newmesh.edge_handle(hei.handle());
+                        newmesh.data(eh).set_is_crease(crease);
+                        newmesh.data(eh).set_crease_value(creaseval);
+                        newmesh.data(eh).set_weight(weight);
+                        found = true;
+                        break;
+                    }
+                }
+                if(!found)
+                    return false;
+                break;
+            }
+            default:
+                return false;
+        }
+    }
+
+    return false;
+}
+
+bool Mesh::saveMesh(const char *name)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    ofstream ofs(name);
+    if(!ofs)
+        return false;
+
+    for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
+    {
+        MyMesh::Point pt = mesh_.point(vi.handle());
+        double load = mesh_.data(vi.handle()).load();
+        bool pinned = mesh_.data(vi.handle()).pinned();
+        bool anchored = mesh_.data(vi.handle()).anchored();
+        ofs << "v " << pt[0] << " " << pt[1] << " " << pt[2] << " " << load << " " << pinned << " " << anchored << endl;
+        if(!ofs)
+            return false;
+    }
+
+    for(MyMesh::FaceIter fi = mesh_.faces_begin(); fi != mesh_.faces_end(); ++fi)
+    {
+        ofs << "f ";
+        int numverts = this->numFaceVerts(fi.handle());
+        ofs << numverts << " ";
+        for(MyMesh::FaceVertexIter fvi = mesh_.fv_iter(fi.handle()); fvi; ++fvi)
+        {
+            ofs << fvi.handle().idx() << " ";
+        }
+        ofs << endl;
+        if(!ofs)
+            return false;
+    }
+
+    for(MyMesh::EdgeIter ei = mesh_.edges_begin(); ei != mesh_.edges_end(); ++ei)
+    {
+        MyMesh::HalfedgeHandle heh = mesh_.halfedge_handle(ei.handle(), 0);
+        assert(heh.is_valid());
+        ofs << "e " << mesh_.from_vertex_handle(heh).idx() << " " << mesh_.to_vertex_handle(heh).idx();
+        bool creased = mesh_.data(ei.handle()).is_crease();
+        double creaseval = mesh_.data(ei.handle()).crease_value();
+        double weight = mesh_.data(ei.handle()).weight();
+        ofs << " " << creased << " " << creaseval << " " << weight << endl;
+        if(!ofs)
+            return false;
+    }
+
+    return ofs;
+}
+
+bool Mesh::importOBJ(const char *name)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    OpenMesh::IO::Options opt;
+    return OpenMesh::IO::read_mesh(mesh_, name, opt);
+}
+
+bool Mesh::exportOBJ(const char *name)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    OpenMesh::IO::Options opt;
+    return OpenMesh::IO::write_mesh(mesh_, name, opt);
 }

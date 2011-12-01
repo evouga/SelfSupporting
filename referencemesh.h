@@ -21,10 +21,6 @@ public:
     void jitterOnPlane();
     void jitter();
 
-    bool loadMesh(const char *name);
-    bool saveMesh(const char *name);
-    bool importOBJ(const char *name);
-    bool exportOBJ(const char *name);
     void buildQuadMesh(int w, int h);
     void buildTriMesh(int w, int h);
     void buildHexMesh(int w, int h);
@@ -39,8 +35,10 @@ public:
     bool isCrease(int eidx);
     void setPin(int vidx, bool state);
 
-private:
     void pinBoundary();
+    void unpinBoundary();
+
+private:
 
     ReferenceMeshRenderer *renderer_;
 };
