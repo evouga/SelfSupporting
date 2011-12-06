@@ -88,6 +88,8 @@ public:
 
     void pinReferenceBoundary();
     void unpinReferenceBoundary();
+    void swapYandZ();
+    void invertY();
 
     void updateGLWindows();
     const Params &getParams();

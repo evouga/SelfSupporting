@@ -14,7 +14,7 @@ Camera::Camera()
     p_fovy_ = 60;
     p_aspect_ = 1;
 
-    z_near_ = 1;
+    z_near_ = 0.1;
     z_far_ = 2000;
 }
 

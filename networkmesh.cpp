@@ -7,6 +7,7 @@
 #include "networkmeshrenderer.h"
 #include "controller.h"
 #include <set>
+#include "unsupported/Eigen/IterativeSolvers"
 
 using namespace Eigen;
 using namespace std;
@@ -40,6 +41,27 @@ void NetworkMesh::saveSubdivisionReference()
     subdreference_ = mesh_;
 }
 
+double NetworkMesh::calculateEquilibriumViolation(MyMesh::VertexHandle vh)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    if(mesh_.data(vh).pinned())
+            return 0;
+
+    MyMesh::Point center = mesh_.point(vh);
+    MyMesh::Point sum;
+    sum[0] = sum[1] = sum[2] = 0;
+    for(MyMesh::VertexOHalfedgeIter voh = mesh_.voh_iter(vh); voh; ++voh)
+    {
+        MyMesh::HalfedgeHandle heh = voh;
+        MyMesh::EdgeHandle eh = mesh_.edge_handle(heh);
+        double weight = mesh_.data(eh).weight();
+        MyMesh::Point adj = mesh_.point(mesh_.to_vertex_handle(heh));
+        sum += (center-adj)*weight;
+    }
+    sum[1] += mesh_.data(vh).load();
+    return sqrt( sum[0]*sum[0] + sum[1]*sum[1] + sum[2]*sum[2] );
+}
+
 double NetworkMesh::calculateEquilibriumViolation()
 {
     auto_ptr<MeshLock> ml = acquireMesh();
@@ -48,27 +70,14 @@ double NetworkMesh::calculateEquilibriumViolation()
     for(int i=0; i<n; i++)
     {
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
-        if(mesh_.data(vh).pinned())
-            continue;
-
-        MyMesh::Point center = mesh_.point(vh);
-        MyMesh::Point sum;
-        sum[0] = sum[1] = sum[2] = 0;
-        for(MyMesh::VertexOHalfedgeIter voh = mesh_.voh_iter(vh); voh; ++voh)
-        {
-            MyMesh::HalfedgeHandle heh = voh;
-            MyMesh::EdgeHandle eh = mesh_.edge_handle(heh);
-            double weight = mesh_.data(eh).weight();
-            MyMesh::Point adj = mesh_.point(mesh_.to_vertex_handle(heh));
-            sum += (center-adj)*weight;
-        }
-        sum[1] += mesh_.data(vh).load();
-        result += sum[0]*sum[0] + sum[1]*sum[1] + sum[2]*sum[2];
+        double viol = calculateEquilibriumViolation(vh);
+        mesh_.data(vh).set_violation(viol);
+        result += viol*viol;
     }
     return sqrt(result);
 }
 
-double NetworkMesh::computeBestWeights(double maxweight)
+bool NetworkMesh::computeBestWeights(double maxweight)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
 
@@ -148,6 +157,7 @@ double NetworkMesh::computeBestWeights(double maxweight)
     for(int i=0; i<e; i++)
     {
         ub[i] = maxweight;
+        lb[i] = 0.0;
         MyMesh::EdgeHandle eh = mesh_.edge_handle(i);
         result[i] = mesh_.data(eh).weight();
     }
@@ -157,15 +167,15 @@ double NetworkMesh::computeBestWeights(double maxweight)
     ml.reset();
 
     cont_.getSolvers().solveBCLS(M, rhs, lb, ub, result);
-    double residual = std::numeric_limits<double>::infinity();
 
     ml = acquireMesh();
+    bool done = true;
     if(getMeshID() == oldid)
     {
         for(int i=0; i<e; i++)
         {
-            if(result[i] < 0 || isnan(result[i]))
-                result[i] = 0;
+            if(result[i] < lb[i] || isnan(result[i]))
+                result[i] = lb[i];
             MyMesh::EdgeHandle eh = mesh_.edge_handle(i);
             if(edgePinned(eh))
                 result[i] = 0;
@@ -173,13 +183,12 @@ double NetworkMesh::computeBestWeights(double maxweight)
                 result[i] = mesh_.data(eh).crease_value();
             mesh_.data(eh).set_weight(result[i]);
         }
-
         fixBadVertices();
-        residual = calculateEquilibriumViolation();
+        //done = fixBadVerticesNew();
         invalidateMesh();
     }
 
-    return residual;
+    return done;
 }
 
 double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta)
@@ -195,6 +204,7 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta)
         for(int j=0; j<3; j++)
             q0[3*i+j] = pt[j];
     }
+    //q0[3*n] = 1.0;
 
     DynamicSparseMatrix<double> Md(3*n,3*n);
     for(int i=0; i<n; i++)
@@ -207,16 +217,14 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta)
             {
                 Md.coeffRef(3*i+j,3*i+k) = normal[j]*normal[k];
             }
+            //Md.coeffRef(3*i+j, 3*i+j) = 1.0;
         }
         if(mesh_.data(mesh_.vertex_handle(i)).pinned())
         {
-            MyMesh::Point pt = mesh_.point(mesh_.vertex_handle(i));
             for(int k=0; k<3; k++)
             {
-                Md.coeffRef(3*i+k, 3*i+k) += 1.0;
-                q0[3*i+k] = pt[k];
+                Md.coeffRef(3*i+k, 3*i+k) += beta;
             }
-
         }
     }
 
@@ -226,6 +234,7 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta)
     for(int i=0; i<n; i++)
     {
         MyMesh::Point pt = mesh_.point(mesh_.vertex_handle(i));
+
         Vector3d ptv(pt[0],pt[1],pt[2]);
         Vector3d projpt = approximateClosestPoint(subdreference_, ptv);
         for(int j=0; j<3; j++)
@@ -266,6 +275,7 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta)
             ce0[3*row+0] = 0;
             ce0[3*row+1] = mesh_.data(vh).load();
             ce0[3*row+2] = 0;
+            //CEd.coeffRef(3*n, 3*row+1) += mesh_.data(vh).load();
             row++;
         }
     }
@@ -283,53 +293,6 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta)
     DynamicSparseMatrix<double> Pd(3*n, numplanarity);
     VectorXd p0(numplanarity);
     p0.setZero();
-/*
-    row=0;
-    for(MyMesh::FaceIter fi = mesh_.faces_begin(); fi != mesh_.faces_end(); ++fi)
-    {
-        if(numFaceVerts(fi.handle()) == 4)
-        {
-            Vector3d verts[4];
-            int curidx = 0;
-            for(MyMesh::FaceVertexIter fvi = mesh_.fv_iter(fi.handle()); fvi; ++fvi)
-            {
-                for(int j=0; j<3; j++)
-                    verts[curidx][j] = mesh_.point(fvi.handle())[j];
-                curidx++;
-            }
-            assert(curidx==4);
-            double area = fabs( (verts[3]-verts[0]).dot( (verts[1]-verts[0]).cross(verts[2]-verts[0])) );
-
-            for(MyMesh::FaceVertexIter fvi = mesh_.fv_iter(fi.handle()); fvi; ++fvi)
-            {
-                MyMesh::VertexHandle vh = fvi.handle();
-
-                for(int j=0; j<3; j++)
-                    verts[0][j] = mesh_.point(vh)[j];
-                curidx = 1;
-                for(MyMesh::FaceVertexIter fvi2 = mesh_.fv_iter(fi.handle()); fvi2; ++fvi2)
-                {
-                    if(fvi2.handle() == vh)
-                        continue;
-
-                    for(int j=0; j<3; j++)
-                        verts[curidx][j] = mesh_.point(fvi2.handle())[j];
-                    curidx++;
-                }
-                assert(curidx==4);
-
-                Vector3d normal = (verts[2]-verts[1]).cross(verts[3]-verts[1]);
-                Vector3d side = verts[0]-verts[1];
-                if(side.dot(normal) < 0)
-                    normal = -normal;
-                for(int j=0; j<3; j++)
-                    Pd.coeffRef(3*vh.idx() + j, row) += normal[j];
-            }
-            p0[row] += area;
-            row++;
-        }
-    }
-*/
 
     row=0;
     for(MyMesh::FaceIter fi = mesh_.faces_begin(); fi != mesh_.faces_end(); ++fi)
@@ -392,7 +355,6 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta)
     p0 -= Pd.transpose()*q0;
 
 
-    VectorXd result = q0;
     rhs -= CEd*ce0;
     Md += CEd*CEd.transpose();
 
@@ -401,6 +363,8 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta)
 
     SparseMatrix<double> M(Md);
 
+    VectorXd result = q0;
+
     int oldid = getMeshID();
     ml.reset();
 
@@ -408,6 +372,7 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta)
     double residual = std::numeric_limits<double>::infinity();
 
     ml = acquireMesh();
+    //cout << "S: " << result[3*n] << endl;
     if(oldid == getMeshID())
     {
         for(int i=0; i<n; i++)
@@ -418,6 +383,12 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta)
                 pt[j] = result[3*i+j];
         }
 
+      /*  for(MyMesh::EdgeIter ei = mesh_.edges_begin(); ei != mesh_.edges_end(); ++ei)
+        {
+            double curw = mesh_.data(ei).weight();
+            mesh_.data(ei).set_weight(curw/result[3*n]);
+        }
+*/
         residual = calculateEquilibriumViolation();
         invalidateMesh();
     }
@@ -663,6 +634,46 @@ void NetworkMesh::fixBadVertices()
     mesh_.garbage_collection();
 }
 
+bool NetworkMesh::fixBadVerticesNew()
+{
+    bool done = true;
+    auto_ptr<MeshLock> ml = acquireMesh();
+    for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
+    {
+        if(isBadVertex(vi.handle()))
+        {
+            //cout << "Bad vert!" << endl;
+            int numadj = 0;
+            for(MyMesh::VertexVertexIter vvi = mesh_.vv_iter(vi.handle()); vvi; ++vvi)
+            {
+                numadj++;
+            }
+            MatrixXd LS(numadj, 3);
+            VectorXd rhs(numadj);
+            int row=0;
+            for(MyMesh::VertexVertexIter vvi = mesh_.vv_iter(vi.handle()); vvi; ++vvi)
+            {
+                MyMesh::Point pt = mesh_.point(vvi.handle());
+                LS(row,0) = pt[0];
+                LS(row,1) = pt[2];
+                LS(row,2) = 1.0;
+                rhs[row] = pt[1];
+                row++;
+            }
+            assert(row == numadj);
+            Vector3d result = (LS.transpose()*LS).fullPivLu().solve(LS.transpose()*rhs);
+            MyMesh::Point &centpt = mesh_.point(vi.handle());
+            double newz = result[0]*centpt[0] + result[1]*centpt[2] + result[2];
+            if(centpt[1] > newz)
+            {
+                centpt[1] = newz;
+                done = false;
+            }
+        }
+    }
+    return done;
+}
+
 double NetworkMesh::enforcePlanarity()
 {
     auto_ptr<MeshLock> ml = acquireMesh();
@@ -905,16 +916,16 @@ void NetworkMesh::setupVFProperties()
     auto_ptr<MeshLock> ml = acquireMesh();
     OpenMesh::FPropHandleT<OpenMesh::Vec3d> vf1;
     OpenMesh::FPropHandleT<OpenMesh::Vec3d> vf2;
-    mesh_.get_property_handle(vf1, "vector_field_1");
-    mesh_.get_property_handle(vf2, "vector_field_2");
+    mesh_.get_property_handle(vf1, "Vector");
+    mesh_.get_property_handle(vf2, "Vector_2");
     if(!vf1.is_valid())
     {
-        mesh_.add_property(vf1,  "vector_field_1");
+        mesh_.add_property(vf1,  "Vector");
         mesh_.property(vf1).set_persistent(true);
     }
     if(!vf2.is_valid())
     {
-        mesh_.add_property(vf2,  "vector_field_2");
+        mesh_.add_property(vf2,  "Vector_2");
         mesh_.property(vf2).set_persistent(true);
     }
     for(MyMesh::FaceIter fi = mesh_.faces_begin(); fi != mesh_.faces_end(); ++fi)

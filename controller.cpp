@@ -165,6 +165,7 @@ void Controller::iterateNetwork()
     double maxweight = p_.maxWeight;
     if(!p_.enforceMaxWeight)
         maxweight = std::numeric_limits<double>::infinity();
+    if(!nm_->computeBestWeights(maxweight))
     nm_->computeBestWeights(maxweight);
     double residualp = nm_->computeBestPositionsTangentLS(p_.alpha, p_.beta);
 
@@ -408,7 +409,7 @@ void Controller::setDensity(double density)
 void Controller::copyThrustNetwork()
 {
     rm_->copyFromNetworkMesh(*nm_);
-    resetNetworkMesh();
+    //resetNetworkMesh();
     updateGLWindows();
 }
 
@@ -437,6 +438,20 @@ void Controller::pinReferenceBoundary()
 void Controller::unpinReferenceBoundary()
 {
     rm_->unpinBoundary();
+    resetNetworkMesh();
+    w_.updateGLWindows();
+}
+
+void Controller::swapYandZ()
+{
+    rm_->swapYandZ();
+    resetNetworkMesh();
+    w_.updateGLWindows();
+}
+
+void Controller::invertY()
+{
+    rm_->invertY();
     resetNetworkMesh();
     w_.updateGLWindows();
 }

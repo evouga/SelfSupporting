@@ -22,7 +22,7 @@ public:
 
     // Given a (possibly non-self-supporting) 3D mesh, finds non-negative weights that come as close as possible to
     // satisfying the force-equilibrium constraints
-    double computeBestWeights(double maxweight);
+    bool computeBestWeights(double maxweight);
 
     // Given non-negative weights, finds the closest mesh to the given mesh that is self-supporting with those weights
     double computeBestPositionsTangentLS(double alpha, double beta);
@@ -35,6 +35,7 @@ public:
     bool isBadVertex(MyMesh::VertexHandle vert);
 
     double calculateEquilibriumViolation();
+    double calculateEquilibriumViolation(MyMesh::VertexHandle vh);
     void computeRelativePrincipalDirections();
 
     void setupVFProperties();
@@ -42,6 +43,7 @@ public:
 private:
     Eigen::Matrix2d approximateStressHessian(MyMesh::FaceHandle face);
     void fixBadVertices();
+    bool fixBadVerticesNew();
 
     MyMesh subdreference_;
 

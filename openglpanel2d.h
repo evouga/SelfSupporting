@@ -15,6 +15,8 @@ public:
     void setController(Controller &c);
     void centerCamera();
 
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 protected:
 
     void initializeGL();

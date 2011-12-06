@@ -37,6 +37,8 @@ public:
 
     void pinBoundary();
     void unpinBoundary();
+    void swapYandZ();
+    void invertY();
 
 private:
 

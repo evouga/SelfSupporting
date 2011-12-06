@@ -424,3 +424,23 @@ void ReferenceMesh::unpinBoundary()
             mesh_.data(vi.handle()).set_pinned(false);
     }
 }
+
+void ReferenceMesh::swapYandZ()
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
+    {
+        MyMesh::Point &pt = mesh_.point(vi.handle());
+        std::swap(pt[1], pt[2]);
+    }
+}
+
+void ReferenceMesh::invertY()
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
+    {
+        MyMesh::Point &pt = mesh_.point(vi.handle());
+        pt[1] = -pt[1];
+    }
+}

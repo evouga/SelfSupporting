@@ -2,6 +2,7 @@
 #include "bcls.h"
 
 #include <iostream>
+#include <unsupported/Eigen/SparseExtra>
 
 using namespace Eigen;
 using namespace std;
@@ -150,6 +151,11 @@ void Solvers::solveBCLS(const MatrixBlock &B, VectorXd &b, VectorXd &lb, VectorX
     bcls_set_problem_data(ls, m, n, Aprod, (void *)&B, 0, result.data(), b.data(), NULL, lb.data(), ub.data());
     ls->print_level = 0;
     bcls_solve_prob(ls);
+    /*bcls_init_prob(ls);
+    cout << "=========== 0 ===========" << endl;
+    bcls_set_problem_data(ls, m, n, Aprod, (void *)&B, 0, result.data(), b.data(), NULL, lb.data(), ub.data());
+    bcls_solve_prob(ls);
+*/
     bcls_free_prob(ls);
 }
 
@@ -257,11 +263,12 @@ void Solvers::linearSolveCG(const SparseMatrix<double> &A, const VectorXd &rhs, 
     assert(A.cols() == n);
     VectorXd residual = rhs - A*result;
     VectorXd p = residual;
+    double rorig = residual.dot(residual);
     VectorXd tmp(p.size());
     for(int i=0; i<n; i++)
     {
         double rnorm = residual.dot(residual);
-        if(sqrt(rnorm) < 1e-8)
+        if(rnorm/rorig < 1e-8 || rnorm < 1e-12)
         {
             //cout << "Converged after " << i << " iterations" << endl;
             return;

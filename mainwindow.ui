@@ -405,6 +405,13 @@
     <property name="title">
      <string>Reference Mesh</string>
     </property>
+    <widget class="QMenu" name="menuTransform_Axes">
+     <property name="title">
+      <string>Transform Axes</string>
+     </property>
+     <addaction name="actionSwap_Y_and_Z"/>
+     <addaction name="actionInvert_Y"/>
+    </widget>
     <addaction name="actionNew_Mesh"/>
     <addaction name="actionLoad_Mesh"/>
     <addaction name="actionSave_Mesh"/>
@@ -416,6 +423,7 @@
     <addaction name="actionSubdivideRM"/>
     <addaction name="actionPin_Boundary"/>
     <addaction name="actionUnpin_Boundary"/>
+    <addaction name="menuTransform_Axes"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -537,6 +545,16 @@
   <action name="actionUnpin_Boundary">
    <property name="text">
     <string>Unpin Boundary</string>
+   </property>
+  </action>
+  <action name="actionSwap_Y_and_Z">
+   <property name="text">
+    <string>Swap Y and Z</string>
+   </property>
+  </action>
+  <action name="actionInvert_Y">
+   <property name="text">
+    <string>Invert Y</string>
    </property>
   </action>
  </widget>

@@ -18,6 +18,8 @@ public:
 
     const Eigen::Vector3d &getTranslation() const;
 
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 private:
     Camera &c_;
     bool translating_;

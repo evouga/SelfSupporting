@@ -161,9 +161,16 @@ void ReferenceMeshRenderer::renderSurface3D(int renderFlags)
         else
             continue;
         MyMesh::Point pt = mesh_.point(v);
+        double radius = std::numeric_limits<double>::infinity();
+        for(MyMesh::ConstVertexEdgeIter vei = mesh_.cve_iter(v); vei; ++vei)
+        {
+            double len = 0.3*mesh_.calc_edge_length(vei.handle());
+            if(len < radius)
+                radius = len;
+        }
         glPushMatrix();
         glTranslatef(pt[0],pt[1],pt[2]);
-        gluSphere(sphere, 0.04, 10, 10);
+        gluSphere(sphere, radius, 10, 10);
         glPopMatrix();
     }
     gluDeleteQuadric(sphere);

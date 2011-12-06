@@ -60,18 +60,20 @@ struct MyTraits : public OpenMesh::DefaultTraits
     {
       private:
         double load_;
+        double violation_;
         bool anchored_;
         bool pinned_;
         public:
-        VertexT() : load_(0), anchored_(false), pinned_(false) {}
+        VertexT() : load_(0), violation_(0), anchored_(false), pinned_(false) {}
 
         bool anchored() const {return anchored_; }
         void set_anchored(bool anchored) {anchored_ = anchored;}
         double load() const {return load_; }
         void set_load(double load) {load_ = load;}
-
         bool pinned() const {return pinned_;}
         void set_pinned(bool status) {pinned_ = status; }
+        double violation() const {return violation_;}
+        void set_violation(double viol) {violation_ = viol;}
     };
 };
 

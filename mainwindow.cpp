@@ -339,3 +339,23 @@ void MainWindow::on_actionUnpin_Boundary_triggered()
 {
     c_.unpinReferenceBoundary();
 }
+
+void MainWindow::on_actionSwap_Y_and_Z_triggered()
+{
+    c_.swapYandZ();
+}
+
+void MainWindow::on_actionInvert_Y_triggered()
+{
+    c_.invertY();
+}
+
+void MainWindow::on_networkSurfaceCheckBox_clicked()
+{
+    c_.updateGLWindows();
+}
+
+void MainWindow::on_stressCheckBox_clicked()
+{
+    c_.updateGLWindows();
+}

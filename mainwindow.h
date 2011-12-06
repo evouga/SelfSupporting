@@ -96,6 +96,14 @@ private slots:
 
     void on_actionUnpin_Boundary_triggered();
 
+    void on_actionSwap_Y_and_Z_triggered();
+
+    void on_actionInvert_Y_triggered();
+
+    void on_networkSurfaceCheckBox_clicked();
+
+    void on_stressCheckBox_clicked();
+
 protected:
     void moveEvent(QMoveEvent *);
     void resizeEvent(QResizeEvent *);

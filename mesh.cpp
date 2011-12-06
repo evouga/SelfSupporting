@@ -267,12 +267,13 @@ void Mesh::setSurfaceAreaLoads(double density)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
 
+    double total = 0;
     for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
     {
         double area = vertexArea(vi);
+        total += density*area;
         mesh_.data(vi).set_load(density*area);
     }
-
     invalidateMesh();
 }
 

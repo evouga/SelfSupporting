@@ -21,6 +21,8 @@ public:
     void centerCamera();
     void saveScreenshot(const std::string &filename);
 
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 protected:
     enum MouseAction { MA_NONE, MA_TRANSLATE, MA_ROTATE, MA_ZOOM, MA_ADDANCHORFREE, MA_ADDANCHORHEIGHT, MA_DELETEANCHOR, MA_DELETEFACE, MA_ADDPIN, MA_DELETEPIN, MA_TOGGLECREASE };
 
