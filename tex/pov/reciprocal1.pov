@@ -3,14 +3,13 @@
 #include "mycolors.inc"
 #include "rand.inc"
 
-#declare M = 8;
-#declare N = 7;
-#declare factor=2.5/(M+N);
-
+#declare M = 6;
+#declare N = 6;
+#declare factor=2.0/(M+N);
 
 camera {
 	orthographic
-	location <-1,0,.7>*22*factor rotate z*20
+	location <-1,0,.8>*22*factor rotate z*25
 	angle 55
 	look_at <0,0,0.5>
 	sky <0,0,1>
@@ -32,7 +31,7 @@ light_source { <0,0,-20> color rgb <1,1,1> *0.7 shadowless}
 #declare Right = <-0.5,1.4,0>*0.60;
 #declare Left = -Right;
 
-#include "triangmacros.inc"
+#include "triangmacros1.inc"
 
 
 declarepoints(0.18)
@@ -42,8 +41,8 @@ plane {z,-0.1*factor texture {weiss} }
 //box {<-1.1,-1.1,-0.3*factor><1.1,1.1,-0.2*factor> rotate z*10 texture {gelb}}
 background{White}
 
-#declare i0=0;
-#declare j0=0;
+#declare i0=1;
+#declare j0=1;
 
 // three dual edges emanating from s (in paper: primal!)
 #declare Sp=circums1[i0+1][j0+1]; 
@@ -78,10 +77,7 @@ union {
 
 union { 
 	union {showdualedges(circums1,circums2,M,N,r2) texture {dblau}}
-	mesh { showdualfaces(circums1,circums2,M,N) 
-		texture {pigment {color rgb 1*0.8} 
-		finish {ambient 0.2 diffuse 0.8 phong 0.2}}
-		}
+	union { showpoints(circums1,M-1,N-1,r1) texture {weiss}}
 
 	union {
 		cylinder {Sp+V1*L1,Sp+V1*L1/2,r1}
@@ -97,21 +93,8 @@ union {
 
 // points on the Maxwell paraboloid
 
-
 movepointstomaxwell(pkte)
 movedualpointstomaxwell(circums1,circums2)
-
-
-// apply some transformaton so that the mesh does not look like
-// the Airy bowl
-
-#declare c1=0.1;
-#declare c2=-0.3;
-#declare c3=-2;
-isotrans(pkte,M,N,c1,c2,c3)
-isotrans(circums1,M-1,N-1,c1,c2,c3)
-isotrans(circums2,M-1,N-1,c1,c2,c3)
-
 
 // prepare to draw arrows
 #declare ol1=vlength(B1-Sp); // store original edgelengths
@@ -132,17 +115,15 @@ isotrans(circums2,M-1,N-1,c1,c2,c3)
 #declare FF = V1*L1+V2*L2+V3*L3;
 
 // corresponding primal edges (in paper: dual!)
+#declare P=pkte[i0+2][j0+2];
 
 
 union {
-	union { //showpoints(circums1,M-1,N-1,r1) 
-		//showpoints(circums2,M-1,N-1,r1)
-		showdualedges(circums1,circums2,M,N,r2) texture {brownish}}
+	union { showpoints(circums1,M-1,N-1,r1) texture {weiss}}
+	union { showdualedges(circums1,circums2,M,N,r2) texture {blau}}
 	mesh { showdualfaces(circums1,circums2,M,N) 
-		//texture {pigment {color rgbt <.6,.6,.62,.4>} 
-		//finish {ambient 0.2 diffuse 0.8 phong 0.2}}
-		texture {gelb}
-		}
+		texture {pigment {color rgbt <.6,.6,.62,.4>} 
+		finish {ambient 0.2 diffuse 0.8 phong 0.2}}}
 	union {
 		cylinder {Sp+V1*L1,Sp+V1*L1/2,r1}
 		cylinder {Sp+V2*L2,Sp+V2*L2/2,r1}
@@ -154,7 +135,8 @@ union {
 		cone {Sp+FF,0,Sp+FF/2,2*r1}
 		texture {dblau}
 	}
-	translate 6*factor*z
+	scale z*(-0.7)
+	translate 3*vertical
 	translate Left
 }
 

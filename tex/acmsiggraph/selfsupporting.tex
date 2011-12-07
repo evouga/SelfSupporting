@@ -401,18 +401,31 @@ outer normal vector $\nw$ means $\<M \nabla s, \nw \> = 0$.
   \begin{figure}[t]
   \centering
   \begin{overpic}[width=\columnwidth]{fig/reciprocal}
+	\put(0,35){$\SS$}
+	\lput(13,32){$\vw_i$}
+	\cput(15,26){$F_i$}
 	\color{gelb}
-	\lput(100,15){$\SS'^*$}
+	\lput(100,19){$\SS'^*$}
 	\color{blau}
-	\put(1,25){$\SS$}
-	\lput(7,1){$\SS'$}
-	\lput(21,35){$\vw_i$}
-	\cput(21,29){$F_i$}
+	\put(0,11){$\SS'$}
 	\color{drot}
-	\lput(13,8){\contour{white}{$w_{ij} \ew_{ij}'$}}
-	\lput(66,11){\contour{white}{$\ew_{ij}^*$}}
+	\put(1,2){$w_{ij} \ew_{ij}'$}
+	\lput(63,5){$\ew_{ij}^*$}
   \end{overpic}
-\caption{Self-supporting thrust network $\SS$ (left). This network
+% \begin{overpic}[width=\columnwidth]{fig/reciprocal1}
+%        \color{gelb}
+%        \lput(100,15){$\SS'^*$}
+%        \color{blau}
+%        \put(1,25){$\SS$}
+%        \lput(7,1){$\SS'$}
+%        \lput(21,35){$\vw_i$}
+%        \cput(21,29){$F_i$}
+%        \color{drot}
+%        \lput(13,8){\contour{white}{$w_{ij} \ew_{ij}'$}}
+%        \lput(66,11){\contour{white}{$\ew_{ij}^*$}}
+%  \end{overpic}
+ \caption{Self-supporting thrust network $\SS$, dangling edges indicating
+the directions of external forces (left). This network
 together with compressive forces which balance vertical loads $F_i$ projects
 onto a planar mesh $\SS'$ with equilibrium compressive forces 
 ``$w_{ij}\ew_{ij}'$'' in its edges.
@@ -500,19 +513,30 @@ which has planar faces, but will no longer be a convex polyhedron.
 
 
   \begin{figure}[t]
-	\flushright
+	\centering
   \begin{overpic}[width=.94\columnwidth]{fig/beide}
-	\put(46,30){$\ww_k^*$}
-	\put(46,16){$\vw_k^{*\prime}$}
+	\lput(49,33){$\ww_k^*$}
+	\lput(49,15){$\vw_k^{*\prime}$}
 	\color{gelb}
-	\put(84,10){$\Sw'^*=\Phi^{*\prime}$}
-	\put(78,30){$\Phi^*$}
+	\put(86,10){$\Sw'^*=\Phi^{*\prime}$}
+	\put(83,30){$\Phi^*$}
 	\color{blau}
-	\cput(30,30){$\Phi$}
-	\lput(8,1){$\Phi'=\SS'$}
-	\cput(4,33){$f_k$}
+	\cput(24,35){$\Phi$}
+	\put(0,0){$\Phi'=\SS'$}
+	\cput(4,31){$f_k$}
   \end{overpic}
-\caption{Airy stress potential $\Phi$ and its polar dual $\Phi^*$.
+%  \begin{overpic}[width=.94\columnwidth]{fig/beide1}
+%        \put(46,30){$\ww_k^*$}
+%        \put(46,16){$\vw_k^{*\prime}$}
+%        \color{gelb}
+%        \put(84,10){$\Sw'^*=\Phi^{*\prime}$}
+%        \put(78,30){$\Phi^*$}
+%        \color{blau}
+%        \cput(30,30){$\Phi$}
+%        \lput(8,1){$\Phi'=\SS'$}
+%        \cput(4,33){$f_k$}
+%  \end{overpic}
+ \caption{Airy stress potential $\Phi$ and its polar dual $\Phi^*$.
 $\Phi$ projects onto the same planar mesh as $\SS$ does, while 
 $\Phi^*$ projects onto the reciprocal force diagram.  A primal face
 $f_k$ lies in the plane $z=\alpha x + \beta y + \gamma$ $\iff$
