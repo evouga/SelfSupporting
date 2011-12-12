@@ -281,13 +281,13 @@ ETH Z\"urich.}
 	\end{figure}
 
 
-\paragraph{Contributions. \todo{TODO: unchanged}}
+\paragraph{Contributions.}
 
 
 \begin{list}{$\bullet$}{\leftmargin0pt\itemindent1em}
 
-\item We connect the smooth theory of self\dash supporting surfaces with 
-vertical loads to the geometry of isotropic 3\dash space, whose isotropic 
+\item We connect the \emph{physics} of self\dash supporting surfaces with 
+vertical loads to the \emph{geometry} of isotropic 3\dash space, whose isotropic 
 direction is the direction of gravity \secref{sec:smooth}. In this view 
 the stress surface $\phi(x,y)$ can be viewed as a relative sphere of a 
 dual relative geometry, and one can express the characterizing equations 
@@ -298,19 +298,19 @@ of a self\dash supporting surface \eqref{eq:conds} in terms of curvatures.
 networks in static equilibrium and those that satisfy a condition on their 
 \emph{discrete} isotropic and relative curvatures.
 
-\item We present an optimization algorithm for finding a thrust network 
+\item We present an optimization algorithm for efficiently finding a thrust network 
 near a given arbitrary reference surface \secref{sec:opt}, and build a 
 tool for interactive design of self\dash supporting surfaces based on this 
 algorithm \secref{sec:design}.
 
-\item We exploit the relationship between a self\dash supporting surface 
+\item We exploit the geometric relationships between a self\dash supporting surface 
 and its relative sphere to find planar quadrilateral (PQ) representations 
-of thrust networks \secref{sec:pq}, and construct particularly nice 
-families of self\dash supporting surfaces \secref{sec:koenig}.
+of thrust networks \secref{sec:pq}, and to construct particularly nice 
+families of self\dash supporting surfaces \secref{sec:special}.
 
 \item We demonstrate with examples the versatility and applicability of 
 our approach to the design and analysis of large\dash scale masonry and 
-steel\dash glass structure \secref{sec:results}.
+steel\dash glass structure.
 
 \item \todo{TODO} graph Laplacian.
 
@@ -847,7 +847,23 @@ equivalent. This is the case because the proposition above implies
 	= {1\over A_i} A_i F_i.
 	$
 	\end{proof}
+\paragraph{Relation to discrete Laplace-Beltrami operators.}
+For a given smooth surface $\SS$ with Airy stress function $\phi$, and a given 
+discrete top view $\RR'$, does there exist a polyhedral surface $\RR$ in equilibrium
+approximating $\SS$? We restrict our attention to triangle meshes, where planarity of the faces
+of the discrete stress surface $\Phi$ is not an issue.
 
+This question has several equivalent reformulations:
+\begin{itemize}
+\item Does $\RR'$ have a reciprocal diagram whose polar dual approximates $\phi$?
+\item Does $\RR'$ possess a ``perfect'' discrete Laplace-Beltrami operator $\Delta_\phi$ (in the sense of Wardetzky et al.~\shortcite{wardetzky07})
+whose weights are the edge length scalars of such a reciprocal diagram?
+\end{itemize}
+It is known~\cite{wardetzky07} that even in the special case of $\phi=\phi_0$ the answer is not always affirmative, unless
+$\RR'$ is a Delaunay triangulation. From the previous sections, we can state a sufficient condition for general $\phi$: if
+$\RR'$ lifts to a (strictly) convex polyhedron $\Phi$ with vertices on $\phi$, its polar dual is a reciprocal diagram with positive edge weights,
+$\Delta_\phi$ has positive weights, and $\RR$, given by the solution of the discrete Poisson problem on $\RR'$, approximates $\SS$.
+Whether every top view for every $\phi$ can be retriangulated in a way that $\Phi$ is convex is an interesting question for future work.
 
 \section{Thrust Networks from Reference Meshes} \label{sec:opt} Consider 
 now the problem of taking a given reference mesh, $\RR = 
@@ -895,25 +911,23 @@ which minimize, in the least-squares sense, the error in force equilibrium
 equivalent to minimizing the squared residuals of equations 
 \eqref{eq:deqz} and \eqref{eq:deqtop}, respectively, with the positions 
 held fixed:
-	\begin{align*}
+	\begin{align}
 	\min_{w_{ij}}\ 
 	\sum_i 
 	\Big\| \Forcevector -
 		\sum_{j\sim i} w_{ij} (\vw_j-\vw_i) \Big\|^2
 	\ \
 	\textrm{s.t.}\ \
-		0 \leq w_{ij} \leq w_{\max},
-\end{align*}
+		0 \leq w_{ij} \leq w_{\max}, \label{eq:wbounds}
+\end{align}
  where the outer sum is over the interior and free boundary vertices, and 
 $w_\textrm{max}$ is an optional maximum weight we are willing to assign 
 (to limit the amount of stress in the surface). This convex, sparse, 
-box-constrained least-squares problem always has a solution. If the 
+box-constrained least-squares~\cite{BCLS} problem always has a solution. If the 
 objective is $0$ at this solution, the faces of $\Phi$ locally integrate 
 to a stress surface satisfying \eqref{eq:deqiso}, and so $\Phi$ certifies 
 that $\SS$ is self-supporting -- we are done. Otherwise, $\SS$ is not 
-self-supporting and its vertices must be moved. \todo{Reference the 
-least-squares implementation I actually use in the code. Right now I'm 
-using some BCLS code from UBC that I'm not very happy with.}
+self-supporting and its vertices must be moved.
 
 \paragraph{Alter Positions.} In the previous step we fit as best as 
 possible a stress surface $\Phi$ to $\SS$. There are two possible kinds of 
@@ -964,34 +978,26 @@ uselessly rigid (not to mention make the optimization non-linear.) I need
 to reflect more on this.}
 
 Solving this weighted least-squares problem amounts to solving a sparse, 
-symmetric linear system. While the MINRES algorithm~\cite{TODO} is likely 
-the most robust method for solving this system, in practice we have 
+symmetric linear system. While the MINRES algorithm~\cite{paige75} is likely 
+the most robust algorithm for solving this system, in practice we have 
 observed that the method of conjugate gradients works well despite the 
-potential singularity of the objective matrix.
+potential ill-conditioning of the objective matrix.
 
-\subsection{Convergence} This algorithm is not guaranteed to always 
-converge; this fact is not surprising from the physics of the problem (if 
-the boundary of the reference mesh encloses too large of a region, 
-$w_{\max}$ is set too low, and the density of the surface too high, a 
-thrust network in equilibrium simply does not exist -- the vault is too 
-ambitious and cannot be built to stand; pillars are needed.) We can, 
-however, make a few remarks. Step 3 always decreases the equilibrium 
-energy
-	$$
-	E=\sum_i \Big\|\Forcevector-
-		\sum_{j\sim i} w_{ij} (\qw_j - \qw_i) \Big\|^2
-	$$
- and step 4 does as well as $\beta \to 0$. Moreover, as $\alpha \to 0$ and 
-$\beta \to 0$, step 4 approaches a linear system with as many equations as 
-unknowns; if this system has full rank, its solution sets $E=0$. These 
-facts suggest that the algorithm should generally converge to a thrust 
-network in equilibrium, provided that step 2 does not increase the loads 
-by too much at every iteration, and this is what we observe in practice.  
-\todo{It would be nice if I could prove that, for sufficiently large 
-$w_{\textrm{max}}$, step 2 cannot cause the algorithm to fail to converge, 
-but I don't yet know how to approach this problem.}
+\paragraph{Convergence.}
+This algorithm is not guaranteed to always converge; this fact is not surprising from the physics of the problem (if the boundary of the reference mesh encloses too large of a region, $w_{\max}$ is set too low, and the density of the surface too high, a thrust network in equilibrium simply does not exist -- the vault is too ambitious and cannot be built to stand; pillars are needed.) We can, however, make a few remarks. Step 3 always decreases the equilibrium energy 
+$$E=\sum_i \left\| \Forcevector - \sum_{j\sim i} w_{ij} (\vw_j - \vw_i)\right\|^2$$
+and step 4 does as well as $\beta \to 0$. Moreover, as $\alpha \to 0$ and $\beta \to 0$, step 4 approaches a linear system with as many equations as unknowns; if this system has full rank, its solution sets $E=0$. These facts suggest that the algorithm should generally converge to a thrust network in equilibrium, provided that step 2 does not increase the loads by too much at every iteration, and this is indeed what we observe in practice.  \todo{It would be nice if I could prove that, for sufficiently large $w_{\textrm{max}}$, step 2 cannot cause the algorithm to fail to converge, but I don't yet know how to approach this problem.}
+
+If the linear system in step 4 is singular and infeasible, the algorithm can stall at $E > 0$. This failure occurs, for instance, when an interior vertex has height $z_i$ lower than all of its neighbors, and step 3 assigns all incident edges to that vertex a weight of zero: clearly no amount of moving the vertex or its neighbors can bring the vertex into equilibrium. We avoid such degenerate configurations by bounding weights slightly away from zero in \eqref{eq:wbounds}, trading increased robustness for slight smoothing of the resulting surface.
 
 \section{Design of Self-Supporting Surface} \label{sec:design}
+\begin{figure*}[!tb]
+\centering
+\includegraphics[width=0.24\textwidth]{fig/build.png} \includegraphics[width=0.24\textwidth]{fig/build-n.png}
+\hfill
+\includegraphics[width=0.24\textwidth]{fig/build-edited.png} \includegraphics[width=0.24\textwidth]{fig/build-edited-n.png}
+\caption{The user-designed reference mesh (left) is not self-supporting, but our algorithm finds a nearby perturbation of the reference surface (middle-left) that is in equilibrium. As the user makes edits to the reference surface (middle-right), the thrust network automatically adjusts (right). \label{fig:vault}}
+\end{figure*}
 
 The optimization algorithm described in the previous section forms the 
 basis of an interactive design tool for self-supporting surfaces. Users 
@@ -1035,13 +1041,21 @@ network using optimization \secref{sec:opt}.
 
 \todo{TODO more to come?}
 
-\subsection{Limitations}
 
-\todo{TODO Limits on the size of the mesh due to performance; cases where 
-the optimization breaks down (bad reference geometry), etc}
+\paragraph{Vault with Pillars.} As an example of the design and optimization workflow, consider a rectangular vault with six pillars, free boundary conditions along one edge, fixed boundary conditions along the others, and a tower extruded from the top of the surface (see Figure \ref{fig:vault}). This surface is non-convex, non-simply-connected, and exhibits a mix of boundary conditions, none of which cause our algorithm any difficulty; it finds a self-supporting thrust network near the designed reference mesh. The user is now free to make edits to the reference mesh, and the thrust network adapts to these edits, providing the user feedback on whether her designs are physically realizable. 
 
-\section{Self-supporting Quad Meshes with Planar Faces} \label{sec:pq}
+\begin{figure*}[tb]
+\centering
+\includegraphics[width=0.24\textwidth]{fig/lilium.png} \includegraphics[width=0.24\textwidth]{fig/lilium-n.png}
+\hfill
+\includegraphics[width=0.24\textwidth]{fig/lilium-pillar-n.png} \includegraphics[width=0.24\textwidth]{fig/lilium-pq-n.png}
+\caption{The top of the Lilium Tower (left) cannot stand as a masonry structure. Our algorithm finds a nearby self-supporting mesh without this impossible feature (middle-left). The user can edit the original surface, such as by specifying that the center of the surface is supported by a vertical pillar, and the self-supporting network adjusts accordingly (middle-right). Integrating the principal relative curvature directions of a surface in equilibrium yields a self-supporting, planar quad remeshing of that surface (right). \label{fig:Lilium}}
+\end{figure*}
+\paragraph{Top of the Lilium Tower.}
+Consider the top portion of the steel-glass exterior surface of the Lilium Tower (see Figure \ref{fig:Lilium}). This surface contains a local minimum in its interior and so cannot possibly be self-supporting; more generally, the entire central portion of the surface has positive Gaussian curvature and points downwards, an impossible feature in a self-supporting mesh. Given this surface as a reference mesh, our algorithm constructs a nearby thrust network in equilibrium without the impossible feature. The user can then explore how editing the reference mesh -- adding a pillar, for example -- affects the thrust network and its deviation from the reference surface.
 
+\section{Special Families of Self-Supporting Surfaces} \label{sec:special}
+\paragraph{PQ Meshes.}
 Meshes with {\em planar} faces are of particular interest in architecture, 
 so in this section we discuss how to remesh a given thrust network in 
 equilibrium such that it becomes a quad mesh with planar faces (again in 
@@ -1067,19 +1081,18 @@ exactly on the surface $s(x,y)$. This results in
 	\aw_2={x_{i,j+1}-x_{ij}\choose y_{i,j+1}-y_{ij}},
 	\end{align*}
  and the dots indicate higher order terms. We see that planarity requires 
-$(\aw_1)^T\,\Hess s\,\aw_2=0$. Since not only the mesh $\SS$ must 
-approximate the surface $s(x,y)$, but also the corresponding polyhedral 
-Airy surface $\Phi$ must approximate $\phi(x,y)$, we get the conditions
+$(\aw_1)^T\,\Hess s\,\aw_2=0$. In addition to the mesh $\SS$ approximating the surface $s(x,y)$, the corresponding polyhedral 
+Airy surface $\Phi$ must approximate $\phi(x,y)$; thus we get the conditions
 	$$
 	(\aw_1)^T\,\Hess s\,\,\aw_2=
 	(\aw_1)^T\,\Hess \phi\,\,\aw_2= 0.
 	$$
- Thus $\aw_1,\aw_2$ are eigenvectors of $(\Hess\phi)^{-1}\Hess s$. In view 
+ $\aw_1,\aw_2$ are therefore eigenvectors of $(\Hess\phi)^{-1}\Hess s$. In view 
 of \S\ref{sec:smooth}, $\aw_1,\aw_2$ indicate the principal directions of 
 the surface $s(x,y)$ relative to $\phi(x,y)$ (see 
 Figure~\ref{fig:principal}).
 
- \begin{figure}[h]
+ \begin{figure}[ht]
   \begin{overpic}[width=.55\columnwidth]{fig/curvature1}
 	\put(55,5){$\phi(x,y)$}
 	\put(55,51){$s(x,y)$}
@@ -1102,27 +1115,23 @@ approximating $s,\phi$ which follow those directions. Subseqent global
 optimization makes $\SS,\Phi$ a valid thrust network with discrete stress 
 potential. Convexity of $\Phi$ ensures that $\SS$ is self\dash supporting.
 
-\section{Results} \label{sec:results}
+Figure~\ref{fig:Lilium}, right, illustrates the result of applying this procedure
+to a self-supporting modification of the Lilium tower. \todo{TODO more examples}
 
-\subsection{Concrete Vaults}
-
-\subsection{PQ Steel-Glass Structures}
-
-\subsection{Koenigs Meshes} \label{sec:koenig}
-
+\paragraph{Koenigs Meshes.} 
 Consider a self\dash supporting thrust network $\SS$ and corresponding 
-Airy mesh $\Phi$. Both $\SS,\Phi$ are elements of the linear space of 
+Airy mesh $\Phi$. Both $\SS$ and $\Phi$ are elements of the linear space of 
 meshes which project onto $\SS'$. Any such mesh has vertices 
 $\vw_i=(x_i,y_i,z_i)$, where the choice $z_i=s_i$ leads to $\SS$ and 
 $z_i=\phi_i$ leads to $\Phi$. We already know that the vertical loads 
-``$A_iF_i$'' which put $\SS$ into equilibrium are computed as 
+$A_iF_i$ which put $\SS$ into equilibrium are computed as 
 $AF=\Delta_\phi s$.
 
-The question which perturbation $\SS+\RR$, having $z$ coordinates $z_i = 
-s_i+r_i$ does support the {\em same} vertical loads as $\SS$ does, reads 
-$\Delta_\phi(s+r)=\Delta_\phi s$, which means $\Delta_\phi r = 0$, i.e., 
-$r$ is a harmonic function. It is usually no problem to compute the null 
-space of $\Delta_\phi$.
+Which perturbations $\SS+\RR$, having $z$ coordinates $z_i = 
+s_i+r_i$, support the {\em same} vertical loads as $\SS$ does? Such a mesh must satisfy 
+$\Delta_\phi(s+r)=\Delta_\phi s$, so $\Delta_\phi r = 0$, i.e., 
+$r$ is a harmonic function. Such harmonic functions are easily computed, given any boundary
+conditions.
 
 However there is a very nice explicit geometric construction of all 
 harmonic functions in the case of quad meshes: Equation \eqref{eq:deqiso} 
@@ -1137,13 +1146,34 @@ polyhedron. We conclude that $\RR^*$ is constructed from $\Phi^*$ by the
 condition of {\em parallel non\dash corresponding diagonals}, which is 
 also called Christoffel duality, and which can be seen in 
 Figure~\ref{fig:christoffel}. This condition determines $\RR^*$ uniquely 
-up to translation and scaling. We conclude that $\RR$ is unique up to 
+up to translation and scaling; thus $\RR$ is unique up to 
 scaling of $z$ coordinates and adding linear functions.
 
+ \begin{figure}[ht]
+  \includegraphics[width=.45\columnwidth]{fig/enneper}
+\begin{minipage}[b]{.48\columnwidth}	
+ \caption{From a self-supporting isotropic Koebe surface, it is possible to construct a family of new
+self-supporting meshes, with identical top view, using the Christoffel construction. \label{fig:enneper}}
+\end{minipage}
+ \end{figure}
+
+A particularly interesting special case are \emph{isotropic Koebe meshes} -- PQ meshes $\SS$ whose edges
+are tangent to the Maxwell paraboloid $\phi_0$. Such meshes, by approximating the isotropic sphere,
+satisfy $2K(\vw_i) H^{rel}(\vw_i) \approx 1$ and so, if their load density over the plane is constant,
+are very close to self-supporting. Since the intersection of a paraboloid with a sphere forms a circle,
+each face of $\SS$ contains an inscribed circle, as does its corresponding minimal surface $\RR$ (since polar and Chistoffel duality
+preserve this property~\cite{Pottmann2007}), and all PQ, self-supporting combinations $\SS + \alpha \RR$.
+Figure~\ref{fig:enneper} shows one example of such an $\SS$ and $\SS+\alpha \RR$.
 
 \section{Conclusion and Future Work}
 
 \todo{TODO}
+Some ideas:
+\begin{itemize}
+\item{Non-manifold surfaces}
+\item{Non-vertical loads}
+\item{Adaptive remeshing}
+\end{itemize}
 
 \section*{Acknowledgements}
 
