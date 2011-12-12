@@ -16,7 +16,8 @@ plane {z,-0.01 texture{weiss}}
 background{White}
 
 #macro FF() ((x*x+y*y)/2) #end
-#macro SS() (1.0+cos(2*x)/3-(y*y)/3-(x*y)/2) #end
+//#macro SS() (1.0+cos(2*x)/3-(y*y)/3-(x*y)/2) #end
+#macro SS() (1.0-x*y/2+cos(2*x-3*y)/20) #end
 #declare ff = function(x,y) { FF() };
 #declare ss = function(x,y) { SS() };
 #declare dx=0.1;
