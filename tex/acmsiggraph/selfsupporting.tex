@@ -325,27 +325,35 @@ for polyhedral surfaces.
 Unsupported masonry has been an active topic of research in the 
 engineering community. The foundations for the modern approach were laid 
 by Jacques Heyman \shortcite{Heyman66} and are available as the textbook 
-\cite{Heyman95}. Computational solutions for finding compressive force 
-networks entirely contained within the boundary of a masonry structure 
-have studied by various authors. See e.g.\ \cite{Livesley92}, 
-\cite{O'Dwyer98}, and the many papers by Philippe Block and coauthors, 
-from which we point only to \cite{Block07}. The thrust\dash network method 
-was shaped into a tool to work with. 
-
-\todo{\cite{Block2011}}
-
-Contributions in Computer Graphics include \cite{Whiting09}, where 
-structural feasibility of masonry is incorporated into procedural modeling 
-of buildings, and \cite{Kilian2005} who employ particle\dash spring 
-systems for form finding.
-
-As to Mathematics and in particular polyhedral stress surfaces, 
+\cite{Heyman95}. A unifying view on polyhedral surfaces, compressive forces 
+and corresponding `convex' force diagrams is presented by \cite{Ash1988}. 
 F.~Fraternali \shortcite{Fraternali2002a}, \shortcite{Fraternali2010} 
 established a connection between the continuous theory of stresses in 
 membranes and the discrete theory of forces in thrust networks, by 
 interpreting the latter as a non-conforming finite element discretization 
-of the former. A unifying view on polyhedral surfaces, compressive forces 
-and corresponding `convex' force diagrams is presented by \cite{Ash1988}.
+of the former. 
+
+Several authors have studied the problem of finding discrete compressive force networks
+contained within the boundary of masonry structures; early work in this area includes
+\ \cite{schek74}, \cite{Livesley92}, and\ \cite{O'Dwyer98}. Fraternali~\shortcite{Fraternali2010}
+proposed solving for the structure's discrete stress surface, and examining its convex hull to study
+the structure's stability and susceptibility to cracking.
+Philippe Block's
+seminal thesis~\shortcite{Block07} introduced the method of Thrust Network Analysis,
+which linearizes the form-finding problem by first seeking a reciprocal diagram of the
+top view, which guarantees equilibrium of horizontal forces, then solving for the heights
+that balance the vertical loads. Recent work by Block and coauthors extend this method
+in the case where the reciprocal diagram is not unique; for different choices of reciprocal diagram,
+the optimal heights can be found using the method of least squares~\cite{vanmele2011}, and the search
+for the best such reciprocal diagram can be automated using a genetic algorithm~\cite{Block2011}.
+
+Other approaches to the interactive design of self-supporting structures 
+include modeling these structures as damped particle-spring systems~\cite{Kilian2005}, 
+mirroring the rich tradition in architecture of designing self-supporting surfaces using hanging 
+chain models.~\cite{Heyman98}
+Alternatively, masonry structures can be represented by networks of rigid blocks~\cite{Whiting09}, 
+whose conditions on the structural feasibility were incorporating into procedural modeling 
+of buildings. 
 
 \todo{TODO} \cite{Giaquinta1985}; isotropic geometry~Strubecker, 
 \cite{Koenderink2002}, etc PQ meshes~\cite{Schiftner2010}, 
@@ -869,7 +877,13 @@ It is known~\cite{wardetzky07} that even in the special case of $\phi=\phi_0$ th
 $\RR'$ is a Delaunay triangulation. From the previous sections, we can state a sufficient condition for general $\phi$: if
 $\RR'$ lifts to a (strictly) convex polyhedron $\Phi$ with vertices on $\phi$, its polar dual is a reciprocal diagram with positive edge weights,
 $\Delta_\phi$ has positive weights, and $\RR$, given by the solution of the discrete Poisson problem on $\RR'$, approximates $\SS$.
-Whether every top view for every $\phi$ can be retriangulated in a way that $\Phi$ is convex is an interesting question for future work.
+Moreover, every top view for every $\phi$ can be retriangulated in a way that $\Phi$ is convex, by lifting the top view to $\phi$ and taking the
+convex hull. Since $\phi$ is convex, every vertex lies on the boundary of the convex hull, and faces of the convex hull give the faces of a
+retriangulation of $\RR'$ for which $\Phi$ is convex. Equivalently, every mesh $\RR'$ admits a Delaunay-like triangulation for which a
+``perfect'' generalized Laplacian $\Delta_\phi$ exists.
+
+Therefore, while the choice of edges in $\RR'$ is important, the choice of vertices is not: a smooth self-supporting surface can be approximated by
+a discrete self-supporting triangular mesh for any sampling of the surface.
 
 \section{Thrust Networks from Reference Meshes} \label{sec:opt} Consider 
 now the problem of taking a given reference mesh, $\RR = 
