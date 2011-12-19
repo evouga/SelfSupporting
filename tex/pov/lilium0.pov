@@ -16,9 +16,7 @@ union {
 	#include "lilium-n/lfaces.inc" texture {weiss}}
 
 	#macro triang(a,b,c) Ftriang(a,b,c) #end
-	mesh { #include "lilium-n/lfaces.inc" 
-		texture {farbe(1)}}
-		//texture {weisst}}
+	mesh { #include "lilium-n/lfaces.inc" texture {farbe(1)}}
 
 rotate -x*90
 }

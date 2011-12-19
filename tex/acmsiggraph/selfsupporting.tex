@@ -963,32 +963,36 @@ distance this minimization will be a nonlinear, non-convex,
 inequality-constrained variational problem that cannot be efficiently
 solved in practice. Instead we propose a staggered optimization algorithm:
 
-\begin{enumerate}\itemsep-\parsep
+\begin{enumerate}\itemsep-\parsep\setcounter{enumi}{-1}
 
 \item Start with an initial guess $\SS = \RR$.
 
-\item Estimate the self-load on the vertices of $\SS$ from their current
-positions.
+\item \label{step2} Estimate the self\dash load on the vertices of $\SS$, using
+their current positions.
 
-\item Fixing $\SS$, try to fit an associated stress surface $\Phi$.
+\item \label{step3} Fixing $\SS$, fit an associated stress surface $\Phi$.
 
-\item Alter positions $\vw_i$ to improve the fit.
+\item \label{step4} Alter positions $\vw_i$ to improve the fit.
 
-\item Repeat from step 2 until convergence.
+\item Repeat from Step~\ref{step2} until convergence.
 
 \end{enumerate}
 
-\paragraph{Estimating Self-load.}
+\paragraph{Step~\ref{step2}: Estimating Self-load.}
 
-Since we need to include the self-weight of the surface as a component of
-the load on $\SS$, $F_i$ depends not only on the top view of $\SS$ but
+The dead load due to the surface's own weight 
+depends not only on the top view of $\SS$, but
 also on the surface area of its faces. To avoid adding nonlinearity to the
-algorithm, we estimate $F_i$ at the beginning of each iteration, and
-assume it remains constant until the next iteration. We estimate the mass
-at each vertex by calculating its Voronoi area on each of its incident
-faces, and then multiplying by a user-specified surface density $\rho$.
+algorithm, we estimate the load coefficients $F_i$ at the beginning of each
+iteration, and assume they remain constant until the next iteration.
+We estimate the weight
+associated with each vertex by calculating its Voronoi area on
+each of its incident faces, and then multiplying by a user-specified
+surface density $\rho$.
 
-\paragraph{Fit a Stress Surface.} In this step, we fix $\SS$ and try to
+\paragraph{Step~\ref{step3}: Fit a Stress Surface.}
+
+In this step, we fix $\SS$ and try to
 fit a stress surface $\Phi$ subordinate to the top view $\SS'$ of the
 primal mesh. We do so by searching for convex face normals for $\Phi$
 which minimize, in the least-squares sense, the error in force equilibrium
@@ -1016,7 +1020,7 @@ to a stress surface satisfying \eqref{eq:deqiso}, and so $\Phi$ certifies
 that $\SS$ is self-supporting -- we are done. Otherwise, $\SS$ is not
 self-supporting and its vertices must be moved.
 
-\paragraph{Alter Positions.} In the previous step we fit as best as
+\paragraph{Step~\ref{step4}: Alter Positions.} In the previous step we fit as best as
 possible a stress surface $\Phi$ to $\SS$. There are two possible kinds of
 error with this fit: the faces around a vertex (equivalently, the
 reciprocal diagram) might not close up; and the resulting stress forces
@@ -1029,7 +1033,7 @@ nonsingular.
 
 While this approach would yield a self-supporting $\SS$, this mesh is
 often far from the reference mesh $\RR$, since any local errors in the
-stress surface from step 3 amplify into global errors in $\SS$. We propose
+stress surface from Step~\ref{step3} amplify into global errors in $\SS$. We propose
 instead to look for new positions that decrease the imbalance in the
 stresses and loads, while also penalizing drift away from the reference
 mesh:
@@ -1071,12 +1075,44 @@ observed that the method of conjugate gradients works well despite the
 potential ill-conditioning of the objective matrix.
 
 \paragraph{Convergence.}
-This algorithm is not guaranteed to always converge; this fact is not surprising from the physics of the problem (if the boundary of the reference mesh encloses too large of a region, $w_{\max}$ is set too low, and the density of the surface too high, a thrust network in equilibrium simply does not exist -- the vault is too ambitious and cannot be built to stand; pillars are needed.) We can, however, make a few remarks. Step 3 always decreases the equilibrium energy
+This algorithm is not guaranteed to always converge; this fact is not surprising from the physics of the problem (if the boundary of the reference mesh encloses too large of a region, $w_{\max}$ is set too low, and the density of the surface too high, a thrust network in equilibrium simply does not exist -- the vault is too ambitious and cannot be built to stand; pillars are needed.) We can, however, make a few remarks. Step~\ref{step3} always decreases the equilibrium energy
 	$$E=\sum_i \Big\| \Forcevector 
 		- \sum_{j\sim i} w_{ij} (\vw_j - \vw_i)\Big\|^2$$
-and step 4 does as well as $\beta \to 0$. Moreover, as $\alpha \to 0$ and $\beta \to 0$, step 4 approaches a linear system with as many equations as unknowns; if this system has full rank, its solution sets $E=0$. These facts suggest that the algorithm should generally converge to a thrust network in equilibrium, provided that step 2 does not increase the loads by too much at every iteration, and this is indeed what we observe in practice.  \todo{It would be nice if I could prove that, for sufficiently large $w_{\textrm{max}}$, step 2 cannot cause the algorithm to fail to converge, but I don't yet know how to approach this problem.}
+and Step~\ref{step4} does as well as $\beta \to 0$. Moreover, as $\alpha \to 0$ and $\beta \to 0$, Step~\ref{step4} approaches a linear system with as many equations as unknowns; if this system has full rank, its solution sets $E=0$. These facts suggest that the algorithm should generally converge to a thrust network in equilibrium, provided that Step~\ref{step2} does not increase the loads by too much at every iteration, and this is indeed what we observe in practice.  \todo{It would be nice if I could prove that, for sufficiently large $w_{\textrm{max}}$, Step~\ref{step2} cannot cause the algorithm to fail to converge, but I don't yet know how to approach this problem.}
 
-If the linear system in step 4 is singular and infeasible, the algorithm can stall at $E > 0$. This failure occurs, for instance, when an interior vertex has height $z_i$ lower than all of its neighbors, and step 3 assigns all incident edges to that vertex a weight of zero: clearly no amount of moving the vertex or its neighbors can bring the vertex into equilibrium. We avoid such degenerate configurations by bounding weights slightly away from zero in \eqref{eq:wbounds}, trading increased robustness for slight smoothing of the resulting surface.
+If the linear system in Step~\ref{step4} is singular and infeasible, the algorithm can stall at $E > 0$. This failure occurs, for instance, when an interior vertex has height $z_i$ lower than all of its neighbors, and Step~\ref{step3} assigns all incident edges to that vertex a weight of zero: clearly no amount of moving the vertex or its neighbors can bring the vertex into equilibrium. We avoid such degenerate configurations by bounding weights slightly away from zero in \eqref{eq:wbounds}, trading increased robustness for slight smoothing of the resulting surface.
+
+\begin{figure*}[t]
+\centerline{\raise.02\textwidth
+	\hbox{\begin{overpic}[width=.25\textwidth]{fig/curvature1}
+		\put(55,5){$\phi(x,y)$}
+		\put(55,51){$s(x,y)$}
+		\put(0,-4){(a)}
+	\end{overpic}}\hfill
+	\begin{overpic}[width=0.25\textwidth]{fig/lilium-vf.jpg}
+		\put(0,4){(b)}
+	\end{overpic}\hfill
+	\begin{overpic}[width=0.25\textwidth]{fig/lilium-pq.jpg}
+		\put(0,4){(c)}
+	\end{overpic}\hfill
+	\begin{overpic}[width=0.25\textwidth]{fig/lilium-pq-n.jpg}
+		\put(0,4){(d)}
+	\end{overpic}}
+	\vspace*{-0.01\textwidth}
+\caption{Planar quad remeshing of self-supporting surfaces.
+(a) A planar quad mesh approximating a self\dash supporting surface
+$s(x,y)$ with stress potential $\phi(x,y)$ is guided by the principal
+curvature directions of $s$ relative to $\phi$ (found from eigenvectors of
+$(\protect\Hess\phi)^{-1}\protect\Hess s$). For the 
+`Lilium tower' surface of Figure~\protect\ref{fig:Lilium}, the
+principal directions (b) yield the planar quad remeshing (c) 
+which is close to self\dash supporting;
+subsequent small changes make it self\dash supporting (d).}
+ \label{fig:lilium:pq} 
+ \end{figure*}
+
+
+
 
 \section{Design of Self-Supporting Surface} \label{sec:design}
 
@@ -1112,21 +1148,21 @@ condition that forces must be in equilibrium there.
 and maximum permissible stress per edge $w_{\textrm{max}}$, with visual
 feedback of how these parameters affect the fitted thrust network.
 
-\item Upsampling of the thrust network through Catmull-Clark
+\item Upsampling of the thrust network through Catmull\dash Clark
 subdivision~\cite{TODO} and polishing of the resulting refined thrust
 network using optimization \secref{sec:opt}.
 
-\item Visualization of the stress surface $R$ dual to the thrust network.
+\item Visualization of the stress surface $\RR$ dual to the thrust network.
 
 \end{itemize}
 
 \todo{TODO more to come?}
 
 
-\paragraph{Vault with Pillars.} As an example of the design and optimization workflow, consider a rectangular vault with six pillars, free boundary conditions along one edge, fixed boundary conditions along the others, and a tower extruded from the top of the surface (see Figure \ref{fig:vault}). This surface is non-convex, non-simply-connected, and exhibits a mix of boundary conditions, none of which cause our algorithm any difficulty; it finds a self-supporting thrust network near the designed reference mesh. The user is now free to make edits to the reference mesh, and the thrust network adapts to these edits, providing the user feedback on whether her designs are physically realizable.
+\paragraph{Example: Vault with Pillars.} As an example of the design and optimization workflow, consider a rectangular vault with six pillars, free boundary conditions along one edge, fixed boundary conditions along the others, and a tower extruded from the top of the surface (see Figure \ref{fig:vault}). This surface is neither convex nor simply connected, and exhibits a mix of boundary conditions, none of which cause our algorithm any difficulty; it finds a self-supporting thrust network near the designed reference mesh. The user is now free to make edits to the reference mesh, and the thrust network adapts to these edits, providing the user feedback on whether her designs are physically realizable.
 
 
-\paragraph{Top of the Lilium Tower.}
+\paragraph{Example: Top of the Lilium Tower.}
 
 Consider the top portion of the steel-glass exterior surface of the Lilium 
 Tower (see Figure \ref{fig:Lilium}). This surface contains a local minimum 
@@ -1139,7 +1175,7 @@ then explore how editing the reference mesh -- adding a pillar, for
 example -- affects the thrust network and its deviation from the reference 
 surface.
 
-\section{Special Families of Self-Supporting Surfaces} \label{sec:special}
+\section{Special Self-Supporting Surfaces} \label{sec:special}
 
 \paragraph{PQ Meshes.}
 
@@ -1177,20 +1213,7 @@ Airy surface $\Phi$ must approximate $\phi(x,y)$; thus we get the conditions
  $\aw_1,\aw_2$ are therefore eigenvectors of $(\Hess\phi)^{-1}\Hess s$. In view
 of \S\ref{sec:smooth}, $\aw_1,\aw_2$ indicate the principal directions of
 the surface $s(x,y)$ relative to $\phi(x,y)$ (see
-Figure~\ref{fig:principal}).
-
- \begin{figure}[ht]
-  \begin{overpic}[width=.55\columnwidth]{fig/curvature1}
-	\put(55,5){$\phi(x,y)$}
-	\put(55,51){$s(x,y)$}
-	\end{overpic}\hspace*{-.5\columnwidth}\hfill
-\begin{minipage}[b]{.48\columnwidth}
- \caption{A planar quad mesh approximating a self\dash supporting surface
-$s(x,y)$ with stress potential $\phi(x,y)$ is guided by the principal
-curvature directions of $s$ relative to $\phi$ (found from eigenvectors of
-$(\protect\Hess\phi)^{-1}\protect\Hess s$.)} \label{fig:principal}
-\end{minipage}
- \end{figure}
+Figure~\ref{fig:lilium:pq}a).
 
 In the discrete case, where $s,\phi$ are not given as continuous surfaces,
 but are represented by a mesh in equilibrium and its Airy mesh, we use the
@@ -1202,17 +1225,7 @@ approximating $s,\phi$ which follow those directions. Subseqent global
 optimization makes $\SS,\Phi$ a valid thrust network with discrete stress
 potential. Convexity of $\Phi$ ensures that $\SS$ is self\dash supporting.
 
-\begin{figure}
-	\includegraphics[width=0.24\textwidth]{fig/lilium-vf.jpg}\hfill
-	\includegraphics[width=0.24\textwidth]{fig/lilium-pq-n.jpg}
-
-\caption{Integrating the principal relative curvature directions of a 
-surface in equilibrium yields a self-supporting, planar quad remeshing of 
-that surface (right).}
- \label{fig:lilium:pq} 
- \end{figure}
-
-Figure~\ref{fig:lilium:pq} illustrates the result of applying this 
+Figure~\ref{fig:lilium:pq}b--d illustrates the result of applying this 
 procedure to a self-supporting modification of the Lilium tower. 
 \todo{TODO more examples}
 

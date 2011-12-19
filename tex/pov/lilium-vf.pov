@@ -10,7 +10,7 @@
 #include "lilium-n/lnvertices.inc" // declare NV,NF, V
 
 union { #macro triang(a,b,c) Ftriang(a,b,c) #end
-	mesh { #include "lilium-n/lnfaces.inc" texture {weiss}}
+	mesh { #include "lilium-n/lnfaces.inc" texture {gelb}}
 	rotate -x*90 }
 
 // declare array of faces, by reading file and appropriately
@@ -32,11 +32,11 @@ union { #macro triang(a,b,c) Ftriang(a,b,c) #end
 	#declare trsize = (vlength(V[F[i].x]-bary)+ vlength(V[F[i].y]-bary)+
 			vlength(V[F[i].z]-bary))/3;
 	cylinder {-<a,b,c>*trsize*vlen,<a,b,c>*trsize*vlen r1
-		texture {gelb} translate bary}
+		texture {weiss} translate bary}
 	cylinder {-<a,b,c>*trsize*vlen,<a,b,c>*trsize*vlen r1
-		texture {gelb} translate bary translate <d,e,f>*r1}
+		texture {weiss} translate bary translate <d,e,f>*r1}
 	cylinder {-<a,b,c>*trsize*vlen,<a,b,c>*trsize*vlen r1
-		texture {gelb} translate bary translate -<d,e,f>*r1}
+		texture {weiss} translate bary translate -<d,e,f>*r1}
 	cylinder {-<d,e,f>*trsize*vlen,<d,e,f>*trsize*vlen r1*1.2
 		texture {dblau} translate bary}
 	#declare i=i+1;
