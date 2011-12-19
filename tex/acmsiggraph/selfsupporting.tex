@@ -835,6 +835,43 @@ correspond under the Gauss mapping. We define
  where $A_i$ is the Voronoi area of vertex $\vw_i'$ in the projected mesh
 $\SS'$, which was used in \eqref{eq:deqz}.
 
+
+
+ \begin{figure*}[tb]
+	\centering
+	%\includegraphics[width=0.24\textwidth]{fig/lilium.png} 
+	%\includegraphics[width=0.24\textwidth]{fig/lilium-n.png}
+	%\hfill
+	%\includegraphics[width=0.24\textwidth]{fig/lilium-pillar-n.png} 
+	%\includegraphics[width=0.24\textwidth]{fig/lilium-pq-n.png}
+ \centerline{\begin{overpic}[width=.25\textwidth]{fig/lilium0.jpg}
+		\put(0,0){(a)}
+	\end{overpic}\hfill
+	\begin{overpic}[width=.25\textwidth]{fig/lilium-n.jpg}
+		\put(0,0){(b)}
+		\color{gelb}
+		\put(20,64){$\SS$}
+	\end{overpic}\hfill
+	\begin{overpic}[width=.25\textwidth]{fig/lilium-nstress.jpg}
+		\put(0,0){(c)}
+		\color{blau}
+		\put(25,60){$\Phi$}
+		\lput(45,0){$\SS'^*=\Phi'^*$}
+	\end{overpic}\hfill
+	\begin{overpic}[width=0.25\textwidth]{fig/lilium-pillar-n.jpg}
+		\put(0,0){(d)}
+	\end{overpic}}
+ \caption{The top of the Lilium Tower (a) cannot stand as a masonry 
+structure. (b) Our algorithm finds a nearby self-supporting mesh without 
+this impossible feature. (c) shows the corresponding Airy mesh $\Phi$ and 
+reciprocal force diagram $\SS'^*$. (d) The user can edit the original 
+surface, such as by specifying that the center of the surface is supported 
+by a vertical pillar, and the self-supporting network adjusts accordingly}
+ \label{fig:Lilium}
+ \end{figure*}
+
+
+
 \paragraph{Discrete Balance Equation.}
 
 We now prove the discrete analogue to Equation \eqref{equigeo}.
@@ -892,12 +929,33 @@ retriangulation of $\RR'$ for which $\Phi$ is convex. Equivalently, every mesh $
 Therefore, while the choice of edges in $\RR'$ is important, the choice of vertices is not: a smooth self-supporting surface can be approximated by
 a discrete self-supporting triangular mesh for any sampling of the surface.
 
-\section{Thrust Networks from Reference Meshes} \label{sec:opt} Consider
-now the problem of taking a given reference mesh, $\RR =
-(\tilde{V},\tilde{E},\tilde{F})$ with vertices $\tilde{\vw}_i$, and
-finding a combinatorically equivalent mesh $\SS$ in static equilibrium
+\begin{figure*}[t]
+	%\includegraphics[width=0.24\textwidth]{fig/build.png}
+	%\includegraphics[width=0.24\textwidth]{fig/build-n.png}
+	%\hfill
+	%\includegraphics[width=0.24\textwidth]{fig/build-edited.png}
+	%\includegraphics[width=0.24\textwidth]{fig/build-edited-n.png}
+\centerline{
+	\begin{overpic}[width=0.25\textwidth]{fig/build.jpg}
+	\end{overpic}\hfill
+	\begin{overpic}[width=0.25\textwidth]{fig/build-n.jpg}
+	\end{overpic}\hfill
+	\begin{overpic}[width=0.25\textwidth]{fig/build-edited.jpg}
+	\end{overpic}\hfill
+	\begin{overpic}[width=0.25\textwidth]{fig/build-edited-n.jpg}
+	\end{overpic}}
+
+\caption{The user-designed reference mesh (left) is not self-supporting, but our algorithm finds a nearby perturbation of the reference surface (middle-left) that is in equilibrium. As the user makes edits to the reference surface (middle-right), the thrust network automatically adjusts (right). \label{fig:vault}}
+\end{figure*}
+
+\section{Thrust Networks from Reference Meshes} \label{sec:opt} 
+
+Consider
+now the problem of taking a given reference mesh, $\RR$
+and finding a combinatorically equivalent mesh $\SS$ in static equilibrium
 approximating $\RR$. The loads on $\SS$ include user-prescribed loads as
-well as the self-weight of the mesh (which depends on the vertices $\vw_i$
+well as the dead load caused by the mesh's own weight
+(which depends on the vertices $\vw_i$
 of $\SS$.) Conceptually, finding $\SS$ amounts to minimizing some
 formulation of distance between $\RR$ and $\SS$, subject to constraints
 \eqref{eq:deqtop}, \eqref{eq:deqz}, and $w_{ij} \geq 0$. For any choice of
@@ -1021,13 +1079,6 @@ and step 4 does as well as $\beta \to 0$. Moreover, as $\alpha \to 0$ and $\beta
 If the linear system in step 4 is singular and infeasible, the algorithm can stall at $E > 0$. This failure occurs, for instance, when an interior vertex has height $z_i$ lower than all of its neighbors, and step 3 assigns all incident edges to that vertex a weight of zero: clearly no amount of moving the vertex or its neighbors can bring the vertex into equilibrium. We avoid such degenerate configurations by bounding weights slightly away from zero in \eqref{eq:wbounds}, trading increased robustness for slight smoothing of the resulting surface.
 
 \section{Design of Self-Supporting Surface} \label{sec:design}
-\begin{figure*}[!tb]
-\centering
-\includegraphics[width=0.24\textwidth]{fig/build.png} \includegraphics[width=0.24\textwidth]{fig/build-n.png}
-\hfill
-\includegraphics[width=0.24\textwidth]{fig/build-edited.png} \includegraphics[width=0.24\textwidth]{fig/build-edited-n.png}
-\caption{The user-designed reference mesh (left) is not self-supporting, but our algorithm finds a nearby perturbation of the reference surface (middle-left) that is in equilibrium. As the user makes edits to the reference surface (middle-right), the thrust network automatically adjusts (right). \label{fig:vault}}
-\end{figure*}
 
 The optimization algorithm described in the previous section forms the
 basis of an interactive design tool for self-supporting surfaces. Users
@@ -1073,41 +1124,6 @@ network using optimization \secref{sec:opt}.
 
 
 \paragraph{Vault with Pillars.} As an example of the design and optimization workflow, consider a rectangular vault with six pillars, free boundary conditions along one edge, fixed boundary conditions along the others, and a tower extruded from the top of the surface (see Figure \ref{fig:vault}). This surface is non-convex, non-simply-connected, and exhibits a mix of boundary conditions, none of which cause our algorithm any difficulty; it finds a self-supporting thrust network near the designed reference mesh. The user is now free to make edits to the reference mesh, and the thrust network adapts to these edits, providing the user feedback on whether her designs are physically realizable.
-
-
-\begin{figure*}[tb]
-\centering
-
-	%\includegraphics[width=0.24\textwidth]{fig/lilium.png} 
-	%\includegraphics[width=0.24\textwidth]{fig/lilium-n.png}
-	%\hfill
-	%\includegraphics[width=0.24\textwidth]{fig/lilium-pillar-n.png} 
-	%\includegraphics[width=0.24\textwidth]{fig/lilium-pq-n.png}
-
-\centerline{\begin{overpic}[width=.24\textwidth]{fig/lilium0.jpg}
-		\put(0,0){(a)}
-	\end{overpic}\hfill
-	\begin{overpic}[width=.24\textwidth]{fig/lilium-n.jpg}
-		\put(0,0){(b)}
-		\put(20,64){$\SS$}
-	\end{overpic}\hfill
-	\begin{overpic}[width=.24\textwidth]{fig/lilium-nstress.jpg}
-		\put(0,0){(c)}
-		\put(25,60){$\Phi$}
-		\lput(45,0){$\SS'^*=\Phi'^*$}
-	\end{overpic}\hfill
-	\begin{overpic}[width=0.24\textwidth]{fig/lilium-pillar-n.jpg}
-		\put(0,0){(d)}
-	\end{overpic}}
-
-\caption{The top of the Lilium Tower (a) cannot stand as a masonry 
-structure. (b) Our algorithm finds a nearby self-supporting mesh without 
-this impossible feature. (c) shows the corresponding Airy mesh $\Phi$ and 
-reciprocal force diagram $\SS'^*$. (d) The user can edit the original 
-surface, such as by specifying that the center of the surface is supported 
-by a vertical pillar, and the self-supporting network adjusts accordingly}
- \label{fig:Lilium}
-\end{figure*}
 
 
 \paragraph{Top of the Lilium Tower.}
