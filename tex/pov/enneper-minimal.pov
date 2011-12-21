@@ -11,29 +11,20 @@
 #declare VS = array[NV];
 #declare i=0; #while (i<NV) #declare VS[i]=V[i]; #declare i=i+1; #end
 
+// compute difference
 
-// compute intermediate surface
+#declare i=0; #while (i<NV) 
+	#declare V[i]=<VK[i].x, VK[i].y-VS[i].y+.5, VK[i].z>;
+#declare i=i+1; #end
 
-
-#declare tt = -2.0;
-#while (tt<2.01)
-	#declare i=0; #while (i<NV) 
-		#declare V[i]=((1-tt)*VK[i]+tt*VS[i])/3
-			+<-.15,0,.8>*(tt)*.5 +y*.5;
-	#declare i=i+1; #end
-
-	union {
-		#macro Quad(a,b,c,d) EQuad(a,b,c,d) #end
-		union { #include "enneper/e-faces.inc" texture {weiss}}
+union {
+	#macro Quad(a,b,c,d) EQuad(a,b,c,d) #end
+	union { #include "enneper/e-faces.inc" texture {dblau}}
 	
-		#macro Quad(a,b,c,d) FQuad(a,b,c,d) #end
-		mesh { #include "enneper/e-faces.inc" texture {gelb}}
+	#macro Quad(a,b,c,d) FQuad(a,b,c,d) #end
+	mesh { #include "enneper/e-faces.inc" texture {weiss}}
 
-	rotate -x*90
-	}
-#declare tt=tt+2.0;
-#end
-
-
+rotate -x*90
+}
 
 
