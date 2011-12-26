@@ -123,11 +123,11 @@ OpenGLPanel3D::MouseAction OpenGLPanel3D::deduceAction(QMouseEvent *event)
     {
         if(event->buttons() & Qt::LeftButton)
         {
-            return MA_ADDANCHORFREE;
+            return MA_ADDHANDLEFREE;
         }
         else if(event->buttons() & Qt::RightButton)
         {
-            return MA_DELETEANCHOR;
+            return MA_DELETEHANDLE;
         }
         return MA_NONE;
     }
@@ -135,11 +135,23 @@ OpenGLPanel3D::MouseAction OpenGLPanel3D::deduceAction(QMouseEvent *event)
     {
         if(event->buttons() & Qt::LeftButton)
         {
-            return MA_ADDANCHORHEIGHT;
+            return MA_ADDHANDLEHEIGHT;
         }
         else if(event->buttons() & Qt::RightButton)
         {
-            return MA_DELETEANCHOR;
+            return MA_DELETEHANDLE;
+        }
+        return MA_NONE;
+    }
+    else if(curmode == Controller::EM_TOPHANDLE)
+    {
+        if(event->buttons() & Qt::LeftButton)
+        {
+            return MA_ADDHANDLETOP;
+        }
+        else if(event->buttons() & Qt::RightButton)
+        {
+            return MA_DELETEHANDLE;
         }
         return MA_NONE;
     }
@@ -154,11 +166,15 @@ OpenGLPanel3D::MouseAction OpenGLPanel3D::deduceAction(QMouseEvent *event)
             return MA_DELETEPIN;
         }
     }
-    else if(curmode == Controller::EM_CREASE)
+    else if(curmode == Controller::EM_ANCHOR)
     {
         if(event->buttons() & Qt::LeftButton)
         {
-            return MA_TOGGLECREASE;
+            return MA_ADDANCHOR;
+        }
+        else if(event->buttons() & Qt::RightButton)
+        {
+            return MA_DELETEANCHOR;
         }
     }
     else if(curmode == Controller::EM_DELETEFACE)
@@ -197,22 +213,28 @@ void OpenGLPanel3D::mousePressEvent(QMouseEvent *event)
             zoomer_.startZoom(pos);
             break;
         }
-        case MA_ADDANCHORFREE:
+        case MA_ADDHANDLEFREE:
         {
             // queue pos for rendering
             selector_.startEditing(pos, Selector::SM_DRAGFREE);
             cont_->updateGLWindows();
             break;
         }
-        case MA_ADDANCHORHEIGHT:
+        case MA_ADDHANDLEHEIGHT:
         {
             selector_.startEditing(pos, Selector::SM_DRAGHEIGHT);
             cont_->updateGLWindows();
             break;
         }
-        case MA_DELETEANCHOR:
+        case MA_ADDHANDLETOP:
         {
-            selector_.startEditing(pos, Selector::SM_CLEARANCHOR);
+            selector_.startEditing(pos, Selector::SM_DRAGTOP);
+            cont_->updateGLWindows();
+            break;
+        }
+        case MA_DELETEHANDLE:
+        {
+            selector_.startEditing(pos, Selector::SM_CLEARHANDLE);
             cont_->updateGLWindows();
             break;
         }
@@ -228,15 +250,21 @@ void OpenGLPanel3D::mousePressEvent(QMouseEvent *event)
             cont_->updateGLWindows();
             break;
         }
-        case MA_DELETEFACE:
+        case MA_ADDANCHOR:
         {
-            selector_.startEditing(pos, Selector::SM_DELETEFACE);
+            selector_.startEditing(pos, Selector::SM_ADDANCHOR);
             cont_->updateGLWindows();
             break;
         }
-        case MA_TOGGLECREASE:
+        case MA_DELETEANCHOR:
         {
-            selector_.startEditing(pos, Selector::SM_TOGGLECREASE);
+            selector_.startEditing(pos, Selector::SM_DELETEANCHOR);
+            cont_->updateGLWindows();
+            break;
+        }
+        case MA_DELETEFACE:
+        {
+            selector_.startEditing(pos, Selector::SM_DELETEFACE);
             cont_->updateGLWindows();
             break;
         }
@@ -258,12 +286,16 @@ void OpenGLPanel3D::mouseMoveEvent(QMouseEvent *event)
     updateGL();
 }
 
-void OpenGLPanel3D::mouseReleaseEvent(QMouseEvent *)
+void OpenGLPanel3D::mouseReleaseEvent(QMouseEvent *event)
 {
+    int x = event->pos().x();
+    int y = event->pos().y();
+    Vector2d pos;
+    scaleMousePos(x,y,pos[0],pos[1]);
     translator_.stopTranslation();
     rotator_.stopRotation();
     zoomer_.stopZoom();
-    selector_.stopEditing();
+    selector_.stopEditing(pos);
 }
 
 void OpenGLPanel3D::centerCamera()

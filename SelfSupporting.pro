@@ -67,7 +67,8 @@ FORMS    += \
 unix:!macx:!symbian: LIBS += -L$$PWD/../../OpenMesh-2.0.1/build/Build/lib/OpenMesh/ -lOpenMeshCore
 
 INCLUDEPATH += $$PWD/../../OpenMesh-2.0.1/src \
-    $$PWD/../../eigen
+    $$PWD/../../eigen \
+    /usr/include/suitesparse
 DEPENDPATH += $$PWD/../../OpenMesh-2.0.1/src
 
 DEFINES += EIGEN_YES_I_KNOW_SPARSE_MODULE_IS_NOT_STABLE_YET
@@ -76,75 +77,6 @@ RESOURCES +=
 
 QMAKE_CXXFLAGS += -g
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 unix:!macx:!symbian: LIBS += -lbcls
 
-unix|win32: LIBS += -lcblas
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+unix|win32: LIBS += -ltsnnls -lblas -lquadmath -lgfortran -llapack -lm -lumfpack

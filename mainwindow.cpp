@@ -46,6 +46,17 @@ void MainWindow::on_actionImport_OBJ_triggered()
     }
 }
 
+
+void MainWindow::on_actionAdd_Mesh_triggered()
+{
+    QString filename = QFileDialog::getOpenFileName(this, "Add Parallel Mesh", ".", "OBJ Files (*.obj)");
+    if(!filename.isNull())
+    {
+        c_.addMesh(filename.toStdString().c_str());
+    }
+}
+
+
 void MainWindow::on_actionSave_Mesh_triggered()
 {
     QFileDialog savedialog(this, "Save Reference Mesh", ".", "SSS Files (*.sss)");
@@ -224,8 +235,10 @@ Controller::EditMode MainWindow::getEditMode()
         return Controller::EM_DELETEFACE;
     else if(ui->pinButton->isChecked())
         return Controller::EM_PIN;
-    else if(ui->creaseButton->isChecked())
-        return Controller::EM_CREASE;
+    else if(ui->anchorButton->isChecked())
+        return Controller::EM_ANCHOR;
+    else if(ui->topHandleButton->isChecked())
+        return Controller::EM_TOPHANDLE;
     assert(false);
 }
 
@@ -284,13 +297,14 @@ void MainWindow::on_maxWeightHorizontalSlider_valueChanged(int value)
 void MainWindow::reportParams()
 {
     c_.enforceMaxWeight(ui->maxWeightCheckBox->isChecked());
+    c_.setEnforcePlanarity(ui->enforcePlanarityCheckBox->isChecked());
     c_.setMaxWeight(ui->maxWeightHorizontalSlider->value());
     c_.setDensity(ui->densitySlider->value());
 }
 
 void MainWindow::on_actionSubdivide_triggered()
 {
-    c_.subdivideMesh();
+    c_.subdivideMesh(false);
 }
 
 void MainWindow::on_actionCopy_Thrust_Network_triggered()
@@ -305,7 +319,7 @@ void MainWindow::on_pushButton_clicked()
 
 void MainWindow::on_actionSubdivideRM_triggered()
 {
-    c_.subdivideReferenceMesh();
+    c_.subdivideReferenceMesh(false);
 }
 
 void MainWindow::on_actionTriangulate_triggered()
@@ -358,4 +372,67 @@ void MainWindow::on_networkSurfaceCheckBox_clicked()
 void MainWindow::on_stressCheckBox_clicked()
 {
     c_.updateGLWindows();
+}
+
+void MainWindow::on_actionWeights_triggered()
+{
+    c_.computeBestWeights();
+}
+
+void MainWindow::on_actionPositions_triggered()
+{
+    c_.computeBestPositions();
+}
+
+void MainWindow::on_actionHeights_triggered()
+{
+    c_.computeBestHeights();
+}
+
+
+void MainWindow::on_avgHeightsButton_clicked()
+{
+    c_.averageHeights();
+}
+
+void MainWindow::on_enforcePlanarityCheckBox_clicked()
+{
+    c_.setEnforcePlanarity(ui->enforcePlanarityCheckBox->isChecked());
+}
+
+void MainWindow::on_actionTrim_triggered()
+{
+    c_.trimReferenceBoundary();
+}
+
+void MainWindow::on_actionCompute_Conjugate_Dirs_triggered()
+{
+    c_.computeConjugateDirs();
+}
+
+void MainWindow::on_actionSmooth_Boundary_triggered()
+{
+    c_.subdivideReferenceMesh(true);
+}
+
+void MainWindow::on_actionSmooth_Boundary_2_triggered()
+{
+    c_.subdivideMesh(true);
+}
+
+void MainWindow::on_actionExport_Everything_triggered()
+{
+    QFileDialog savedialog(this, "Save Everything", ".", "");
+    savedialog.setFileMode(QFileDialog::AnyFile);
+    savedialog.setViewMode(QFileDialog::List);
+    savedialog.setAcceptMode(QFileDialog::AcceptSave);
+    if(savedialog.exec())
+    {
+        QStringList filenames = savedialog.selectedFiles();
+        if(filenames.size() > 0)
+        {
+            QString filename = filenames[0];
+            c_.saveNetworkEverything(filename.toStdString().c_str());
+        }
+    }
 }

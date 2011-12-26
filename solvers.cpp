@@ -3,9 +3,33 @@
 
 #include <iostream>
 #include <unsupported/Eigen/SparseExtra>
+#include <unsupported/Eigen/UmfPackSupport>
+#include <libtsnnls/tsnnls.h>
 
 using namespace Eigen;
 using namespace std;
+
+taucs_ccs_matrix* convertToTauCS(const SparseMatrix<double> &M)
+{
+    taucs_ccs_matrix *newM = taucs_ccs_create(M.rows(), M.cols(), M.nonZeros(), TAUCS_DOUBLE);
+
+    assert(M.outerSize() == M.cols());
+    int curidx = 0;
+    for(int k=0; k<M.outerSize(); k++)
+    {
+        newM->colptr[k] = curidx;
+        for(SparseMatrix<double>::InnerIterator it(M, k); it; ++it)
+        {
+            newM->rowind[curidx] = it.row();
+            newM->values.d[curidx] = it.value();
+            curidx++;
+        }
+    }
+    newM->colptr[M.outerSize()] = curidx;
+    assert(curidx == M.nonZeros());
+
+    return newM;
+}
 
 MatrixBlock::MatrixBlock(int rows, int cols, vector<const SparseMatrix<double> *> blocks) : n_(rows), m_(cols), blocks_(blocks)
 {
@@ -147,20 +171,43 @@ void Solvers::solveBCLS(const MatrixBlock &B, VectorXd &b, VectorXd &lb, VectorX
     assert(b.size() == m);
     assert(lb.size() == n);
     assert(ub.size() == n);
+    double *anorm = new double[n];
+    bcls_compute_anorm(ls, n, m, Aprod, (void *)&B, anorm);
 
+    bcls_set_anorm(ls, anorm);
     bcls_set_problem_data(ls, m, n, Aprod, (void *)&B, 0, result.data(), b.data(), NULL, lb.data(), ub.data());
+    ls->newton_step = BCLS_NEWTON_STEP_CGLS;
     ls->print_level = 0;
     bcls_solve_prob(ls);
-    /*bcls_init_prob(ls);
-    cout << "=========== 0 ===========" << endl;
-    bcls_set_problem_data(ls, m, n, Aprod, (void *)&B, 0, result.data(), b.data(), NULL, lb.data(), ub.data());
-    bcls_solve_prob(ls);
-*/
     bcls_free_prob(ls);
+    delete[] anorm;
 }
 
 void Solvers::solveBCLS(const SparseMatrix<double> &A, VectorXd &b, VectorXd &lb, VectorXd &ub, VectorXd &result)
 {
+    /*
+    taucs_ccs_matrix* newM = convertToTauCS(A);
+    taucs_double *newb = (taucs_double *)malloc(b.size() * sizeof(taucs_double));
+    double residual;
+    tsnnls_verbosity(100);
+    taucs_double *results = t_snnls(newM, newb, &residual, 0, 100);
+    if(!results)
+    {
+        cout << "Did not converge" << endl;
+        result.setZero();
+        return;
+    }
+    assert(result.size() == newM->n);
+    for(int i=0; i<result.size(); i++)
+    {
+        cout << i << endl;
+        result[i] = results[i];
+    }
+    free(newb);
+    taucs_ccs_free(newM);
+    free(results);
+    return;*/
+
     vector<const SparseMatrix<double> *> blocks;
     blocks.push_back(&A);
     MatrixBlock B(1,1,blocks);
@@ -257,6 +304,25 @@ void Solvers::solveWeightedLSE(const VectorXd &M, const VectorXd &q0, const Spar
     result = q0 - Minv*(C*lambda);
 }
 
+void Solvers::linearSolveLDLT(const SparseMatrix<double> &A, const VectorXd &rhs, VectorXd &result)
+{
+    assert(A.cols() == rhs.size());
+    assert(A.rows() == A.cols());
+    assert(A.rows() == result.size());
+    SparseLDLT<SparseMatrix<double> > ldlt(A);
+    result = ldlt.solve(rhs);
+}
+
+void Solvers::linearSolveLU(const SparseMatrix<double> &A, const VectorXd &rhs, VectorXd &result)
+{
+    assert(A.cols() == rhs.size());
+    assert(A.rows() == A.cols());
+    assert(A.rows() == result.size());
+    SparseLU<SparseMatrix<double>, UmfPack > lu(A);
+    result = lu.solve(rhs);
+}
+
+
 void Solvers::linearSolveCG(const SparseMatrix<double> &A, const VectorXd &rhs, VectorXd &result)
 {
     int n = A.rows();
@@ -272,7 +338,7 @@ void Solvers::linearSolveCG(const SparseMatrix<double> &A, const VectorXd &rhs, 
         {
             //cout << "Converged after " << i << " iterations" << endl;
             return;
-        }
+        }        
         tmp = A*p;
         double denom = p.dot(tmp);
         double alpha = rnorm/denom;

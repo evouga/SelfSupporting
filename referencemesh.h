@@ -6,6 +6,7 @@
 class ReferenceMeshRenderer;
 class Controller;
 class NetworkMesh;
+class Camera;
 
 class ReferenceMesh : public Mesh
 {
@@ -16,6 +17,7 @@ public:
     MeshRenderer &getRenderer();
 
     void copyFromNetworkMesh(NetworkMesh &nm);
+    bool addOBJ(const char *filename);
 
     void computeClosestPointOnPlane(const Eigen::Vector2d &pos, int &closestidx, double &closestdist);
     void jitterOnPlane();
@@ -25,20 +27,27 @@ public:
     void buildTriMesh(int w, int h);
     void buildHexMesh(int w, int h);
 
+    double computeBestDWeights(const Eigen::VectorXd &dQ, Eigen::VectorXd &dW);
+
     void applyLaplacianDeformation(int vidx, const Eigen::Vector3d &delta);
     void applyLaplacianDeformationHeight(int vidx, const Eigen::Vector3d &delta);
+    void applyLaplacianDeformationTop(int vidx, const Eigen::Vector3d &delta);
 
-    void setAnchor(int vidx, bool state);
+    void setHandle(int vidx, bool state);
     void deleteFace(int fidx);
 
-    void setCrease(int eidx, bool state);
-    bool isCrease(int eidx);
     void setPin(int vidx, bool state);
+    void setAnchor(int vidx, bool state);
 
     void pinBoundary();
     void unpinBoundary();
     void swapYandZ();
     void invertY();
+
+    void averageHandledHeights();
+    void trimBoundary();
+
+    std::vector<int> selectRectangle(const Eigen::Vector2d &c1, const Eigen::Vector2d &c2, Camera &c);
 
 private:
 

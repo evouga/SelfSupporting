@@ -22,10 +22,11 @@ public:
 
     // Given a (possibly non-self-supporting) 3D mesh, finds non-negative weights that come as close as possible to
     // satisfying the force-equilibrium constraints
-    bool computeBestWeights(double maxweight);
+    double computeBestWeights(double maxweight);
+
 
     // Given non-negative weights, finds the closest mesh to the given mesh that is self-supporting with those weights
-    double computeBestPositionsTangentLS(double alpha, double beta);
+    double computeBestPositionsTangentLS(double alpha, double beta, bool planarity);
 
     double enforcePlanarity();
 
@@ -39,11 +40,19 @@ public:
     void computeRelativePrincipalDirections();
 
     void setupVFProperties();
+    void solveLaplacian();
+    void exportVectorFields(const char *name);
+    bool exportReciprocalMesh(const char *name);
 
 private:
     Eigen::Matrix2d approximateStressHessian(MyMesh::FaceHandle face);
     void fixBadVertices();
     bool fixBadVerticesNew();
+
+    double computeLaplacianWeight(MyMesh::EdgeHandle edge);
+    double computeLaplacianAlpha(MyMesh::HalfedgeHandle heh);
+    void computeLaplacianCurvatures();
+    void triangleSubdivide();
 
     MyMesh subdreference_;
 

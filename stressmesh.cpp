@@ -144,7 +144,7 @@ void StressMesh::integrateFace(NetworkMesh &nm, MyMesh::FaceHandle face)
 
         double a,b,c;
         MyMesh::FaceHandle sneighbor = mesh_.face_handle(neighbor.idx());
-        computeFacePlane(sneighbor, a, b, c);
+        computeFacePlane(mesh_, sneighbor, a, b, c);
         MyMesh::Point top = nm.getMesh().point(nm.getMesh().to_vertex_handle(heh));
         MyMesh::Point fromp = nm.getMesh().point(nm.getMesh().from_vertex_handle(heh));
         double vx = top[0]-fromp[0];

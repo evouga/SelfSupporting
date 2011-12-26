@@ -15,6 +15,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include "camera.h"
 
 using namespace Eigen;
 using namespace std;
@@ -66,7 +67,20 @@ void Controller::importOBJ(const char *filename)
     }
     p_.statusmsg = "Imported geometry from " + QString(filename) + ".";
     resetNetworkMesh();
-    w_.centerCameras();
+ //   w_.centerCameras();
+}
+
+void Controller::addMesh(const char *filename)
+{
+    if(!rm_->addOBJ(filename))
+    {
+        QString msg = "Couldn't add " + QString(filename) + " to reference mesh.";
+        QMessageBox::warning(&w_, "Couldn't Add Mesh", msg, QMessageBox::Ok);
+        return;
+    }
+    p_.statusmsg = "Added mesh " + QString(filename) + ".";
+    resetNetworkMesh();
+    //w_.centerCameras();
 }
 
 void Controller::loadMesh(const char *filename)
@@ -79,7 +93,7 @@ void Controller::loadMesh(const char *filename)
     }
     p_.statusmsg = "Loaded mesh " + QString(filename) + ".";
     resetNetworkMesh();
-    w_.centerCameras();
+    //w_.centerCameras();
 }
 
 void Controller::saveMesh(const char *filename)
@@ -102,6 +116,35 @@ void Controller::saveNetwork(const char *filename)
         return;
     }
     p_.statusmsg = "Saved thrust network " + QString(filename) + ".";
+}
+
+void Controller::saveNetworkEverything(const char *filename)
+{
+    string name(filename);
+    string objname = name + "-n.obj";
+    if(!nm_->exportOBJ(objname.c_str()))
+    {
+        QString msg = "Couldn't write network mesh file " + QString(objname.c_str()) + ". Save failed.";
+        QMessageBox::warning(&w_, "Couldn't Write File", msg, QMessageBox::Ok);
+        return;
+    }
+    computeConjugateDirs();
+    string stressname = name + "-n-stress.obj";
+    if(!sm_->exportOBJ(stressname.c_str()))
+    {
+        QString msg = "Couldn't write stress network file " + QString(stressname.c_str()) + ". Save failed.";
+        QMessageBox::warning(&w_, "Couldn't Write File", msg, QMessageBox::Ok);
+        return;
+    }
+    string vfname = name + "-n-vf.txt";
+    nm_->exportVectorFields(vfname.c_str());
+    string reciprocalname = name + "-n-recip.obj";
+    if(!nm_->exportReciprocalMesh(reciprocalname.c_str()))
+    {
+        QString msg = "Couldn't write reciprocal mesh file " + QString(reciprocalname.c_str()) + ". Save failed.";
+        QMessageBox::warning(&w_, "Couldn't Write File", msg, QMessageBox::Ok);
+        return;
+    }
 }
 
 
@@ -148,6 +191,12 @@ void Controller::resetNetworkMesh()
 
 void Controller::laplacianTest()
 {
+    nm_->solveLaplacian();
+    w_.updateGLWindows();
+}
+
+void Controller::computeConjugateDirs()
+{
     sm_->buildFromThrustNetwork(*nm_);
     nm_->computeRelativePrincipalDirections();
     w_.updateGLWindows();
@@ -165,17 +214,43 @@ void Controller::iterateNetwork()
     double maxweight = p_.maxWeight;
     if(!p_.enforceMaxWeight)
         maxweight = std::numeric_limits<double>::infinity();
-    if(!nm_->computeBestWeights(maxweight))
     nm_->computeBestWeights(maxweight);
-    double residualp = nm_->computeBestPositionsTangentLS(p_.alpha, p_.beta);
+    double residualp = nm_->computeBestPositionsTangentLS(p_.alpha, p_.beta, p_.planarity);
 
 //    p_.statusmsg = "Projected onto best weights and positions. Residual after calculating best weights " + QString::number(residualw)
 //            + ", and after adjusting position " + QString::number(residualp) + "." + " Alpha: " + QString::number(p_.alpha) + " Beta: " + QString::number(p_.beta);
     p_.alpha /= 2.;
     p_.alpha = std::max(p_.alpha, 1e-15);
+    p_.beta *= 2;
+    p_.beta = std::min(p_.beta, 1e15);
+    p_.nmresidual = residualp;
+}
+
+void Controller::computeBestWeights()
+{
+    nm_->setPlaneAreaLoads(p_.density);
+    double maxweight = p_.maxWeight;
+    if(!p_.enforceMaxWeight)
+        maxweight = std::numeric_limits<double>::infinity();
+    p_.nmresidual = nm_->computeBestWeights(maxweight);
+    updateGLWindows();
+}
+
+void Controller::computeBestPositions()
+{
+    double residualp = nm_->computeBestPositionsTangentLS(p_.alpha, p_.beta, p_.planarity);
+    p_.alpha /= 2.;
+    p_.alpha = std::max(p_.alpha, 1e-15);
     p_.beta *= 2.;
     p_.beta = std::min(p_.beta, 1e15);
     p_.nmresidual = residualp;
+    updateGLWindows();
+}
+
+void Controller::computeBestHeights()
+{
+    nm_->updateHeights();
+    updateGLWindows();
 }
 
 void Controller::jitterMesh()
@@ -186,9 +261,9 @@ void Controller::jitterMesh()
     w_.updateGLWindows();
 }
 
-void Controller::subdivideMesh()
+void Controller::subdivideMesh(bool andboundary)
 {
-    nm_->subdivide();
+    nm_->subdivide(andboundary);
     nm_->saveSubdivisionReference();
     p_.alpha = 0.1;
     p_.beta = .2;
@@ -197,9 +272,9 @@ void Controller::subdivideMesh()
     w_.updateGLWindows();
 }
 
-void Controller::subdivideReferenceMesh()
+void Controller::subdivideReferenceMesh(bool andboundary)
 {
-    rm_->subdivide();
+    rm_->subdivide(andboundary);
     resetParams();
     p_.statusmsg = "Subdivided reference mesh.";
     w_.updateGLWindows();
@@ -248,6 +323,13 @@ void Controller::dragVertexHeight(int vidx, const Vector3d &translation)
     updateGLWindows();
 }
 
+void Controller::dragVertexTop(int vidx, const Vector3d &translation)
+{
+    rm_->applyLaplacianDeformationTop(vidx, translation);
+    resetNetworkMesh();
+    updateGLWindows();
+}
+
 void Controller::computeClosestPointOnPlane(const Vector2d &pos, int &closestidx, double &closestdist)
 {
     rm_->computeClosestPointOnPlane(pos, closestidx, closestdist);
@@ -270,12 +352,10 @@ void Controller::renderMesh3D()
 {
     if(w_.showNetworkSurface())
         ((NetworkMeshRenderer &)nm_->getRenderer()).renderSurface();
-    if(w_.showNetworkMesh())
-    {
+    if(w_.showNetworkMesh())    
         nm_->getRenderer().render3D();
-        if(w_.showConjugateVectors())
-            ((NetworkMeshRenderer &)nm_->getRenderer()).renderConjugateVectors3D();
-    }
+    if(w_.showConjugateVectors())
+        ((NetworkMeshRenderer &)nm_->getRenderer()).renderConjugateVectors3D();
     if(w_.showReferenceMesh())
         rm_->getRenderer().render3D();
     if(w_.showStressSurface())
@@ -316,26 +396,48 @@ void Controller::updateGLWindows()
     w_.updateGLWindows();
 }
 
-void Controller::setAnchor(int vidx)
+void Controller::setHandle(vector<int> &vidx)
 {
-    rm_->setAnchor(vidx, true);
+    for(vector<int>::iterator it = vidx.begin(); it != vidx.end(); ++it)
+        rm_->setHandle(*it, true);
+    w_.updateGLWindows();
 }
 
-void Controller::clearAnchor(int vidx)
+void Controller::clearHandle(vector<int> &vidx)
 {
-    rm_->setAnchor(vidx, false);
+    for(vector<int>::iterator it = vidx.begin(); it != vidx.end(); ++it)
+        rm_->setHandle(*it, false);
+    w_.updateGLWindows();
 }
 
-void Controller::setPin(int vidx)
+void Controller::setPin(vector<int> & vidxs)
 {
-    rm_->setPin(vidx, true);
+    for(vector<int>::iterator it = vidxs.begin(); it != vidxs.end(); ++it)
+        rm_->setPin(*it, true);
     resetNetworkMesh();
     w_.updateGLWindows();
 }
 
-void Controller::clearPin(int vidx)
+void Controller::clearPin(vector<int> &vidxs)
 {
-    rm_->setPin(vidx, false);
+    for(vector<int>::iterator it = vidxs.begin(); it != vidxs.end(); ++it)
+        rm_->setPin(*it, false);
+    resetNetworkMesh();
+    w_.updateGLWindows();
+}
+
+void Controller::setAnchor(std::vector<int> &vidx)
+{
+    for(vector<int>::iterator it = vidx.begin(); it != vidx.end(); ++it)
+        rm_->setAnchor(*it, true);
+    resetNetworkMesh();
+    w_.updateGLWindows();
+}
+
+void Controller::clearAnchor(std::vector<int> &vidx)
+{
+    for(vector<int>::iterator it = vidx.begin(); it != vidx.end(); ++it)
+        rm_->setAnchor(*it, false);
     resetNetworkMesh();
     w_.updateGLWindows();
 }
@@ -343,13 +445,6 @@ void Controller::clearPin(int vidx)
 void Controller::deleteFace(int fidx)
 {
     rm_->deleteFace(fidx);
-    resetNetworkMesh();
-    w_.updateGLWindows();
-}
-
-void Controller::toggleCrease(int eidx)
-{
-    rm_->setCrease(eidx, !rm_->isCrease(eidx));
     resetNetworkMesh();
     w_.updateGLWindows();
 }
@@ -389,6 +484,11 @@ void Controller::setAutoIterate(bool state)
         nt_->unpause();
     else
         nt_->pause();
+}
+
+void Controller::setEnforcePlanarity(bool state)
+{
+    p_.planarity = state;
 }
 
 void Controller::enforceMaxWeight(bool state)
@@ -442,6 +542,13 @@ void Controller::unpinReferenceBoundary()
     w_.updateGLWindows();
 }
 
+void Controller::trimReferenceBoundary()
+{
+    rm_->trimBoundary();
+    resetNetworkMesh();
+    w_.updateGLWindows();
+}
+
 void Controller::swapYandZ()
 {
     rm_->swapYandZ();
@@ -454,4 +561,14 @@ void Controller::invertY()
     rm_->invertY();
     resetNetworkMesh();
     w_.updateGLWindows();
+}
+
+vector<int> Controller::selectRectangle(const Vector2d &c1, const Vector2d &c2, Camera &c)
+{
+    return rm_->selectRectangle(c1, c2, c);
+}
+
+void Controller::averageHeights()
+{
+    rm_->averageHandledHeights();
 }

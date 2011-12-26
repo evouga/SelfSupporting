@@ -12,20 +12,20 @@ class Selector
 public:
     Selector(Camera &c);
 
-    enum SelectMode {SM_DRAGFREE, SM_DRAGHEIGHT, SM_CLEARANCHOR, SM_DELETEFACE, SM_ADDPIN, SM_DELETEPIN, SM_TOGGLECREASE};
+    enum SelectMode {SM_DRAGFREE, SM_DRAGHEIGHT, SM_CLEARHANDLE, SM_DELETEFACE, SM_ADDPIN, SM_DELETEPIN, SM_DRAGTOP, SM_ADDANCHOR, SM_DELETEANCHOR};
 
     void setController(Controller &c);
 
     void startEditing(const Eigen::Vector2d &pos, SelectMode mode);
     void primitiveSelected(Mesh::PrimType primtype, int primidx);
     void updateEditing(const Eigen::Vector2d &pos);
-    void stopEditing();
+    void stopEditing(const Eigen::Vector2d &pos);
 
     bool selectionQueued() {return state_ == SS_PICKQUEUED;}
     Eigen::Vector2d getQueuedPos();
 
 private:
-    enum SelectorState {SS_NONE, SS_PICKQUEUED, SS_DRAGGING};
+    enum SelectorState {SS_NONE, SS_PICKQUEUED, SS_DRAGGING, SS_RECTANGLE};
 
 
     Camera &c_;

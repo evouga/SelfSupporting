@@ -357,7 +357,7 @@ Philippe Block's seminal thesis introduced the method
 of {\it Thrust Network Analysis}, which linearizes the form-finding problem by 
 first seeking a reciprocal diagram of the top view, which guarantees 
 equilibrium of horizontal forces, then solving for the heights that 
-balance the vertical loads (see e.g.\ \cite{Block07}). Recent work by Block and coauthors extend this 
+balance the vertical loads (see e.g.\ \cite{Block07,block09}). Recent work by Block and coauthors extend this 
 method in the case where the reciprocal diagram is not unique; for 
 different choices of reciprocal diagram, the optimal heights can be found 
 using the method of least squares~\cite{vanmele2011}, and the search for 
@@ -1031,7 +1031,7 @@ surface density $\rho$.
 
 In this step, we fix $\SS$ and try to
 fit a stress surface $\Phi$ subordinate to the top view $\SS'$ of the
-primal mesh. We do so by searching for convex face normals for $\Phi$
+primal mesh. We do so by searching for dihedral angles between the faces of $\Phi$
 which minimize, in the least-squares sense, the error in force equilibrium
 \eqref{eq:deqiso} and local integrability of $\Phi$. Doing so is
 equivalent to minimizing the squared residuals of equations
@@ -1097,14 +1097,6 @@ third term, weaker than the second, regularizes the optimization by
 preventing large drift away from the reference surface or excessive
 tangetial sliding.
 
-\todo{Geometric interpretation of this step. It is *almost* fixing the
-dihedral angles of the stress surface, and adjusting the top view to
-improve the integrability of the stress surface -- this would be the case
-if the edges of the top view were constrained to have fixed lengths. (We
-don't want to do this, of course, since that would make the top view
-uselessly rigid (not to mention make the optimization non-linear.) I need
-to reflect more on this.}
-
 Solving this weighted least-squares problem amounts to solving a sparse,
 symmetric linear system. While the MINRES algorithm~\cite{paige75} is likely
 the most robust algorithm for solving this system, in practice we have
@@ -1115,7 +1107,7 @@ potential ill-conditioning of the objective matrix.
 This algorithm is not guaranteed to always converge; this fact is not surprising from the physics of the problem (if the boundary of the reference mesh encloses too large of a region, $w_{\max}$ is set too low, and the density of the surface too high, a thrust network in equilibrium simply does not exist -- the vault is too ambitious and cannot be built to stand; pillars are needed.) We can, however, make a few remarks. Step~\ref{step3} always decreases the equilibrium energy
 	$$E=\sum_i \Big\| \Forcevector 
 		- \sum_{j\sim i} w_{ij} (\vw_j - \vw_i)\Big\|^2$$
-and Step~\ref{step4} does as well as $\beta \to 0$. Moreover, as $\alpha \to 0$ and $\beta \to 0$, Step~\ref{step4} approaches a linear system with as many equations as unknowns; if this system has full rank, its solution sets $E=0$. These facts suggest that the algorithm should generally converge to a thrust network in equilibrium, provided that Step~\ref{step2} does not increase the loads by too much at every iteration, and this is indeed what we observe in practice.  \todo{It would be nice if I could prove that, for sufficiently large $w_{\textrm{max}}$, Step~\ref{step2} cannot cause the algorithm to fail to converge, but I don't yet know how to approach this problem.}
+and Step~\ref{step4} does as well as $\beta \to 0$. Moreover, as $\alpha \to 0$ and $\beta \to 0$, Step~\ref{step4} approaches a linear system with as many equations as unknowns; if this system has full rank, its solution sets $E=0$. These facts suggest that the algorithm should generally converge to a thrust network in equilibrium, provided that Step~\ref{step2} does not increase the loads by too much at every iteration, and this is indeed what we observe in practice. One case where this assumption is guaranteed to hold is if the thickness of the surface is allowed to freely vary, so that it can be chosen so that the surface has uniform density over the top view.
 
 If the linear system in Step~\ref{step4} is singular and infeasible, the algorithm can stall at $E > 0$. This failure occurs, for instance, when an interior vertex has height $z_i$ lower than all of its neighbors, and Step~\ref{step3} assigns all incident edges to that vertex a weight of zero: clearly no amount of moving the vertex or its neighbors can bring the vertex into equilibrium. We avoid such degenerate configurations by bounding weights slightly away from zero in \eqref{eq:wbounds}, trading increased robustness for slight smoothing of the resulting surface.
 
@@ -1186,14 +1178,13 @@ and maximum permissible stress per edge $w_{\textrm{max}}$, with visual
 feedback of how these parameters affect the fitted thrust network.
 
 \item Upsampling of the thrust network through Catmull\dash Clark
-subdivision~\cite{TODO} and polishing of the resulting refined thrust
+subdivision~\cite{catmull98} and polishing of the resulting refined thrust
 network using optimization \secref{sec:opt}.
 
-\item Visualization of the stress surface $\RR$ dual to the thrust network.
+\item Visualization of the stress surface $\RR$ dual to the thrust network and corresponding reciprocal diagram.
 
 \end{itemize}
 
-\todo{TODO more to come?}
 
 
 \paragraph{Example: Vault with Pillars.} As an example of the design and optimization workflow, consider a rectangular vault with six pillars, free boundary conditions along one edge, fixed boundary conditions along the others, and a tower extruded from the top of the surface (see Figure \ref{fig:vault}). This surface is neither convex nor simply connected, and exhibits a mix of boundary conditions, none of which cause our algorithm any difficulty; it finds a self-supporting thrust network near the designed reference mesh. The user is now free to make edits to the reference mesh, and the thrust network adapts to these edits, providing the user feedback on whether these designs are physically realizable.
@@ -1211,6 +1202,48 @@ thrust network in equilibrium without the impossible feature. The user can
 then explore how editing the reference mesh -- adding a pillar, for 
 example -- affects the thrust network and its deviation from the reference 
 surface.
+
+\paragraph{Example: Swiss Cheese.}
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=0.4\columnwidth]{fig/cheese}
+\hfill
+\includegraphics[width=0.4\columnwidth]{fig/cheese-n}
+\caption{A surface with many, irregularly placed holes (left) almost never stands; those that do stand
+are surprising and their stability is not obvious by inspection. Our algorithm handles such surfaces,
+despite the large deformations to both the top view and heights needed to render the initial surface
+self-supporting.}
+\label{fig:cheese}
+\end{figure}
+
+Cutting a hole in a self-supporting surface interrupts force flow lines and causes dramatic global changes
+to the surface stresses, often to the point that the surface is no longer in equilibrium. Whether a given surface
+with many such holes can stand is far from obvious. Figure~\ref{fig:cheese} shows such an implausible and unstable 
+surface; our optimization finds a nearby, equally implausible but stable surface without difficulty.
+
+\paragraph{Example: Freeform Structure with Two Pillars.}
+
+\begin{figure*}[htb]
+\centering
+\includegraphics[width=0.3\textwidth]{fig/cas}
+\includegraphics[width=0.3\textwidth]{fig/cas-n}
+\hfill
+%\includegraphics[width=0.3\textwidth]{fig/cas-pq}
+%TODO
+\caption{A freeform surface (a) needs adjustments around the entrance arch and between the two pillars in order to be self-supporting;
+our algorithm finds the nearby surface in equilibrium (b) that incorporates these changes. From this self-supporting surface and its
+corresponding discrete stress surface, a PQ remeshing of the surface can be found by discretizing relative principal curvature
+directions~\secref{sec:special}. }
+ \label{fig:cas} 
+ \end{figure*}
+
+The architect's experience and intuition has permitted him to design a freeform surface 
+(see Figure \ref{fig:cas}) that is nearly self-supporting. Our algorithm reveals those
+edits needed make the structure sound -- principally around the entrance arch, and the area
+between the two pillars. From the thrust network, we also compute the unique conjugate curve
+network that allows the surface to be remeshed using planar quads, using the algorithm
+discussed in the next section.
 
 \section{Special Self-Supporting Surfaces} \label{sec:special}
 
@@ -1262,9 +1295,27 @@ approximating $s,\phi$ which follow those directions. Global
 optimization now makes $\SS,\Phi$ a valid thrust network with discrete stress
 potential. Convexity of $\Phi$ ensures that $\SS$ is self\dash supporting.
 
-Figure~\ref{fig:lilium:pq}b--d illustrates the result of applying this 
-procedure to a self-supporting modification of the Lilium tower. 
-\todo{TODO more examples}
+\begin{figure}[htb]
+\centering
+\includegraphics[width=0.3\columnwidth]{fig/vault}
+\hfill
+\includegraphics[width=0.3\columnwidth]{fig/vault-flat}
+\hfill
+\includegraphics[width=0.3\columnwidth]{fig/vault-pq}
+\caption{Directly enforcing planarity of the faces of even a very simple self-supporting quad-mesh 
+vault (a) results in a surface far removed from the original design (b). Starting instead from a
+remeshing of the surface with edges following relative principal curvature directions yields a
+self-supporting, PQ mesh far more faithful to the original (c).}
+\label{fig:badpq}
+\end{figure}
+
+Note that the relative principal curvature directions give the \emph{unique}
+curve network along which a planar quad discretization of a self-supporting surface
+is possible. Taking an arbitrary non-planar quad mesh and attempting naive, simultaneous
+enforcement of planarity and static equilibrium does not yield good results,
+as shown in Figure~\ref{fig:badpq}. Figures~\ref{fig:lilium:pq}b--d 
+and~\ref{fig:cas}c further illustrates the result of applying this 
+procedure to self-supporting surfaces. 
 
 \paragraph{Koenigs Meshes.}
 

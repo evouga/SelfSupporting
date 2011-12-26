@@ -121,3 +121,19 @@ void Camera::setCenter(const Vector3d &center)
 {
     viewCenter_ = center;
 }
+
+void Camera::project(const Vector3d &pos, double &x, double &y)
+{
+    double z;
+    applyProjection();
+    double model[16];
+    glGetDoublev(GL_MODELVIEW_MATRIX, model);
+    double proj[16];
+    glGetDoublev(GL_PROJECTION_MATRIX, proj);
+    int view[4];
+    view[0] = -1;
+    view[1] = -1;
+    view[2] = 2;
+    view[3] = 2;
+    gluProject(pos[0], pos[1], pos[2], model, proj, view, &x, &y, &z);
+}

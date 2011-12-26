@@ -187,11 +187,10 @@ double Mesh::faceAreaOnPlane(MyMesh::FaceHandle face)
     return fabs(area);
 }
 
-int Mesh::numFaceVerts(MyMesh::FaceHandle face)
+int Mesh::numFaceVerts(const MyMesh &mesh, MyMesh::FaceHandle face)
 {
-    auto_ptr<MeshLock> ml = acquireMesh();
     int result = 0;
-    for(MyMesh::FaceVertexIter fvi = mesh_.fv_iter(face); fvi; ++fvi)
+    for(MyMesh::ConstFaceVertexIter fvi = mesh.cfv_iter(face); fvi; ++fvi)
     {
         result++;
     }
@@ -204,7 +203,7 @@ double Mesh::vertexAreaOnPlane(MyMesh::VertexHandle vert)
     double ans = 0;
     for(MyMesh::VertexFaceIter it = mesh_.vf_iter(vert); it; ++it)
     {
-        int verts = numFaceVerts(it);
+        int verts = numFaceVerts(mesh_, it);
         double facearea = faceAreaOnPlane(it);
         ans += facearea/verts;
     }
@@ -250,6 +249,16 @@ double Mesh::edgeArea(MyMesh::EdgeHandle edge)
         }
     }
     return tot;
+}
+
+void Mesh::setConstantLoads(double density)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
+    {
+        mesh_.data(vi).set_load(density);
+    }
+    invalidateMesh();
 }
 
 void Mesh::setPlaneAreaLoads(double density)
@@ -307,6 +316,15 @@ void Mesh::getNRing(int vidx, int n, set<int> &nring)
     nring = *result;
 }
 
+Vector3d Mesh::projectToFaceZ(const MyMesh &mesh, MyMesh::FaceHandle fh, const Vector3d &p)
+{
+    double a,b,c;
+    computeFacePlane(mesh, fh, a, b, c);
+    double z = a*p[0]+b*p[2]+c;
+    Vector3d result(p[0],z,p[2]);
+    return result;
+}
+
 Vector3d Mesh::projectToFace(const MyMesh &mesh, MyMesh::FaceHandle fh, const Vector3d &p)
 {
     MyMesh::Point centroid;
@@ -359,6 +377,33 @@ Vector3d Mesh::approximateClosestPoint(const MyMesh &mesh, const Vector3d &p)
     return p;
 }
 
+Vector3d Mesh::approximateClosestZParallel(const MyMesh &mesh, const Eigen::Vector3d &p)
+{
+    int closestface = -1;
+    double closestdist = std::numeric_limits<double>::infinity();
+
+    for(MyMesh::ConstFaceIter f = mesh.faces_begin(); f != mesh.faces_end(); ++f)
+    {
+        MyMesh::FaceHandle fh = f;
+        MyMesh::Point centroid;
+        mesh.calc_face_centroid(fh, centroid);
+        double dist = (p[0]-centroid[0])*(p[0]-centroid[0])+(p[2]-centroid[2])*(p[2]-centroid[2]);
+        if(dist < closestdist)
+        {
+            closestdist = dist;
+            closestface = fh.idx();
+        }
+    }
+
+    if(closestface != -1)
+    {
+        MyMesh::FaceHandle fh = mesh.face_handle(closestface);
+        Vector3d newpos = projectToFaceZ(mesh, fh, p);
+        return newpos;
+    }
+    return p;
+}
+
 int Mesh::getMeshID()
 {
     auto_ptr<MeshLock> ml = acquireMesh();
@@ -394,7 +439,7 @@ MeshLock::~MeshLock()
     m_.unlockMesh();
 }
 
-void Mesh::subdivide()
+void Mesh::subdivide(bool subdivideBoundary)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
     int e = mesh_.n_edges();
@@ -417,7 +462,7 @@ void Mesh::subdivide()
     {
         MyMesh::EdgeHandle eh = mesh_.edge_handle(i);
         bool pinned = edgePinned(eh);
-        //TODO Fix boundary case
+
         MyMesh::Point midp = computeEdgeMidpoint(eh);
         if(!mesh_.is_boundary(eh))
         {
@@ -442,17 +487,23 @@ void Mesh::subdivide()
         MyMesh::Point newpt(0,0,0);
         if(mesh_.is_boundary(vh))
         {
-            //TODO fix boundary case
-            for(MyMesh::VertexEdgeIter ve = mesh_.ve_iter(vh); ve; ++ve)
+            if(subdivideBoundary)
             {
-                if(mesh_.is_boundary(ve))
+                for(MyMesh::VertexEdgeIter ve = mesh_.ve_iter(vh); ve; ++ve)
                 {
-                    newpt += computeEdgeMidpoint(ve);
+                    if(mesh_.is_boundary(ve))
+                    {
+                        newpt += computeEdgeMidpoint(ve);
+                    }
                 }
+                newpt *= 0.5;
+                newpt += mesh_.point(vh);
+                newpt *= 0.5;
             }
-            newpt *= 0.5;
-            newpt += mesh_.point(vh);
-            newpt *= 0.5;
+            else
+            {
+                newpt = mesh_.point(vh);
+            }
         }
         else
         {
@@ -504,25 +555,7 @@ void Mesh::subdivide()
             newface.push_back(newmesh.vertex_handle(f+edge1.idx()));
             newface.push_back(newmesh.vertex_handle(f+e+tovert.idx()));
             newface.push_back(newmesh.vertex_handle(f+edge2.idx()));
-            MyMesh::FaceHandle fh = newmesh.add_face(newface);
-            for(MyMesh::FaceEdgeIter fei = newmesh.fe_iter(fh); fei; ++fei)
-            {
-                MyMesh::HalfedgeHandle heh = newmesh.halfedge_handle(fei.handle(),0);
-                int vidx = f+e+tovert.idx();
-                if(newmesh.to_vertex_handle(heh).idx() == vidx || newmesh.from_vertex_handle(heh).idx() == vidx)
-                {
-                    if(newmesh.to_vertex_handle(heh).idx() == f+edge1.idx() || newmesh.from_vertex_handle(heh).idx() == f+edge1.idx())
-                    {
-                        newmesh.data(fei.handle()).set_is_crease(mesh_.data(edge1).is_crease());
-                        newmesh.data(fei.handle()).set_crease_value(mesh_.data(edge1).crease_value());
-                    }
-                    else if(newmesh.to_vertex_handle(heh).idx() == f+edge2.idx() || newmesh.from_vertex_handle(heh).idx() == f+edge2.idx())
-                    {
-                        newmesh.data(fei.handle()).set_is_crease(mesh_.data(edge2).is_crease());
-                        newmesh.data(fei.handle()).set_crease_value(mesh_.data(edge2).crease_value());
-                    }
-                }
-            }
+            newmesh.add_face(newface);
         }
     }
 
@@ -638,17 +671,16 @@ void Mesh::removeVertex(MyMesh::VertexHandle vert)
     invalidateMesh();
 }
 
-void Mesh::computeFacePlane(MyMesh::FaceHandle face, double &a, double &b, double &c)
+void Mesh::computeFacePlane(const MyMesh &mesh, MyMesh::FaceHandle face, double &a, double &b, double &c)
 {
-    auto_ptr<MeshLock> ml = acquireMesh();
-    int numv = numFaceVerts(face);
+    int numv = numFaceVerts(mesh, face);
 
     MatrixXd M(numv,3);
     VectorXd rhs(numv);
     int row = 0;
-    for(MyMesh::FaceVertexIter fvi = mesh_.fv_iter(face); fvi; ++fvi)
+    for(MyMesh::ConstFaceVertexIter fvi = mesh.cfv_iter(face); fvi; ++fvi)
     {
-        MyMesh::Point pt = mesh_.point(fvi.handle());
+        MyMesh::Point pt = mesh.point(fvi.handle());
         M(row,0) = pt[0];
         M(row,1) = pt[2];
         M(row,2) = 1.0;
@@ -670,29 +702,44 @@ double Mesh::isotropicDihedralAngle(MyMesh::EdgeHandle edge)
     MyMesh::FaceHandle fh1 = mesh_.face_handle(heh);
     assert(fh1.is_valid());
     double a1,b1,c;
-    computeFacePlane(fh1, a1, b1, c);
+    computeFacePlane(mesh_,fh1, a1, b1, c);
     MyMesh::FaceHandle fh2 = mesh_.opposite_face_handle(heh);
     assert(fh2.is_valid());
     double a2,b2;
-    computeFacePlane(fh2, a2, b2, c);
+    computeFacePlane(mesh_,fh2, a2, b2, c);
     return sqrt((a2-a1)*(a2-a1) + (b2-b1)*(b2-b1));
 }
 
 Matrix2d Mesh::approximateHessian(MyMesh::FaceHandle face)
 {
-    int numpts = 0;
-    numpts += numFaceVerts(face);
+    auto_ptr<MeshLock> ml = acquireMesh();
+
+    set<int> uniquepts;
+    for(MyMesh::FaceVertexIter fvi = mesh_.fv_iter(face); fvi; ++fvi)
+    {
+        uniquepts.insert(fvi.handle().idx());
+    }
     for(MyMesh::FaceFaceIter ffi = mesh_.ff_iter(face); ffi; ++ffi)
     {
-        numpts += numFaceVerts(ffi.handle());
+        for(MyMesh::FaceVertexIter fvi = mesh_.fv_iter(ffi.handle()); fvi; ++fvi)
+        {
+            uniquepts.insert(fvi.handle().idx());
+        }
     }
+
+    int numpts = uniquepts.size();
 
     MatrixXd LS(numpts, 6);
     VectorXd rhs(numpts);
 
+    uniquepts.clear();
+
     int curpt = 0;
     for(MyMesh::FaceVertexIter fvi = mesh_.fv_iter(face); fvi; ++fvi)
     {
+        if(uniquepts.count(fvi.handle().idx()) > 0)
+            continue;
+        uniquepts.insert(fvi.handle().idx());
         MyMesh::Point pt = mesh_.point(fvi.handle());
         LS(curpt, 0) = pt[0]*pt[0];
         LS(curpt, 1) = pt[0]*pt[2];
@@ -708,6 +755,10 @@ Matrix2d Mesh::approximateHessian(MyMesh::FaceHandle face)
     {
         for(MyMesh::FaceVertexIter fvi = mesh_.fv_iter(ffi.handle()); fvi; ++fvi)
         {
+            if(uniquepts.count(fvi.handle().idx()) > 0)
+                continue;
+            uniquepts.insert(fvi.handle().idx());
+
             MyMesh::Point pt = mesh_.point(fvi.handle());
             LS(curpt, 0) = pt[0]*pt[0];
             LS(curpt, 1) = pt[0]*pt[2];
@@ -726,6 +777,39 @@ Matrix2d Mesh::approximateHessian(MyMesh::FaceHandle face)
     hess << 2*sol[0], sol[1], sol[1], 2*sol[2];
     return hess;
 }
+
+Matrix2d Mesh::approximateHessianVertex(MyMesh::VertexHandle vert)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+
+    int numpts = mesh_.valence(vert);
+
+    MatrixXd LS(numpts, 5);
+    VectorXd rhs(numpts);
+
+    int curpt = 0;
+
+    MyMesh::Point cpt = mesh_.point(vert);
+
+    for(MyMesh::VertexVertexIter vvi = mesh_.vv_iter(vert); vvi; ++vvi)
+    {
+        MyMesh::Point pt = mesh_.point(vvi.handle());
+        LS(curpt, 0) = (pt[0]-cpt[0])*(pt[0]-cpt[0]);
+        LS(curpt, 1) = (pt[0]-cpt[0])*(pt[2]-cpt[2]);
+        LS(curpt, 2) = (pt[2]-cpt[2])*(pt[2]-cpt[2]);
+        LS(curpt, 3) = (pt[0]-cpt[0]);
+        LS(curpt, 4) = (pt[2]-cpt[2]);
+        rhs[curpt] = pt[1]-cpt[1];
+        curpt++;
+    }
+    assert(curpt == numpts);
+
+    VectorXd sol = (LS.transpose()*LS).ldlt().solve(LS.transpose()*rhs);
+    Matrix2d hess;
+    hess << 2*sol[0], sol[1], sol[1], 2*sol[2];
+    return hess;
+}
+
 
 bool Mesh::loadMesh(const char *name)
 {
@@ -754,14 +838,14 @@ bool Mesh::loadMesh(const char *name)
                 ifs >> pt[2];
                 double load;
                 bool pinned;
-                bool anchored;
+                bool handled;
                 ifs >> load;
                 ifs >> pinned;
-                ifs >> anchored;
+                ifs >> handled;
                 MyMesh::VertexHandle vh = newmesh.add_vertex(pt);
                 newmesh.data(vh).set_load(load);
                 newmesh.data(vh).set_pinned(pinned);
-                newmesh.data(vh).set_anchored(anchored);
+                newmesh.data(vh).set_handled(handled);
                 break;
             }
             case 'f':
@@ -798,8 +882,6 @@ bool Mesh::loadMesh(const char *name)
                         ifs >> creaseval;
                         ifs >> weight;
                         MyMesh::EdgeHandle eh = newmesh.edge_handle(hei.handle());
-                        newmesh.data(eh).set_is_crease(crease);
-                        newmesh.data(eh).set_crease_value(creaseval);
                         newmesh.data(eh).set_weight(weight);
                         found = true;
                         break;
@@ -829,8 +911,8 @@ bool Mesh::saveMesh(const char *name)
         MyMesh::Point pt = mesh_.point(vi.handle());
         double load = mesh_.data(vi.handle()).load();
         bool pinned = mesh_.data(vi.handle()).pinned();
-        bool anchored = mesh_.data(vi.handle()).anchored();
-        ofs << "v " << pt[0] << " " << pt[1] << " " << pt[2] << " " << load << " " << pinned << " " << anchored << endl;
+        bool handled = mesh_.data(vi.handle()).handled();
+        ofs << "v " << pt[0] << " " << pt[1] << " " << pt[2] << " " << load << " " << pinned << " " << handled << endl;
         if(!ofs)
             return false;
     }
@@ -838,7 +920,7 @@ bool Mesh::saveMesh(const char *name)
     for(MyMesh::FaceIter fi = mesh_.faces_begin(); fi != mesh_.faces_end(); ++fi)
     {
         ofs << "f ";
-        int numverts = this->numFaceVerts(fi.handle());
+        int numverts = this->numFaceVerts(mesh_, fi.handle());
         ofs << numverts << " ";
         for(MyMesh::FaceVertexIter fvi = mesh_.fv_iter(fi.handle()); fvi; ++fvi)
         {
@@ -854,10 +936,8 @@ bool Mesh::saveMesh(const char *name)
         MyMesh::HalfedgeHandle heh = mesh_.halfedge_handle(ei.handle(), 0);
         assert(heh.is_valid());
         ofs << "e " << mesh_.from_vertex_handle(heh).idx() << " " << mesh_.to_vertex_handle(heh).idx();
-        bool creased = mesh_.data(ei.handle()).is_crease();
-        double creaseval = mesh_.data(ei.handle()).crease_value();
         double weight = mesh_.data(ei.handle()).weight();
-        ofs << " " << creased << " " << creaseval << " " << weight << endl;
+        ofs << " " << 0 << " " << 0 << " " << weight << endl;
         if(!ofs)
             return false;
     }
@@ -877,4 +957,86 @@ bool Mesh::exportOBJ(const char *name)
     auto_ptr<MeshLock> ml = acquireMesh();
     OpenMesh::IO::Options opt;
     return OpenMesh::IO::write_mesh(mesh_, name, opt);
+}
+
+void Mesh::computeEigenstuff(const Matrix2d &M, double &lambda1, double &lambda2, Vector2d &u, Vector2d &v)
+{
+    double a = M(0,0);
+    double b = M(0,1);
+    double c = M(1,0);
+    double d = M(1,1);
+
+    double discr = (a-d)*(a-d)+4*b*c;
+    lambda1 = 0.5*(a+d+sqrt(discr));
+    lambda2 = 0.5*(a+d-sqrt(discr));
+
+    if(fabs(b) < 1e-8)
+    {
+        if(fabs(c) < 1e-8)
+        {
+            if(a > d)
+            {
+                u[0] = v[1] = 1.0;
+                u[1] = v[0] = 0.0;
+            }
+            else
+            {
+                u[0] = v[1] = 0.0;
+                u[1] = v[0] = 1.0;
+            }
+        }
+        else
+        {
+            u[1] = v[1] = 1.0;
+            u[0] = (lambda1-d)/c;
+            v[0] = (lambda2-d)/c;
+        }
+    }
+    else
+    {
+        u[0] = v[0] = 1.0;
+        u[1] = (lambda1-a)/b;
+        v[1] = (lambda2-a)/b;
+    }
+}
+
+void Mesh::computePlaneBarycentricCoordinates(const Eigen::Vector2d &pt, MyMesh::FaceHandle face, double &alpha, double &beta)
+{
+    assert(numFaceVerts(mesh_, face) == 3);
+
+    MyMesh::Point verts[3];
+    int idx=0;
+    for(MyMesh::FaceVertexIter fvi = mesh_.fv_iter(face); fvi; ++fvi)
+    {
+        verts[idx] = mesh_.point(fvi.handle());
+        idx++;
+    }
+    assert(idx==3);
+
+    double a,b,c,d;
+    a = verts[1][0]-verts[0][0];
+    b = verts[2][0]-verts[0][0];
+    c = verts[1][2]-verts[0][2];
+    d = verts[2][2]-verts[0][2];
+    double det = a*d-b*c;
+    Matrix2d E;
+    E << d,-b,-c,a;
+    Vector2d rhs(det*(pt[0]-verts[0][0]), det*(pt[1]-verts[0][2]));
+    Vector2d bary = E*rhs;
+    alpha = bary[0];
+    beta = bary[1];
+}
+
+int Mesh::findEnclosingPlaneTriangle(const Eigen::Vector2d &pt, double &alpha, double &beta)
+{
+    for(MyMesh::FaceIter fi = mesh_.faces_begin(); fi != mesh_.faces_end(); ++fi)
+    {
+        if(numFaceVerts(mesh_, fi.handle()) == 3)
+        {
+            computePlaneBarycentricCoordinates(pt, fi.handle(), alpha, beta);
+            if(alpha >= 0 && beta >= 0 && 1-alpha-beta >= 0)
+                return fi.handle().idx();
+        }
+    }
+    return -1;
 }

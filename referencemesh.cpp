@@ -4,7 +4,7 @@
 #include "solvers.h"
 #include "networkmesh.h"
 #include <fstream>
-
+#include "camera.h"
 #include <vector>
 
 #include <Eigen/Sparse>
@@ -47,8 +47,8 @@ void ReferenceMesh::buildQuadMesh(int w, int h)
     for(int i=0; i<h; i++)
         for(int j=0; j<w; j++)
         {
-            double x = -1.0 + 2.0*j/(w-1);
-            double y = -1.0 + 2.0*i/(h-1);
+            double x = -1.0 + 0.2*j;
+            double y = -1.0 + 0.2*i;
             mesh_.add_vertex(MyMesh::Point(x,0,y));
         }
     for(int i=0; i<h-1; i++)
@@ -260,13 +260,13 @@ void ReferenceMesh::applyLaplacianDeformationHeight(int, const Vector3d &delta)
     for(int i=0; i<n; i++)
     {
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
-        if(mesh_.data(vh).anchored())
+        if(mesh_.data(vh).handled())
         {
             MyMesh::Point movedpt = mesh_.point(vh);
             rhs[i] += (movedpt[1]+delta[1]);
             LTL.coeffRef(i, i) += 1.0;
         }
-        else if(mesh_.data(vh).pinned())
+        else if(mesh_.data(vh).pinned() || mesh_.data(vh).anchored())
         {
             LTL.coeffRef(i, i) += 1.0;
             rhs[i] += mesh_.point(vh)[1];
@@ -277,12 +277,30 @@ void ReferenceMesh::applyLaplacianDeformationHeight(int, const Vector3d &delta)
 
     cont_.getSolvers().linearSolveCG(M, rhs, v0);
 
+    VectorXd dQ(3*n);
+    for(int i=0; i<n; i++)
+    {
+        dQ[3*i] = dQ[3*i+2] = 0;
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+        MyMesh::Point pt = mesh_.point(vh);
+        dQ[3*i+1] = v0[i]-pt[1];
+    }
+    int e = mesh_.n_edges();
+    VectorXd dW(e);
+    double dresid = computeBestDWeights(dQ, dW);
+
     for(int i=0; i<n; i++)
     {
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
         MyMesh::Point &pt = mesh_.point(vh);
-        if(mesh_.data(vh).anchored() || !mesh_.data(vh).pinned())
-            pt[1] = v0[i];
+        if(mesh_.data(vh).handled() || !mesh_.data(vh).pinned())
+            pt[1] += dQ[3*i+1];
+    }
+    for(int i=0; i<e; i++)
+    {
+        MyMesh::EdgeHandle eh = mesh_.edge_handle(i);
+        if(!edgePinned(eh))
+            mesh_.data(eh).set_weight(mesh_.data(eh).weight() + dW[i]);
     }
 }
 
@@ -324,7 +342,7 @@ void ReferenceMesh::applyLaplacianDeformation(int, const Vector3d &delta)
     for(int i=0; i<n; i++)
     {
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
-        if(mesh_.data(vh).anchored())
+        if(mesh_.data(vh).handled())
         {
             MyMesh::Point movedpt = mesh_.point(vh);
             for(int j=0; j<3; j++)
@@ -333,7 +351,7 @@ void ReferenceMesh::applyLaplacianDeformation(int, const Vector3d &delta)
                 LTL.coeffRef(3*i+j,3*i+j) += 1.0;
             }
         }
-        else if(mesh_.data(vh).pinned())
+        else if(mesh_.data(vh).pinned() || mesh_.data(vh).anchored())
         {
             for(int j=0; j<3; j++)
             {
@@ -351,20 +369,94 @@ void ReferenceMesh::applyLaplacianDeformation(int, const Vector3d &delta)
     {
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
         MyMesh::Point &pt = mesh_.point(vh);
-        pt[0] = v0[3*i];
-        if(mesh_.data(vh).anchored() || !mesh_.data(vh).pinned())
+        if(mesh_.data(vh).handled() || !mesh_.data(vh).pinned())
+        {
+            pt[0] = v0[3*i];
             pt[1] = v0[3*i+1];
-        pt[2] = v0[3*i+2];
+            pt[2] = v0[3*i+2];
+        }
     }
 }
 
-void ReferenceMesh::setAnchor(int vidx, bool state)
+void ReferenceMesh::applyLaplacianDeformationTop(int, const Vector3d &delta)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+
+    int n = mesh_.n_vertices();
+
+    DynamicSparseMatrix<double> L(2*n,2*n);
+    for(int i=0; i<n; i++)
+    {
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+        int valence = mesh_.valence(vh);
+        for(int j=0; j<2; j++)
+            L.coeffRef(2*i+j, 2*i+j) = 1.0;
+        for(MyMesh::VertexVertexIter vv = mesh_.vv_iter(vh); vv; ++vv)
+        {
+            MyMesh::VertexHandle adj = vv;
+            int adjidx = adj.idx();
+            for(int j=0; j<2; j++)
+                L.coeffRef(2*i+j, 2*adjidx+j) = -1.0/valence;
+        }
+    }
+
+    DynamicSparseMatrix<double> LTL(L.transpose()*L);
+    VectorXd v0(2*n);
+    for(int i=0; i<n; i++)
+    {
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+        MyMesh::Point pt = mesh_.point(vh);
+        v0[2*i+0] = pt[0];
+        v0[2*i+1] = pt[2];
+    }
+
+
+    VectorXd rhs = LTL*v0;
+
+    for(int i=0; i<n; i++)
+    {
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+        if(mesh_.data(vh).handled())
+        {
+            MyMesh::Point movedpt = mesh_.point(vh);
+            rhs[2*i+0] += (movedpt[0] + delta[0]);
+            rhs[2*i+1] += (movedpt[2] + delta[2]);
+
+            LTL.coeffRef(2*i+0,2*i+0) += 1.0;
+            LTL.coeffRef(2*i+1,2*i+1) += 1.0;
+
+        }
+        else if(mesh_.data(vh).pinned())
+        {
+            LTL.coeffRef(2*i + 0, 2*i + 0) += 1.0;
+            LTL.coeffRef(2*i + 1, 2*i + 1) += 1.0;
+
+            rhs[2*i+0] += mesh_.point(vh)[0];
+            rhs[2*i+1] += mesh_.point(vh)[2];
+
+        }
+    }
+
+    SparseMatrix<double> M(LTL);
+
+    cont_.getSolvers().linearSolveCG(M, rhs, v0);
+
+    for(int i=0; i<n; i++)
+    {
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+        MyMesh::Point &pt = mesh_.point(vh);
+        pt[0] = v0[2*i];
+        pt[2] = v0[2*i+1];
+    }
+}
+
+void ReferenceMesh::setHandle(int vidx, bool state)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
     int n = mesh_.n_vertices();
     assert(vidx >= 0 && vidx < n);
 
-    mesh_.data(mesh_.vertex_handle(vidx)).set_anchored(state);
+    mesh_.data(mesh_.vertex_handle(vidx)).set_handled(state);
 }
 
 void ReferenceMesh::setPin(int vidx, bool state)
@@ -385,24 +477,12 @@ void ReferenceMesh::deleteFace(int fidx)
     mesh_.garbage_collection();
 }
 
-void ReferenceMesh::setCrease(int eidx, bool state)
+void ReferenceMesh::setAnchor(int vidx, bool state)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
-    int e = mesh_.n_edges();
-    assert(eidx >= 0 && eidx < e);
-    MyMesh::EdgeHandle eh = mesh_.edge_handle(eidx);
-    mesh_.data(eh).set_is_crease(state);
-    if(state)
-        mesh_.data(eh).set_crease_value(1.0);
-}
-
-bool ReferenceMesh::isCrease(int eidx)
-{
-    auto_ptr<MeshLock> ml = acquireMesh();
-    int e = mesh_.n_edges();
-    assert(eidx >= 0 && eidx < e);
-    MyMesh::EdgeHandle eh = mesh_.edge_handle(eidx);
-    return mesh_.data(eh).is_crease();
+    int n = mesh_.n_vertices();
+    assert(vidx >= 0 && vidx < n);
+    mesh_.data(mesh_.vertex_handle(vidx)).set_anchored(state);
 }
 
 void ReferenceMesh::pinBoundary()
@@ -443,4 +523,173 @@ void ReferenceMesh::invertY()
         MyMesh::Point &pt = mesh_.point(vi.handle());
         pt[1] = -pt[1];
     }
+}
+
+bool ReferenceMesh::addOBJ(const char *filename)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    OpenMesh::IO::Options opt;
+    MyMesh addmesh;
+    if(!OpenMesh::IO::read_mesh(addmesh, filename, opt))
+    {
+        cout << "Couldn't open file" << endl;
+        return false;
+    }
+
+    if(addmesh.n_vertices() != mesh_.n_vertices())
+    {
+        cout << addmesh.n_vertices() << " != " << mesh_.n_vertices() << endl;
+        return false;
+    }
+
+    int n = mesh_.n_vertices();
+    for(int i=0; i<n; i++)
+    {
+        MyMesh::Point addpt = addmesh.point(addmesh.vertex_handle(i));
+        int closestpt = -1;
+        double closestdist = std::numeric_limits<double>::infinity();
+        for(int j=0; j<n; j++)
+        {
+            MyMesh::Point pt = mesh_.point(mesh_.vertex_handle(j));
+            double dist = (addpt[0]-pt[0])*(addpt[0]-pt[0]) + (addpt[2]-pt[2])*(addpt[2]-pt[2]);
+            if(dist < closestdist)
+            {
+                closestdist = dist;
+                closestpt = j;
+            }
+        }
+        assert(closestpt != -1);
+        assert(closestdist < 1e-8);
+        MyMesh::Point &pt = mesh_.point(mesh_.vertex_handle(closestpt));
+        pt[1] += addpt[1];
+    }
+    return true;
+}
+
+vector<int> ReferenceMesh::selectRectangle(const Vector2d &c1, const Vector2d &c2, Camera &c)
+{
+    vector<int> result;
+    int n = mesh_.n_vertices();
+    for(int i=0; i<n; i++)
+    {
+        MyMesh::Point pt = mesh_.point(mesh_.vertex_handle(i));
+        Eigen::Vector3d pos(pt[0], pt[1], pt[2]);
+        double x,y;
+        c.project(pos, x, y);
+        if(x >= std::min(c1[0],c2[0]) && x <= std::max(c1[0],c2[0]) && y >= std::min(c1[1],c2[1]) && y <= std::max(c1[1],c2[1]))
+        {
+            result.push_back(i);
+        }
+    }
+    return result;
+}
+
+void ReferenceMesh::averageHandledHeights()
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    double avz = 0.0;
+    int numpts = 0;
+    for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
+    {
+        if(mesh_.data(vi).handled())
+        {
+            avz += mesh_.point(vi)[1];
+            numpts++;
+        }
+    }
+    avz /= numpts;
+    for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
+    {
+        if(mesh_.data(vi).handled())
+        {
+            mesh_.point(vi)[1] = avz;
+        }
+    }
+}
+
+void ReferenceMesh::trimBoundary()
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    vector<int> todelete;
+    for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
+        if(mesh_.is_boundary(vi))
+            todelete.push_back(vi.handle().idx());
+    for(vector<int>::iterator it = todelete.begin(); it != todelete.end(); ++it)
+        mesh_.delete_vertex(mesh_.vertex_handle(*it));
+    mesh_.garbage_collection();
+}
+
+
+double ReferenceMesh::computeBestDWeights(const VectorXd &dQ, VectorXd &dW)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    int n = mesh_.n_vertices();
+    int e = mesh_.n_edges();
+    assert(dQ.size() == 3*n);
+    dW.resize(e);
+    dW.setZero();
+    int interiorn=0;
+    for(MyMesh::VertexIter it = mesh_.vertices_begin(); it != mesh_.vertices_end(); ++it)
+    {
+        if(!mesh_.data(it.handle()).pinned())
+            interiorn++;
+    }
+
+    int boundarye=0;
+    for(MyMesh::EdgeIter it = mesh_.edges_begin(); it != mesh_.edges_end(); ++it)
+    {
+        if(edgePinned(it.handle()))
+            boundarye++;
+    }
+
+    if(interiorn == 0 || boundarye == 0)
+        return 0;
+
+    DynamicSparseMatrix<double> Md(3*interiorn+boundarye, e);
+    VectorXd rhs(3*interiorn+boundarye);
+    rhs.setZero();
+
+    int row=0;
+    for(int i=0; i<n; i++)
+    {
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+        if(mesh_.data(vh).pinned())
+            continue;
+
+        MyMesh::Point center = mesh_.point(vh);
+        MyMesh::Point dcenter(dQ[3*vh.idx()], dQ[3*vh.idx()+1], dQ[3*vh.idx()+2]);
+
+        for(MyMesh::VertexOHalfedgeIter voh = mesh_.voh_iter(vh); voh; ++voh)
+        {
+
+            MyMesh::HalfedgeHandle heh = voh;
+            MyMesh::VertexHandle tov = mesh_.to_vertex_handle(heh);
+            MyMesh::EdgeHandle eh = mesh_.edge_handle(heh);
+            int eidx = eh.idx();
+            MyMesh::Point adj = mesh_.point(tov);
+            MyMesh::Point dadj(dQ[3*tov.idx()], dQ[3*tov.idx()+1],dQ[3*tov.idx()+2]);
+            Md.coeffRef(row, eidx) += center[0]-adj[0];
+            Md.coeffRef(row+1, eidx) += (center[1]-adj[1]);
+            Md.coeffRef(row+2, eidx) += center[2]-adj[2];
+            double weight = mesh_.data(eh).weight();
+            rhs[row] -= weight*(dcenter[0]-dadj[0]);
+            rhs[row+1] -= weight*(dcenter[1]-dadj[1]);
+            rhs[row+2] -= weight*(dcenter[2]-dadj[2]);
+        }
+        row += 3;
+    }
+    for(int i=0; i<e; i++)
+    {
+        MyMesh::EdgeHandle eh = mesh_.edge_handle(i);
+        if(edgePinned(eh))
+        {
+            Md.coeffRef(row, i) = 1.0;
+            row++;
+        }
+    }
+    assert(row == 3*interiorn + boundarye);
+
+    SparseMatrix<double> M(Md.transpose()*Md);
+    cont_.getSolvers().linearSolveCG(M, Md.transpose()*rhs, dW);
+    return (Md*dW-rhs).norm();
 }

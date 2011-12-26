@@ -30,6 +30,7 @@ public:
     const Eigen::Vector3d &getEye() const;
     const Eigen::Vector3d &getCenter() const;
     void setCenter(const Eigen::Vector3d &center);
+    void project(const Eigen::Vector3d &pos, double &x, double &y);
 
     void getPixelAt(const Eigen::Vector2d &pos, GLubyte *pixelbuf) const;
 

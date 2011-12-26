@@ -72,7 +72,7 @@
       <x>710</x>
       <y>460</y>
       <width>171</width>
-      <height>151</height>
+      <height>161</height>
      </rect>
     </property>
     <property name="title">
@@ -127,7 +127,7 @@
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>80</y>
+       <y>100</y>
        <width>116</width>
        <height>22</height>
       </rect>
@@ -140,7 +140,7 @@
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>100</y>
+       <y>120</y>
        <width>116</width>
        <height>22</height>
       </rect>
@@ -149,17 +149,30 @@
       <string>Pin</string>
      </property>
     </widget>
-    <widget class="QRadioButton" name="creaseButton">
+    <widget class="QRadioButton" name="anchorButton">
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>120</y>
+       <y>140</y>
        <width>116</width>
        <height>22</height>
       </rect>
      </property>
      <property name="text">
-      <string>Crease</string>
+      <string>Anchor</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="topHandleButton">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>80</y>
+       <width>141</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Handle (top)</string>
      </property>
     </widget>
    </widget>
@@ -276,22 +289,6 @@
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QCheckBox" name="fitCheckBox">
-    <property name="geometry">
-     <rect>
-      <x>890</x>
-      <y>600</y>
-      <width>201</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Fit network automatically</string>
-    </property>
-    <property name="checked">
-     <bool>true</bool>
-    </property>
-   </widget>
    <widget class="QSlider" name="maxWeightHorizontalSlider">
     <property name="geometry">
      <rect>
@@ -338,7 +335,7 @@
     <property name="geometry">
      <rect>
       <x>710</x>
-      <y>640</y>
+      <y>670</y>
       <width>160</width>
       <height>29</height>
      </rect>
@@ -354,7 +351,7 @@
     <property name="geometry">
      <rect>
       <x>890</x>
-      <y>640</y>
+      <y>670</y>
       <width>67</width>
       <height>31</height>
      </rect>
@@ -362,6 +359,61 @@
     <property name="text">
      <string>Density</string>
     </property>
+   </widget>
+   <widget class="QPushButton" name="avgHeightsButton">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>10</y>
+      <width>97</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Avg Heights</string>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="optimizationBox">
+    <property name="geometry">
+     <rect>
+      <x>890</x>
+      <y>600</y>
+      <width>281</width>
+      <height>80</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Optimization Options</string>
+    </property>
+    <widget class="QCheckBox" name="fitCheckBox">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>20</y>
+       <width>201</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Fit network interactively</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="enforcePlanarityCheckBox">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>40</y>
+       <width>201</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Enforce Planarity</string>
+     </property>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -390,16 +442,35 @@
     <property name="title">
      <string>Thrust Network</string>
     </property>
+    <widget class="QMenu" name="menuFind_Best">
+     <property name="title">
+      <string>Find Best...</string>
+     </property>
+     <addaction name="actionWeights"/>
+     <addaction name="actionPositions"/>
+     <addaction name="actionHeights"/>
+    </widget>
+    <widget class="QMenu" name="menuSubdivide_2">
+     <property name="title">
+      <string>Subdivide</string>
+     </property>
+     <addaction name="actionSubdivide"/>
+     <addaction name="actionSmooth_Boundary_2"/>
+    </widget>
     <addaction name="actionReset"/>
     <addaction name="separator"/>
     <addaction name="actionExport_OM"/>
     <addaction name="actionExport_Network"/>
+    <addaction name="actionExport_Everything"/>
     <addaction name="separator"/>
     <addaction name="actionIterate_Fit"/>
+    <addaction name="menuFind_Best"/>
+    <addaction name="separator"/>
     <addaction name="actionProject_Onto_Reference"/>
-    <addaction name="actionSubdivide"/>
     <addaction name="actionTriangulate"/>
     <addaction name="actionMake_Planar"/>
+    <addaction name="actionCompute_Conjugate_Dirs"/>
+    <addaction name="menuSubdivide_2"/>
    </widget>
    <widget class="QMenu" name="menuReference_Mesh">
     <property name="title">
@@ -412,6 +483,21 @@
      <addaction name="actionSwap_Y_and_Z"/>
      <addaction name="actionInvert_Y"/>
     </widget>
+    <widget class="QMenu" name="menuBoundary">
+     <property name="title">
+      <string>Boundary</string>
+     </property>
+     <addaction name="actionPin_Boundary"/>
+     <addaction name="actionUnpin_Boundary"/>
+     <addaction name="actionTrim"/>
+    </widget>
+    <widget class="QMenu" name="menuSubdivide">
+     <property name="title">
+      <string>Subdivide</string>
+     </property>
+     <addaction name="actionSubdivideRM"/>
+     <addaction name="actionSmooth_Boundary"/>
+    </widget>
     <addaction name="actionNew_Mesh"/>
     <addaction name="actionLoad_Mesh"/>
     <addaction name="actionSave_Mesh"/>
@@ -420,10 +506,10 @@
     <addaction name="separator"/>
     <addaction name="actionJitter"/>
     <addaction name="actionCopy_Thrust_Network"/>
-    <addaction name="actionSubdivideRM"/>
-    <addaction name="actionPin_Boundary"/>
-    <addaction name="actionUnpin_Boundary"/>
     <addaction name="menuTransform_Axes"/>
+    <addaction name="actionAdd_Mesh"/>
+    <addaction name="menuBoundary"/>
+    <addaction name="menuSubdivide"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -489,7 +575,7 @@
   </action>
   <action name="actionSubdivide">
    <property name="text">
-    <string>Subdivide</string>
+    <string>Fixed Boundary</string>
    </property>
   </action>
   <action name="actionSave_Mesh">
@@ -504,7 +590,7 @@
   </action>
   <action name="actionSubdivideRM">
    <property name="text">
-    <string>Subdivide</string>
+    <string>Fixed Boundary</string>
    </property>
   </action>
   <action name="actionTriangulate">
@@ -539,12 +625,12 @@
   </action>
   <action name="actionPin_Boundary">
    <property name="text">
-    <string>Pin Boundary</string>
+    <string>Pin</string>
    </property>
   </action>
   <action name="actionUnpin_Boundary">
    <property name="text">
-    <string>Unpin Boundary</string>
+    <string>Unpin</string>
    </property>
   </action>
   <action name="actionSwap_Y_and_Z">
@@ -555,6 +641,51 @@
   <action name="actionInvert_Y">
    <property name="text">
     <string>Invert Y</string>
+   </property>
+  </action>
+  <action name="actionWeights">
+   <property name="text">
+    <string>Weights</string>
+   </property>
+  </action>
+  <action name="actionPositions">
+   <property name="text">
+    <string>Positions</string>
+   </property>
+  </action>
+  <action name="actionAdd_Mesh">
+   <property name="text">
+    <string>Add Mesh</string>
+   </property>
+  </action>
+  <action name="actionHeights">
+   <property name="text">
+    <string>Heights</string>
+   </property>
+  </action>
+  <action name="actionTrim">
+   <property name="text">
+    <string>Trim</string>
+   </property>
+  </action>
+  <action name="actionCompute_Conjugate_Dirs">
+   <property name="text">
+    <string>Compute Conjugate Dirs</string>
+   </property>
+  </action>
+  <action name="actionSmooth_Boundary">
+   <property name="text">
+    <string>Smooth Boundary</string>
+   </property>
+  </action>
+  <action name="actionSmooth_Boundary_2">
+   <property name="text">
+    <string>Smooth Boundary</string>
+   </property>
+  </action>
+  <action name="actionExport_Everything">
+   <property name="text">
+    <string>Export Everything</string>
    </property>
   </action>
  </widget>

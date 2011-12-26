@@ -76,7 +76,7 @@ void ReferenceMeshRenderer::renderSurface3D(int renderFlags)
                 MyMesh::Point n;
                 mesh_.calc_vertex_normal_correct(v, n);
                 n.normalize();
-                glNormal3d(n[0], n[1], n[2]);
+                glNormal3d(n[0], -fabs(n[1]), n[2]);
                 glVertex3d(pt[0],pt[1],pt[2]);
 
             }
@@ -103,8 +103,6 @@ void ReferenceMeshRenderer::renderSurface3D(int renderFlags)
             }
             else if(m_.edgePinned(ei.handle()))
                 glColor4f(1.0, 0.0, 0.0, 0.8);
-            else if(mesh_.data(ei).is_crease())
-                glColor4f(0.0, 1.0, 0.0, 0.8);
             else
                 glColor4f(0.0, 0.0, 0.0, 0.8);
             MyMesh::Point pt1, pt2;
@@ -142,11 +140,15 @@ void ReferenceMeshRenderer::renderSurface3D(int renderFlags)
             else
                 continue;
         }
-        else if(mesh_.data(v).anchored() && mesh_.data(v).pinned())
+        else if(mesh_.data(v).handled() && mesh_.data(v).pinned())
         {
             glColor3f(1.0, 0.4, 0.0);
         }
         else if(mesh_.data(v).anchored())
+        {
+            glColor3f(0.7, 0.7, 0.0);
+        }
+        else if(mesh_.data(v).handled())
         {
             glColor3f(0, .4, 0);
         }

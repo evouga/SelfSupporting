@@ -8,6 +8,7 @@
 #include "controller.h"
 #include <set>
 #include "unsupported/Eigen/IterativeSolvers"
+#include <fstream>
 
 using namespace Eigen;
 using namespace std;
@@ -77,7 +78,7 @@ double NetworkMesh::calculateEquilibriumViolation()
     return sqrt(result);
 }
 
-bool NetworkMesh::computeBestWeights(double maxweight)
+double NetworkMesh::computeBestWeights(double maxweight)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
 
@@ -97,9 +98,12 @@ bool NetworkMesh::computeBestWeights(double maxweight)
     int boundarye=0;
     for(MyMesh::EdgeIter it = mesh_.edges_begin(); it != mesh_.edges_end(); ++it)
     {
-        if(edgePinned(it.handle()) || mesh_.data(it).is_crease())
+        if(edgePinned(it.handle()))
             boundarye++;
     }
+
+    if(interiorn == 0 || boundarye == 0)
+        return 0;
 
     DynamicSparseMatrix<double> Md(3*interiorn+boundarye, e);
     VectorXd rhs(3*interiorn+boundarye);
@@ -141,12 +145,6 @@ bool NetworkMesh::computeBestWeights(double maxweight)
             Md.coeffRef(row, i) = 1.0;
             row++;
         }
-        else if(mesh_.data(eh).is_crease())
-        {
-            Md.coeffRef(row, i) = 1.0;
-            rhs[row] = mesh_.data(eh).crease_value();
-            row++;
-        }
     }
     assert(row == 3*interiorn + boundarye);
 
@@ -156,9 +154,9 @@ bool NetworkMesh::computeBestWeights(double maxweight)
     lb.setZero();
     for(int i=0; i<e; i++)
     {
-        ub[i] = maxweight;
-        lb[i] = 0.0;
         MyMesh::EdgeHandle eh = mesh_.edge_handle(i);
+        ub[i] = maxweight;
+        lb[i] = 0.00;
         result[i] = mesh_.data(eh).weight();
     }
 
@@ -167,9 +165,12 @@ bool NetworkMesh::computeBestWeights(double maxweight)
     ml.reset();
 
     cont_.getSolvers().solveBCLS(M, rhs, lb, ub, result);
+/*    DynamicSparseMatrix<double> MTM(M.transpose()*M);
+    SparseMatrix<double> MTMd(MTM);
+    VectorXd Mrhs = M.transpose()*rhs;
+    cont_.getSolvers().linearSolveCG(MTMd, Mrhs, result);*/
 
     ml = acquireMesh();
-    bool done = true;
     if(getMeshID() == oldid)
     {
         for(int i=0; i<e; i++)
@@ -179,22 +180,20 @@ bool NetworkMesh::computeBestWeights(double maxweight)
             MyMesh::EdgeHandle eh = mesh_.edge_handle(i);
             if(edgePinned(eh))
                 result[i] = 0;
-            else if(mesh_.data(eh).is_crease())
-                result[i] = mesh_.data(eh).crease_value();
             mesh_.data(eh).set_weight(result[i]);
         }
-        fixBadVertices();
-        //done = fixBadVerticesNew();
+        //fixBadVertices();
         invalidateMesh();
     }
-
-    return done;
+    return calculateEquilibriumViolation();
 }
 
-double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta)
+double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, bool planarity)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
     int n = mesh_.n_vertices();
+    if(n==0)
+        return 0;
 
     VectorXd q0(3*n);
 
@@ -205,6 +204,28 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta)
             q0[3*i+j] = pt[j];
     }
     //q0[3*n] = 1.0;
+
+    DynamicSparseMatrix<double> L(3*n,3*n);
+    for(int i=0; i<n; i++)
+    {
+
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+        if(!mesh_.data(vh).pinned())
+        {
+            int valence = mesh_.valence(vh);
+            for(int j=0; j<3; j++)
+                L.coeffRef(3*i+j, 3*i+j) = 1.0;
+            for(MyMesh::VertexVertexIter vv = mesh_.vv_iter(vh); vv; ++vv)
+            {
+                MyMesh::VertexHandle adj = vv;
+                int adjidx = adj.idx();
+                for(int j=0; j<3; j++)
+                    L.coeffRef(3*i+j, 3*adjidx+j) = -1.0/valence;
+            }
+        }
+    }
+
+    DynamicSparseMatrix<double> LTL(L.transpose()*L);
 
     DynamicSparseMatrix<double> Md(3*n,3*n);
     for(int i=0; i<n; i++)
@@ -219,11 +240,11 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta)
             }
             //Md.coeffRef(3*i+j, 3*i+j) = 1.0;
         }
-        if(mesh_.data(mesh_.vertex_handle(i)).pinned())
+        if(mesh_.data(mesh_.vertex_handle(i)).pinned() || mesh_.data(mesh_.vertex_handle(i)).anchored())
         {
             for(int k=0; k<3; k++)
             {
-                Md.coeffRef(3*i+k, 3*i+k) += beta;
+                Md.coeffRef(3*i+k, 3*i+k) += 100*beta;
             }
         }
     }
@@ -236,7 +257,8 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta)
         MyMesh::Point pt = mesh_.point(mesh_.vertex_handle(i));
 
         Vector3d ptv(pt[0],pt[1],pt[2]);
-        Vector3d projpt = approximateClosestPoint(subdreference_, ptv);
+        //Vector3d projpt = approximateClosestPoint(subdreference_, ptv);
+        Vector3d projpt = approximateClosestZParallel(subdreference_, ptv);
         for(int j=0; j<3; j++)
         {
             rhs[3*i+j] += alpha/beta*(projpt[j]);
@@ -275,7 +297,6 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta)
             ce0[3*row+0] = 0;
             ce0[3*row+1] = mesh_.data(vh).load();
             ce0[3*row+2] = 0;
-            //CEd.coeffRef(3*n, 3*row+1) += mesh_.data(vh).load();
             row++;
         }
     }
@@ -284,7 +305,7 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta)
     int numplanarity = 0;
     for(MyMesh::FaceIter fi = mesh_.faces_begin(); fi != mesh_.faces_end(); ++fi)
     {
-        if(numFaceVerts(fi.handle()) == 4)
+        if(numFaceVerts(mesh_, fi.handle()) == 4)
         {
             numplanarity++;
         }
@@ -297,7 +318,7 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta)
     row=0;
     for(MyMesh::FaceIter fi = mesh_.faces_begin(); fi != mesh_.faces_end(); ++fi)
     {
-        if(numFaceVerts(fi.handle()) == 4)
+        if(numFaceVerts(mesh_, fi.handle()) == 4)
         {
             MyMesh::FaceHalfedgeIter fhi = mesh_.fh_iter(fi.handle());
             MyMesh::HalfedgeHandle prev = fhi.handle();
@@ -325,7 +346,8 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta)
                 }
 
                 double denom = e1.dot(e1)*e2.dot(e2)-(e1.dot(e2))*(e1.dot(e2));
-                assert(denom > 0);
+                if(denom < 0)
+                    denom = 0;
                 denom = sqrt(denom);
                 Vector3d grade1 = (e2 - e1.dot(e2)/(e1.dot(e1))*e1)/denom;
                 Vector3d grade2 = (e1 - e2.dot(e1)/(e2.dot(e2))*e2)/denom;
@@ -358,8 +380,13 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta)
     rhs -= CEd*ce0;
     Md += CEd*CEd.transpose();
 
-    rhs -= 0*Pd*p0;
-    Md += 0*Pd*Pd.transpose();
+    if(planarity)
+    {
+        rhs -= 0.1*Pd*p0;
+        Md += 0.1*Pd*Pd.transpose();
+    }
+
+    Md += 0.0/beta * LTL;
 
     SparseMatrix<double> M(Md);
 
@@ -367,28 +394,29 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta)
 
     int oldid = getMeshID();
     ml.reset();
-
     cont_.getSolvers().linearSolveCG(M, rhs, result);
     double residual = std::numeric_limits<double>::infinity();
 
     ml = acquireMesh();
-    //cout << "S: " << result[3*n] << endl;
     if(oldid == getMeshID())
     {
         for(int i=0; i<n; i++)
         {
             MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
-            MyMesh::Point &pt = mesh_.point(vh);
-            for(int j=0; j<3; j++)
-                pt[j] = result[3*i+j];
+            if(!mesh_.data(vh).pinned() && !mesh_.data(vh).anchored())
+            {
+                MyMesh::Point &pt = mesh_.point(vh);
+                for(int j=0; j<3; j++)
+                {
+                    pt[j] = result[3*i+j];
+                }
+            }
         }
 
-      /*  for(MyMesh::EdgeIter ei = mesh_.edges_begin(); ei != mesh_.edges_end(); ++ei)
-        {
-            double curw = mesh_.data(ei).weight();
-            mesh_.data(ei).set_weight(curw/result[3*n]);
-        }
-*/
+        //double planresidual = (Pd.transpose()*result+p0).norm();
+        //cout << "Planarity residual " << planresidual << endl;
+
+
         residual = calculateEquilibriumViolation();
         invalidateMesh();
     }
@@ -683,7 +711,7 @@ double NetworkMesh::enforcePlanarity()
     int numplanarity = 0;
     for(MyMesh::FaceIter fi = mesh_.faces_begin(); fi != mesh_.faces_end(); ++fi)
     {
-        if(numFaceVerts(fi.handle()) == 4)
+        if(numFaceVerts(mesh_, fi.handle()) == 4)
         {
             numplanarity++;
         }
@@ -696,7 +724,7 @@ double NetworkMesh::enforcePlanarity()
     int row=0;
     for(MyMesh::FaceIter fi = mesh_.faces_begin(); fi != mesh_.faces_end(); ++fi)
     {
-        if(numFaceVerts(fi.handle()) == 4)
+        if(numFaceVerts(mesh_, fi.handle()) == 4)
         {
             MyMesh::FaceHalfedgeIter fhi = mesh_.fh_iter(fi.handle());
             MyMesh::HalfedgeHandle prev = fhi.handle();
@@ -783,12 +811,19 @@ double NetworkMesh::enforcePlanarity()
 
 Matrix2d NetworkMesh::approximateStressHessian(MyMesh::FaceHandle face)
 {
-    int numpts = 0;
-    numpts += numFaceVerts(face);
+    set<int> uniquepts;
+    for(MyMesh::FaceVertexIter fvi = mesh_.fv_iter(face); fvi; ++fvi)
+    {
+        uniquepts.insert(fvi.handle().idx());
+    }
     for(MyMesh::FaceFaceIter ffi = mesh_.ff_iter(face); ffi; ++ffi)
     {
-        numpts += numFaceVerts(ffi.handle());
+        for(MyMesh::FaceVertexIter fvi = mesh_.fv_iter(ffi.handle()); fvi; ++fvi)
+            uniquepts.insert(fvi.handle().idx());
     }
+
+    int numpts = uniquepts.size();
+    uniquepts.clear();
 
     MatrixXd LS(numpts, 6);
     VectorXd rhs(numpts);
@@ -796,6 +831,10 @@ Matrix2d NetworkMesh::approximateStressHessian(MyMesh::FaceHandle face)
     int curpt = 0;
     for(MyMesh::FaceVertexIter fvi = mesh_.fv_iter(face); fvi; ++fvi)
     {
+        if(uniquepts.count(fvi.handle().idx()))
+            continue;
+
+        uniquepts.insert(fvi.handle().idx());
         MyMesh::Point pt = mesh_.point(fvi.handle());
         LS(curpt, 0) = pt[0]*pt[0];
         LS(curpt, 1) = pt[0]*pt[2];
@@ -825,6 +864,11 @@ Matrix2d NetworkMesh::approximateStressHessian(MyMesh::FaceHandle face)
 
         for(MyMesh::FaceVertexIter fvi = mesh_.fv_iter(oppface); fvi; ++fvi)
         {
+            if(uniquepts.count(fvi.handle().idx()))
+                continue;
+
+            uniquepts.insert(fvi.handle().idx());
+
             MyMesh::Point pt = mesh_.point(fvi.handle());
             LS(curpt, 0) = pt[0]*pt[0];
             LS(curpt, 1) = pt[0]*pt[2];
@@ -855,47 +899,18 @@ void NetworkMesh::computeRelativePrincipalDirections()
         Matrix2d Hfx;
         Hfx << Hf(1,1), -Hf(0,1), -Hf(0,1), Hf(0,0);
         Matrix2d W = Hfx*Hg;
-        double a = W(0,0);
-        double b = W(0,1);
-        double c = W(1,0);
-        double d = W(1,1);
 
-        double discr = (a-d)*(a-d)+4*b*c;
-        double lambda1 = 0.5*(a+d+sqrt(discr));
-        double lambda2 = 0.5*(a+d-sqrt(discr));
+        double lambda1, lambda2;
 
-        Vector2d u,v;
-        if(fabs(b) < 1e-8)
-        {
-            if(fabs(c) < 1e-8)
-            {
-                if(a > d)
-                {
-                    u[0] = v[1] = 1.0;
-                    u[1] = v[0] = 0.0;
-                }
-                else
-                {
-                    u[0] = v[1] = 0.0;
-                    u[1] = v[0] = 1.0;
-                }
-            }
-            else
-            {
-                u[1] = v[1] = 1.0;
-                u[0] = (lambda1-d)/c;
-                v[0] = (lambda2-d)/c;
-            }
-        }
-        else
-        {
-            u[0] = v[0] = 1.0;
-            u[1] = (lambda1-a)/b;
-            v[1] = (lambda2-a)/b;
-        }
+        Vector2d u, v;
+
+        computeEigenstuff(W, lambda1, lambda2, u, v);
+
+        double discr = sqrt((lambda1-lambda2)*(lambda1-lambda2));
+        mesh_.data(fi.handle()).set_umbilic(discr);
 
         double x, y, C;
-        computeFacePlane(fi.handle(), x,y,C);
+        computeFacePlane(mesh_, fi.handle(), x,y,C);
         Vector3d u3d, v3d;
         u3d[0] = u[0];
         u3d[2] = u[1];
@@ -936,4 +951,326 @@ void NetworkMesh::setupVFProperties()
             mesh_.property(vf2, fi.handle())[i] = mesh_.data(fi.handle()).rel_principal_v()[i];
         }
     }
+}
+
+void NetworkMesh::solveLaplacian()
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+/*
+    assert(mesh_.n_faces() == 1);
+
+    // set up weights
+
+    int e = mesh_.n_edges();
+
+    double oddsum = 0;
+    double evensum = 0;
+    for(int i=0; i<e; i++)
+    {
+        double len = mesh_.calc_edge_length(mesh_.edge_handle(i));
+        ((i%2) == 0 ? evensum : oddsum) += len;
+    }
+    for(int i=0; i<e; i++)
+    {
+        double len = mesh_.calc_edge_length(mesh_.edge_handle(i));
+        double weight = len / ((i%2)==0 ? evensum : -oddsum);
+        mesh_.data(mesh_.edge_handle(i)).set_weight(weight);
+    }
+
+    MyMesh::Point facecent;
+    mesh_.calc_face_centroid(mesh_.faces_begin().handle(), facecent);
+    //mesh_.split(mesh_.faces_begin().handle(), facecent);
+    triangulate();
+
+    for(int i=0; i<4; i++)
+        triangleSubdivide();
+
+    int n = mesh_.n_vertices();
+
+    DynamicSparseMatrix<double> L(n,n);
+    VectorXd rhs(n);
+    L.setZero();
+    rhs.setZero();
+
+    int row=0;
+    for(int i=0; i<n; i++)
+    {
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+        if(!mesh_.is_boundary(vh))
+        {
+            for(MyMesh::VertexOHalfedgeIter ve = mesh_.voh_iter(vh); ve; ++ve)
+            {
+                assert(!mesh_.is_boundary(ve.handle()));
+
+                double w = computeLaplacianWeight(mesh_.edge_handle(ve.handle()));
+                MyMesh::VertexHandle tov = mesh_.to_vertex_handle(ve.handle());
+                L.coeffRef(row, tov.idx()) -= w;
+                L.coeffRef(row, i) += w;
+            }
+            row++;
+        }
+
+    }
+
+
+    for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
+    {
+        if(mesh_.is_boundary(vi))
+        {
+            int numf = mesh_.valence(vi.handle()) - 1;
+            for(MyMesh::VertexOHalfedgeIter voh = mesh_.voh_iter(vi.handle()); voh; ++voh)
+            {
+                if(mesh_.is_boundary(voh.handle()))
+                    continue;
+                MyMesh::HalfedgeHandle e1 = voh.handle();
+                MyMesh::HalfedgeHandle e2 = mesh_.prev_halfedge_handle(e1);
+                double w1 = computeLaplacianAlpha(e1);
+                double w2 = computeLaplacianAlpha(e2);
+                L.coeffRef(row, mesh_.to_vertex_handle(e1).idx()) += w1/numf;
+                L.coeffRef(row, mesh_.from_vertex_handle(e1).idx()) -= w1/numf;
+                L.coeffRef(row, mesh_.from_vertex_handle(e2).idx()) += w2/numf;
+                L.coeffRef(row, mesh_.to_vertex_handle(e2).idx()) -= w2/numf;
+            }
+            double weight = 0;
+            for(MyMesh::VertexEdgeIter vei = mesh_.ve_iter(vi.handle()); vei; ++vei)
+            {
+                if(mesh_.is_boundary(vei.handle()))
+                    weight += mesh_.data(vei.handle()).weight();
+            }
+            rhs[row] = 0.5*weight;
+            row++;
+        }
+    }
+    assert(row == n);
+
+    VectorXd result(n);
+    result.setZero();
+    SparseMatrix<double> LTL(L.transpose()*L);
+
+    cont_.getSolvers().linearSolveLU(LTL, L.transpose()*rhs, result);
+
+    cout << "residual " << (L*result-rhs).norm() << endl;
+
+
+    double avz = 0;
+    for(int i=0; i<n; i++)
+    {
+        avz += result[i];
+    }
+    avz /= n;
+
+    for(int i=0; i<n; i++)
+    {
+        MyMesh::Point &pt = mesh_.point(mesh_.vertex_handle(i));
+        pt[1] = result[i]-avz;
+    }
+*/
+    computeLaplacianCurvatures();
+}
+
+double NetworkMesh::computeLaplacianWeight(MyMesh::EdgeHandle edge)
+{
+    //return 1.0;
+    return computeLaplacianAlpha(mesh_.halfedge_handle(edge,0)) + computeLaplacianAlpha(mesh_.halfedge_handle(edge,1));
+}
+
+double NetworkMesh::computeLaplacianAlpha(MyMesh::HalfedgeHandle heh)
+{
+    MyMesh::HalfedgeHandle e1 = mesh_.next_halfedge_handle(heh);
+    MyMesh::HalfedgeHandle e2 = mesh_.prev_halfedge_handle(heh);
+    assert(e1.is_valid() && e2.is_valid());
+    assert(mesh_.to_vertex_handle(e1) == mesh_.from_vertex_handle(e2));
+
+    MyMesh::Point opp = mesh_.point(mesh_.to_vertex_handle(e1));
+    MyMesh::Point p1 = mesh_.point(mesh_.from_vertex_handle(e1));
+    MyMesh::Point p2 = mesh_.point(mesh_.to_vertex_handle(e2));
+
+    double num = (p1[0]-opp[0])*(p2[0]-opp[0]) + (p1[2]-opp[2])*(p2[2]-opp[2]);
+    double denom = fabs( (p1[0]-opp[0])*(p2[2]-opp[2]) - (p1[2]-opp[2])*(p2[0]-opp[0]));
+    return num/denom;
+}
+
+void NetworkMesh::computeLaplacianCurvatures()
+{
+    for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
+    {
+        Matrix2d H = approximateHessianVertex(vi.handle());
+        Vector2d u, v;            
+        u.setZero();
+        v.setZero();
+  //      if(!mesh_.is_boundary(vi.handle()))
+        {
+            double l1, l2;
+            computeEigenstuff(H, l1, l2, u, v);
+            u.normalize();
+            v.normalize();
+        }
+        mesh_.data(vi.handle()).set_rel_principal_dirs(u,v);
+    }
+    for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
+    {
+      mesh_.point(vi.handle())[1] = 0.0;
+      mesh_.data(vi.handle()).set_violation(100);
+    }
+}
+
+void NetworkMesh::triangleSubdivide()
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+
+    MyMesh newmesh;
+
+    int n = mesh_.n_vertices();
+    int e = mesh_.n_edges();
+
+    for(int i=0; i<n; i++)
+    {
+        MyMesh::VertexHandle oldv = mesh_.vertex_handle(i);
+        MyMesh::Point newpt;
+        newpt[0] = newpt[1] = newpt[2] = 0;
+        int numadj=0;
+        if(!mesh_.is_boundary(oldv))
+        {
+            for(MyMesh::VertexVertexIter vvi = mesh_.vv_iter(oldv); vvi; ++vvi)
+            {
+                newpt += mesh_.point(vvi.handle())/16.0;
+                numadj++;
+            }
+        }
+        newpt += mesh_.point(oldv) * (16-numadj)/16.0;
+        newmesh.add_vertex(newpt);
+    }
+    for(int i=0; i<e; i++)
+    {
+        MyMesh::EdgeHandle edge = mesh_.edge_handle(i);
+        if(mesh_.is_boundary(edge))
+            newmesh.add_vertex(computeEdgeMidpoint(edge));
+        else
+        {
+            MyMesh::HalfedgeHandle heh1 = mesh_.halfedge_handle(edge,0);
+            MyMesh::HalfedgeHandle heh2 = mesh_.halfedge_handle(edge,1);
+            MyMesh::Point newpt = mesh_.point(mesh_.to_vertex_handle(heh1))*3.0/8.0;
+            newpt += mesh_.point(mesh_.from_vertex_handle(heh1))*3.0/8.0;
+            newpt += mesh_.point(mesh_.to_vertex_handle(mesh_.next_halfedge_handle(heh1)))*1.0/8.0;
+            newpt += mesh_.point(mesh_.to_vertex_handle(mesh_.next_halfedge_handle(heh2)))*1.0/8.0;
+            newmesh.add_vertex(newpt);
+        }
+    }
+    for(MyMesh::FaceIter fi = mesh_.faces_begin(); fi != mesh_.faces_end(); ++fi)
+    {
+        vector<MyMesh::VertexHandle> toaddcenter;
+        for(MyMesh::FaceHalfedgeIter fhi = mesh_.fh_iter(fi.handle()); fhi; ++fhi)
+        {
+            int vidx = mesh_.from_vertex_handle(fhi.handle()).idx();
+            MyMesh::HalfedgeHandle prev = mesh_.prev_halfedge_handle(fhi.handle());
+            vector<MyMesh::VertexHandle> toadd;
+            toadd.push_back(newmesh.vertex_handle(vidx));
+            int eidx1 = mesh_.edge_handle(prev).idx();
+            int eidx2 = mesh_.edge_handle(fhi.handle()).idx();
+            toadd.push_back(newmesh.vertex_handle(n+eidx2));
+            toadd.push_back(newmesh.vertex_handle(n+eidx1));
+            MyMesh::FaceHandle newface = newmesh.add_face(toadd);
+            toaddcenter.push_back(newmesh.vertex_handle(n+eidx2));
+
+            //fix weights; don't bother with interior triangles
+            for(MyMesh::FaceHalfedgeIter newfh = newmesh.fh_iter(newface); newfh; ++newfh)
+            {
+                if(newmesh.from_vertex_handle(newfh.handle()).idx() == vidx)
+                {
+                    newmesh.data(newmesh.edge_handle(newfh.handle())).set_weight(0.5*mesh_.data(mesh_.edge_handle(fhi.handle())).weight());
+                }
+                if(newmesh.to_vertex_handle(newfh.handle()).idx() == vidx)
+                {
+                    newmesh.data(newmesh.edge_handle(newfh.handle())).set_weight(0.5*mesh_.data(mesh_.edge_handle(prev)).weight());
+                }
+            }
+        }
+        newmesh.add_face(toaddcenter);
+    }
+    mesh_ = newmesh;
+}
+
+void NetworkMesh::exportVectorFields(const char *name)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    ofstream ofs(name);
+    if(!ofs)
+        return;
+
+    for(MyMesh::FaceIter fi = mesh_.faces_begin(); fi != mesh_.faces_end(); ++fi)
+    {
+        Vector3d u = mesh_.data(fi.handle()).rel_principal_u();
+        Vector3d v = mesh_.data(fi.handle()).rel_principal_v();
+        ofs << u.transpose() << " " << v.transpose() << endl;
+    }
+}
+
+bool NetworkMesh::exportReciprocalMesh(const char *name)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    MyMesh rmesh;
+
+    int f = mesh_.n_faces();
+    int n = mesh_.n_vertices();
+
+    for(int i=0; i<f; i++)
+    {
+        MyMesh::Point pt(0,0,0);
+        rmesh.add_vertex(pt);
+    }
+    for(int i=0; i<n; i++)
+    {
+        MyMesh::VertexHandle vh(i);
+        if(!mesh_.is_boundary(vh))
+        {
+            vector<MyMesh::VertexHandle> toadd;
+            for(MyMesh::VertexFaceIter vfi = mesh_.vf_iter(vh); vfi; ++vfi)
+            {
+                toadd.push_back(rmesh.vertex_handle(vfi.handle().idx()));
+            }
+            rmesh.add_face(toadd);
+        }
+    }
+    for(int i=0; i<f; i++)
+    {
+        MyMesh::FaceHandle fh(i);
+        mesh_.data(fh).set_integrated(i==0);
+    }
+
+    // TODO something less simplistic
+    bool done = false;
+    while(!done)
+    {
+        done = true;
+        for(MyMesh::FaceIter fi = mesh_.faces_begin(); fi != mesh_.faces_end(); ++fi)
+        {
+            if(mesh_.data(fi).integrated())
+            {
+                for(MyMesh::FaceHalfedgeIter fhi = mesh_.fh_iter(fi.handle()); fhi; ++fhi)
+                {
+                    MyMesh::HalfedgeHandle opp = mesh_.opposite_halfedge_handle(fhi.handle());
+                    if(mesh_.is_boundary(opp))
+                        continue;
+                    MyMesh::FaceHandle adj = mesh_.face_handle(opp);
+                    if(!mesh_.data(adj).integrated())
+                    {
+                        done = false;
+                        MyMesh::EdgeHandle eh = mesh_.edge_handle(opp);
+                        double weight = mesh_.data(eh).weight();
+                        MyMesh::VertexHandle v1 = mesh_.to_vertex_handle(opp);
+                        MyMesh::VertexHandle v2 = mesh_.from_vertex_handle(opp);
+                        MyMesh::Point recip = (mesh_.point(v1)-mesh_.point(v2))*weight;
+                        recip[1] = 0;
+                        double tmp = recip[0];
+                        recip[0] = -recip[2];
+                        recip[2] = tmp;
+                        rmesh.point(rmesh.vertex_handle(adj.idx())) = rmesh.point(rmesh.vertex_handle(fi.handle().idx())) + recip;
+                        mesh_.data(adj).set_integrated(true);
+                    }
+                }
+            }
+        }
+    }
+    OpenMesh::IO::Options opts;
+    return OpenMesh::IO::write_mesh(rmesh, name, opts);
 }

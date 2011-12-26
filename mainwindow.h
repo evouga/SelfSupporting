@@ -104,6 +104,28 @@ private slots:
 
     void on_stressCheckBox_clicked();
 
+    void on_actionWeights_triggered();
+
+    void on_actionPositions_triggered();
+
+    void on_actionAdd_Mesh_triggered();
+
+    void on_actionHeights_triggered();
+
+    void on_avgHeightsButton_clicked();
+
+    void on_enforcePlanarityCheckBox_clicked();
+
+    void on_actionTrim_triggered();
+
+    void on_actionCompute_Conjugate_Dirs_triggered();
+
+    void on_actionSmooth_Boundary_triggered();
+
+    void on_actionSmooth_Boundary_2_triggered();
+
+    void on_actionExport_Everything_triggered();
+
 protected:
     void moveEvent(QMoveEvent *);
     void resizeEvent(QResizeEvent *);

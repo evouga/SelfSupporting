@@ -3,6 +3,7 @@
 
 #include <Eigen/Core>
 #include <QString>
+#include <vector>
 
 class MainWindow;
 class ReferenceMesh;
@@ -10,6 +11,7 @@ class NetworkMesh;
 class Solvers;
 class NetworkThread;
 class StressMesh;
+class Camera;
 
 struct Params
 {
@@ -20,6 +22,7 @@ struct Params
     double nmresidual;
 
     bool enforceMaxWeight;
+    bool planarity;
     double maxWeight;
     double density;
 };
@@ -30,7 +33,7 @@ public:
     Controller(MainWindow &w);
     ~Controller();
 
-    enum EditMode {EM_CAMERA, EM_FREEHANDLE, EM_HEIGHTHANDLE, EM_DELETEFACE, EM_PIN, EM_CREASE};
+    enum EditMode {EM_CAMERA, EM_FREEHANDLE, EM_HEIGHTHANDLE, EM_DELETEFACE, EM_PIN, EM_ANCHOR, EM_TOPHANDLE};
 
     void initialize();
 
@@ -39,18 +42,24 @@ public:
     void computeWeightsFromTopView();
     void resetNetworkMesh();
     void iterateNetwork();
+    void computeBestWeights();
+    void computeBestPositions();
+    void computeBestHeights();
+
     void projectNetwork();
     void planarizeThrustNetwork();
     void loadMesh(const char *filename);
     void saveMesh(const char *filename);
     void saveNetwork(const char *filename);
+    void saveNetworkEverything(const char *filename);
     void importOBJ(const char *filename);
     void exportOBJ(const char *filename);
+    void addMesh(const char *filename);
     void exportNetworkOBJ(const char *filename);
     void jitterMesh();
     void copyThrustNetwork();
-    void subdivideMesh();
-    void subdivideReferenceMesh();
+    void subdivideMesh(bool andboundary);
+    void subdivideReferenceMesh(bool andboundary);
     void triangulateThrustNetwork();
     Eigen::Vector3d computeMeshCentroid();
     double computeMeshBoundingSphere(const Eigen::Vector3d &center);
@@ -62,16 +71,18 @@ public:
     void translateFace(int fidx, const Eigen::Vector3d &translation);
     void dragVertex(int vidx, const Eigen::Vector3d &translation);
     void dragVertexHeight(int vidx, const Eigen::Vector3d &translation);
+    void dragVertexTop(int vidx, const Eigen::Vector3d &translation);
     void buildQuadMesh(int w, int h);
     void buildTriMesh(int w, int h);
     void buildHexMesh(int w, int h);
 
-    void setAnchor(int vidx);
-    void clearAnchor(int vidx);
-    void setPin(int vidx);
-    void clearPin(int vidx);
+    void setHandle(std::vector<int> &vidx);
+    void clearHandle(std::vector<int> &vidx);
+    void setPin(std::vector<int> &vidxs);
+    void clearPin(std::vector<int> &vidxs);
+    void setAnchor(std::vector<int> &vidx);
+    void clearAnchor(std::vector<int> &vidx);
     void deleteFace(int fidx);
-    void toggleCrease(int eidx);
 
     EditMode getEditMode();
 
@@ -81,20 +92,26 @@ public:
 
     void takeScreenshot();
     void setAutoIterate(bool state);
+    void setEnforcePlanarity(bool state);
     void enforceMaxWeight(bool state);
     void setMaxWeight(double weight);
     void setDensity(double density);
     void laplacianTest();
+    void computeConjugateDirs();
 
     void pinReferenceBoundary();
     void unpinReferenceBoundary();
+    void trimReferenceBoundary();
     void swapYandZ();
     void invertY();
+
+    void averageHeights();
 
     void updateGLWindows();
     const Params &getParams();
 
     NetworkThread *getNT();
+    std::vector<int> selectRectangle(const Eigen::Vector2d &c1, const Eigen::Vector2d &c2, Camera &c);
 
 private:
     void resetParams();

@@ -22,8 +22,10 @@ void NetworkMeshRenderer::render3D()
     {
         if(m_.edgePinned(e.handle()))
             glColor4f(1.0, 0.0, 0.0, 1.0);
-        else if(mesh_.data(e).is_crease())
-            glColor4f(0.4, 1.0, 0.0, 1.0);
+        else if(mesh_.data(e).weight() < -1e-6)
+            glColor4f(0.0, 1.0, 1.0, 1.0);
+        else if(mesh_.data(e).weight() < 1e-6)
+            glColor4f(1.0, 0.0, 1.0, 1.0);
         else
             glColor4f(0.4, 0.1, 0.0, 1.0);
         MyMesh::Point p1, p2;
@@ -50,6 +52,7 @@ void NetworkMeshRenderer::renderSurface()
     int i=0;
     for (f = mesh_.faces_begin(); f != fEnd; ++f,i++) {
 
+        //double umbilic = 1-2.0*mesh_.data(f).umbilic();
         glBegin(GL_POLYGON);
         for (MyMesh::ConstFaceVertexIter v = mesh_.cfv_iter(f); v; ++v) {
             if(((NetworkMesh &)m_).isBadVertex(v.handle()))
@@ -59,12 +62,15 @@ void NetworkMeshRenderer::renderSurface()
 
             double viol = 1+log(mesh_.data(v.handle()).violation())/24.0;
             glColor4f(viol, 213/255., 86/255., 1);
+            //glColor4f(umbilic, 0, 0, 1.0);
+
+
 
             MyMesh::Point pt = mesh_.point(v);
             MyMesh::Point n;
             mesh_.calc_vertex_normal_correct(v, n);
             n.normalize();
-            glNormal3d(n[0], n[1], n[2]);
+            glNormal3d(n[0], -fabs(n[1]), n[2]);
             glVertex3d(pt[0],pt[1],pt[2]);
 
         }
@@ -73,6 +79,43 @@ void NetworkMeshRenderer::renderSurface()
     glDisable(GL_POLYGON_OFFSET_FILL);
 
 }
+
+void NetworkMeshRenderer::renderVertConjugateVectors3D()
+{
+    auto_ptr<MeshLock> ml = m_.acquireMesh();
+    //glEnable(GL_LINE_SMOOTH);
+    glDisable(GL_LIGHTING);
+    const MyMesh &mesh = m_.getMesh();
+
+    for(MyMesh::ConstVertexIter vi = mesh.vertices_begin(); vi != mesh.vertices_end(); ++vi)
+    {
+        MyMesh::Point pt = mesh.point(vi);
+        Vector2d u = mesh.data(vi.handle()).rel_principal_u();
+        Vector2d v = mesh.data(vi.handle()).rel_principal_v();
+        double minlen = std::numeric_limits<double>::infinity();
+        for(MyMesh::ConstVertexEdgeIter ve = mesh.cve_iter(vi); ve; ++ve)
+        {
+            double len = mesh.calc_edge_length(ve.handle());
+            if(len < minlen)
+                minlen = len;
+        }
+
+        double radius = 0.4*minlen;
+
+        glLineWidth(0.1);
+
+        glBegin(GL_LINES);
+        glColor3f(1.0, 0.0, 0.0);
+        glVertex3d(pt[0]-0.5*radius*u[0], pt[1], pt[2]-0.5*radius*u[1]);
+        glVertex3d(pt[0]+radius*u[0], pt[1], pt[2]+radius*u[1]);
+        glColor3f(0.0, 0.5, 0.0);
+        glVertex3d(pt[0]-0.5*radius*v[0], pt[1], pt[2]-0.5*radius*v[1]);
+        glVertex3d(pt[0]+radius*v[0], pt[1], pt[2]+radius*v[1]);
+        glEnd();
+    }
+
+}
+
 
 void NetworkMeshRenderer::renderConjugateVectors3D()
 {

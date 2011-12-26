@@ -23,16 +23,19 @@ struct MyTraits : public OpenMesh::DefaultTraits
     {
       private:
         bool integrated_;
+        double umbilic_;
         Eigen::Vector3d u_, v_;
 
       public:
-        FaceT() : integrated_(false) {}
+        FaceT() : integrated_(false), umbilic_(0) {}
 
         bool integrated() const {return integrated_;}
         Eigen::Vector3d rel_principal_u() const {return u_;}
         Eigen::Vector3d rel_principal_v() const {return v_;}
         void set_integrated(bool status) {integrated_ = status;}
         void set_rel_principal_dirs(const Eigen::Vector3d &u, const Eigen::Vector3d &v) {u_ = u; v_ = v;}
+        double umbilic() const {return umbilic_;}
+        void set_umbilic(double val) {umbilic_ = val;}
     };
 
     EdgeTraits
@@ -40,20 +43,11 @@ struct MyTraits : public OpenMesh::DefaultTraits
       private:
         double weight_;
 
-        bool iscrease_;
-        double creaseang_;
-
       public:
-        EdgeT() : weight_(0), iscrease_(false), creaseang_(0) {}
+        EdgeT() : weight_(0) {}
 
         double weight() const {return weight_; }
         void set_weight(double weight) {weight_ = weight;}
-
-        bool is_crease() const {return iscrease_; }
-        void set_is_crease(bool status) {iscrease_ = status; }
-
-        double crease_value() const {return creaseang_; }
-        void set_crease_value(double angle) {creaseang_ = angle; }
     };
 
     VertexTraits
@@ -63,17 +57,26 @@ struct MyTraits : public OpenMesh::DefaultTraits
         double violation_;
         bool anchored_;
         bool pinned_;
-        public:
-        VertexT() : load_(0), violation_(0), anchored_(false), pinned_(false) {}
+        bool handled_;
+        Eigen::Matrix<double, 2, 1, Eigen::DontAlign> u_, v_;
 
-        bool anchored() const {return anchored_; }
-        void set_anchored(bool anchored) {anchored_ = anchored;}
+        public:
+
+        VertexT() : load_(0), violation_(0), anchored_(false), pinned_(false), handled_(false) {}
+
+        bool handled() const {return handled_; }
+        void set_handled(bool handled) {handled_ = handled;}
         double load() const {return load_; }
         void set_load(double load) {load_ = load;}
         bool pinned() const {return pinned_;}
         void set_pinned(bool status) {pinned_ = status; }
+        bool anchored() const {return anchored_;}
+        void set_anchored(bool status) {anchored_ = status; }
         double violation() const {return violation_;}
         void set_violation(double viol) {violation_ = viol;}
+        Eigen::Vector2d rel_principal_u() const {return u_;}
+        Eigen::Vector2d rel_principal_v() const {return v_;}
+        void set_rel_principal_dirs(const Eigen::Vector2d &u, const Eigen::Vector2d &v) {u_ = u; v_ = v;}
     };
 };
 
@@ -126,22 +129,26 @@ public:
 
     void setPlaneAreaLoads(double density);
     void setSurfaceAreaLoads(double density);
+    void setConstantLoads(double density);
 
-    void subdivide();
+    void subdivide(bool subdivideBoundary);
     void triangulate();
 
     static Eigen::Vector3d projectToFace(const MyMesh &mesh, MyMesh::FaceHandle fh, const Eigen::Vector3d &p);
+    static Eigen::Vector3d projectToFaceZ(const MyMesh &mesh, MyMesh::FaceHandle fh, const Eigen::Vector3d &p);
     static Eigen::Vector3d approximateClosestPoint(const MyMesh &mesh, const Eigen::Vector3d &p);
+    static Eigen::Vector3d approximateClosestZParallel(const MyMesh &mesh, const Eigen::Vector3d &p);
     void edgeEndpoints(MyMesh::EdgeHandle edge, MyMesh::Point &p1, MyMesh::Point &p2);
     bool edgePinned(MyMesh::EdgeHandle edge);
     bool faceContainsPinnedVert(MyMesh::FaceHandle face);
 
     // Finds z = ax + by + c for a given face
-    void computeFacePlane(MyMesh::FaceHandle face, double &a, double &b, double &c);
+    static void computeFacePlane(const MyMesh &mesh, MyMesh::FaceHandle face, double &a, double &b, double &c);
     double isotropicDihedralAngle(MyMesh::EdgeHandle edge);
     double dihedralAngle(MyMesh::EdgeHandle edge);
 
     Eigen::Matrix2d approximateHessian(MyMesh::FaceHandle face);
+    Eigen::Matrix2d approximateHessianVertex(MyMesh::VertexHandle vert);
     double faceAreaOnPlane(MyMesh::FaceHandle face);
 
     friend class MeshLock;
@@ -152,10 +159,13 @@ protected:
     double vertexAreaOnPlane(MyMesh::VertexHandle vert);
     double vertexArea(MyMesh::VertexHandle vert);
     double edgeArea(MyMesh::EdgeHandle edge);
-    int numFaceVerts(MyMesh::FaceHandle face);
+    static int numFaceVerts(const MyMesh &mesh, MyMesh::FaceHandle face);
     MyMesh::Point computeEdgeMidpoint(MyMesh::EdgeHandle edge);
-
     void removeVertex(MyMesh::VertexHandle vert);
+
+    void computePlaneBarycentricCoordinates(const Eigen::Vector2d &pt, MyMesh::FaceHandle face, double &alpha, double &beta);
+    int findEnclosingPlaneTriangle(const Eigen::Vector2d &pt, double &alpha, double &beta);
+    void computeEigenstuff(const Eigen::Matrix2d &M, double &lambda1, double &lambda2, Eigen::Vector2d &v1, Eigen::Vector2d &v2);
 
     MyMesh mesh_;
     Controller &cont_;
