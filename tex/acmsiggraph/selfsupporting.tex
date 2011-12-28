@@ -44,8 +44,8 @@
 %\def\d#1dot#2{\dddddot{#2}}
 \newtheorem{theorem}{Theorem}
 \newtheorem{prop}[theorem]{Proposition}
-\def\Div{\mathop{\textrm{div}}\nolimits}
-\def\tr{\mathop{\textrm{tr}}\nolimits}
+\def\Div{\mathop{{\rm div}}\nolimits}
+\def\tr{\mathop{{\rm tr}}\nolimits}
 \def\rel{{\mathord{\text{\rm rel}}}}
 \def\const{{\mathord{\textrm{const}}}}
 \def\ess{s}
@@ -229,9 +229,9 @@ via curvatures of polyhedral surfaces.
 Vaulted masonry structures are among the simplest and at the same time
 most elegant solutions for creating curved shapes in building
 construction. This is the reason why they have been an object of interest
-since antiquity, and why they continue to be an active topic of research
-in today's engineering community. The shapes range from convex to
-non-convex to freeform (see Figures \ref{fig:tholos} and \ref{fig:block}).
+since antiquity, large non\dash convex examples being provided by gothic
+cathedrals. They continue to be an active topic of research in today's
+engineering community.
 
 
 Our paper is concerned with a combined geometry+statics analysis of {\em
@@ -250,14 +250,15 @@ mortar). On the other hand, their compressive strength is sufficiently
 high so that failure of the structure is by a sudden change in geometry,
 such as shown by Figure \ref{fig:block}, and not by material failure.
 
-{\it Assumption 2 (the Safe Theorem)}: If a system of forces can be found
+{\it Assumption 2 (The Safe Theorem)}: If a system of forces can be found
 which is in equilibrium with the load on the structure and which is
 contained within the masonry envelope then the structure will carry the
 loads, although the actually occurring forces may not be those postulated.
 
 Our approach is twofold: We first give an overview of the continuous case of a
 smooth surface under stress which turns out to be governed by the so\dash
-called {\em Airy stress function}. This mathematical model is called a
+called Airy stress function, at least locally.
+This mathematical model is called a
 membrane in the engineering literature and has been applied to the
 analysis of masonry before. The surface is self\dash supporting if and
 only if stresses are entirely compressive (i.e., the Airy function is
@@ -266,51 +267,44 @@ fictitious {\em thrust network} \cite{Block07}
 contained in the masonry structure.
 This is a system of forces which together with the structure's deadload
 is in equilibrium. It can be interpreted as a finite element discretization
-of continuous case, and it turns out to have very interesting geometry
+of the continuous case, and it turns out to have very interesting geometry
 dating back to the work of J.\ C.\ Maxwell \shortcite{Maxwell64}, with the
 Airy stress function becoming a discrete polyhdron directly
 related to a reciprocal force diagram. 
 Our own contributions are the following:
 
 
-
-	\begin{figure}[t]
-	\includegraphics[height=.35\columnwidth]{fotos/gothicvaults1}\hfill
-	\includegraphics[height=.35\columnwidth]{fotos/Frauenkirche_um_1897}
-	\hfill
-	\hfill
-	\begin{minipage}[b]{.37\columnwidth} \caption{Nonconvex self\dash
-supporting masonry. Left: vaults of a gothic cathedral; Right: dome of
-Frauenkirche, Dres\-den}
-	\label{fig:tholos}
-	\end{minipage}
-	\bigskip
+\begin{figure}[t]
+\includegraphics[width=\columnwidth]{fig/cheesevault25.jpg}
+\caption{A surface with many, irregularly placed holes almost never stands
+by itself; those that do are surprising and their stability is not obvious
+by inspection. The surface shown is produced by out algorithm which finds,
+for a given freeform shape, the nearest self\dash supporting surface.
+This procedure sometimes requires large deformations, as seen for
+this example in Figure~\ref{fig:cheese2} below.}
+	\label{fig:cheese}
+\end{figure}
 
 
-\includegraphics[height=.245\columnwidth]{fotos/project_24_77.png}\hfill
-\includegraphics[height=.245\columnwidth]{fotos/project_24_81.png}
-	\caption{Freeform masonry vault (left) and failure of the same
-(right). These are mock\dash up models from the Block Research Group at
-ETH Z\"urich.}
-	\label{fig:block}
-	\end{figure}
 
 
-\paragraph{Contributions.}
+\paragraph{Contributions.} 
 
-\begin{list}{$\bullet$}{\leftmargin0pt\itemindent1em}
-
-\item We connect the physics of self\dash supporting surfaces with
+$\bullet$ We connect the physics of self\dash supporting surfaces with
 vertical loads to the geometry of isotropic 3\dash space, whith the
 direction of gravity as the distinguished direction
 \secref{sec:smooth}. Taking the convex Airy potential as
 unit sphere, one can express the equations  
 governing self\dash supporting surfaces in terms of curvatures.
 
+\begin{list}{$\bullet$}{\leftmargin0pt\itemindent1em}
+
 \item We employ Maxwell's construction of polyhedral thrust networks
 and their reciprocal diagrams \secref{sec:discrete}, and give
 an interpretation of the equilibrium conditions in terms of
-discrete curvatures.
+discrete curvatures (like the Airy function, this global construction
+works for simply connected connectivity, but is easily extended to
+the general case).
 
 \item The graph Laplacian derived from a thrust network with compressive
 forces is a `perfect' one. We show how it appears in the analysis and
@@ -333,6 +327,27 @@ our approach to the design and analysis of large\dash scale masonry and
 steel\dash glass structures.
 
 \end{list}
+
+	\begin{figure}[t]
+\nix{
+	\includegraphics[height=.35\columnwidth]{fotos/gothicvaults1}\hfill
+	\includegraphics[height=.35\columnwidth]{fotos/Frauenkirche_um_1897}
+	\hfill
+	\hfill
+	\begin{minipage}[b]{.37\columnwidth} \caption{Nonconvex self\dash
+supporting masonry. Left: vaults of a gothic cathedral; Right: dome of
+Frauenkirche, Dres\-den}
+	\label{fig:tholos}
+	\end{minipage}
+	\bigskip}
+\includegraphics[height=.245\columnwidth]{fotos/project_24_77.png}\hfill
+\includegraphics[height=.245\columnwidth]{fotos/project_24_81.png}
+	\caption{Left: Freeform masonry vault. Right: Failure of the same
+(mock\dash up models, Block Research Group at
+ETH Z\"urich).}
+	\label{fig:block}
+	\end{figure}
+
 
 \paragraph{Related Work.}
 
@@ -357,7 +372,7 @@ Philippe Block's seminal thesis introduced the method
 of {\it Thrust Network Analysis}, which linearizes the form-finding problem by 
 first seeking a reciprocal diagram of the top view, which guarantees 
 equilibrium of horizontal forces, then solving for the heights that 
-balance the vertical loads (see e.g.\ \cite{Block07,block09}). Recent work by Block and coauthors extend this 
+balance the vertical loads (see e.g.\ \cite{Block07,block09}). Recent work by Block and coauthors extends this 
 method in the case where the reciprocal diagram is not unique; for 
 different choices of reciprocal diagram, the optimal heights can be found 
 using the method of least squares~\cite{vanmele2011}, and the search for 
@@ -366,7 +381,7 @@ algorithm~\cite{Block2011}.
 
 Other approaches to the interactive design of self-supporting structures 
 include modeling these structures as damped particle-spring 
-systems~\cite{Kilian2005,barnes09}, mirroring the rich tradition in architecture of 
+systems~\cite{Kilian2005,barnes09}, and mirroring the rich tradition in architecture of 
 designing self-supporting surfaces using hanging chain 
 models~\cite{Heyman98}. Alternatively, masonry structures can be 
 represented by networks of rigid blocks~\cite{Whiting09}, whose conditions 
@@ -421,12 +436,20 @@ locally there is a potential $\phi$ with
 	M = \wh{\Hess\phi}.
 	$$
  If the domain $\Omega$ is simply connected, this relation holds globally.
-Positive semidefiniteness of $M$ (or equivalently of $\wh M$) then
+Positive semidefiniteness of $M$ (or equivalently of $\wh M$) 
 characterizes {\em convexity} of the Airy potential $\phi$.
+The Airy function enters computations only by way of its derivatives,
+so global existence is not an issue.
 
-{\it Remark:} Note that $\Div M =0$ yields $\Div(M\nabla s) = \tr(M\Hess
+{\it Remark:} Stresses at boundary points depend on the way the surface is
+anchored: A fixed anchor means no condition, but a free boundary with
+outer normal vector $\nw$ means $\<M \nabla s, \nw \> = 0$.
+
+
+\paragraph{The stress Laplacian.}
+Note that $\Div M =0$ yields $\Div(M\nabla s)$ $ =$ $ \tr(M\Hess
 s)$, which we like to call $\Delta_\phi s$. The operator $\Delta_\phi$ is
-symmetric, and it is elliptic (as a Laplace operator should be) if and
+symmetric. It is elliptic (as a Laplace operator should be) if and
 only if $M$ is positive definite, i.e., $\phi$ is strictly convex. The
 balance condition \eqref{eq:conds} may be written as
 	$
@@ -434,51 +457,9 @@ balance condition \eqref{eq:conds} may be written as
 	$
 
 
-{\it Remark:} Stresses at boundary points depend on the way the surface is
-anchored: A fixed anchor means no condition, but a free boundary with
-outer normal vector $\nw$ means $\<M \nabla s, \nw \> = 0$.
-
-
-  \begin{figure}[t]
-  \centering
-  \begin{overpic}[width=\columnwidth]{fig/reciprocal}
-	\put(0,35){$\SS$}
-	\lput(13,32){$\vw_i$}
-	\cput(14,26){\contour{white}{$A_iF_i$}}
-	\color{gelb}
-	\lput(100,19){$\SS'^*$}
-	\color{blau}
-	\put(0,11){$\SS'$}
-	\color{drot}
-	\put(1,2){$w_{ij} \ew_{ij}'$}
-	\lput(63,5){$\ew_{ij}^*$}
-  \end{overpic}
-% \begin{overpic}[width=\columnwidth]{fig/reciprocal1}
-%        \color{gelb}
-%        \lput(100,15){$\SS'^*$}
-%        \color{blau}
-%        \put(1,25){$\SS$}
-%        \lput(7,1){$\SS'$}
-%        \lput(21,35){$\vw_i$}
-%        \cput(21,29){$F_i$}
-%        \color{drot}
-%        \lput(13,8){\contour{white}{$w_{ij} \ew_{ij}'$}}
-%        \lput(66,11){\contour{white}{$\ew_{ij}^*$}}
-%  \end{overpic}
- \caption{Self-supporting thrust network $\SS$, dangling edges indicating
-the directions of external forces (left). This network
-together with compressive forces which balance vertical loads
-``$A_iF_i$'' projects
-onto a planar mesh $\SS'$ with equilibrium compressive forces
-``$w_{ij}\ew_{ij}'$'' in its edges.
-Rotating forces by 90 degrees leads to the reciprocal force diagram
-$\SS'^*$ (right).}
-  \label{fig:reciprocal}
-  \end{figure}
-
 \subsection{Discrete Theory: Thrust Networks}
 
-We are now going to discretize a self-supporting surface by a polyhedral
+We are discretizing a self-supporting surface by a polyhedral
 mesh $\SS=(V,E,F)$ (see Figure~\ref{fig:reciprocal}). Loads are again
 vertical, and we discretize them as force densities $F_i$ associated with
 vertices $\vw_i$. The load acting on this vertex is then given by
@@ -497,13 +478,13 @@ connecting $\vw_i,\vw_j$ is given by
 compressive nature of forces. The balance conditions at vertices then read
 as follows: With $\vw_i=(x_i,y_i,s_i)$ we have
 	\begin{align}
-	\sum_{j\sim i}
+	\sum\nolimits_{j\sim i}
 		w_{ij} (x_j - x_i)
 	=
-	\sum_{j\sim i}
+	\sum\nolimits_{j\sim i}
 		w_{ij} (y_j - y_i) &= 0,
 			 \label{eq:deqtop} \\
-	\sum_{j\sim i}
+	\sum\nolimits_{j\sim i}
 		w_{ij} (s_j - s_i)
 		&= A_i F_i.
 			\label{eq:deqz}
@@ -513,6 +494,42 @@ network}. Invoking the safe theorem, we can state that a masonry structure
 is self\dash supporting, if we can find a thrust network with compressive
 forces which is entirely contained within the structure.
 
+  \begin{figure}[t]
+  \centering
+  \begin{overpic}[width=\columnwidth]{fig/reciprocal}
+	\put(0,35){$\SS$}
+	\lput(13,32){$\vw_i$}
+	\cput(14,26){\contour{white}{$A_iF_i$}}
+	\color{gelb}
+	\lput(100,19){$\SS'^*$}
+	\color{blau}
+	\put(0,11){$\SS'$}
+	\color{drot}
+	\put(1,2){$w_{ij} \ew_{ij}'$}
+	\lput(63,5){$\ew_{ij}^*$}
+  \end{overpic}\nix{
+ \begin{overpic}[width=\columnwidth]{fig/reciprocal1}
+        \color{gelb}
+        \lput(100,15){$\SS'^*$}
+        \color{blau}
+        \put(1,25){$\SS$}
+        \lput(7,1){$\SS'$}
+        \lput(21,35){$\vw_i$}
+        \cput(21,29){$F_i$}
+        \color{drot}
+        \lput(13,8){\contour{white}{$w_{ij} \ew_{ij}'$}}
+        \lput(66,11){\contour{white}{$\ew_{ij}^*$}}
+  \end{overpic}}\relax
+ \caption{Self-supporting thrust network $\SS$, dangling edges indicating
+the directions of external forces (left). This network
+together with compressive forces which balance vertical loads
+``$A_iF_i$'' projects
+onto a planar mesh $\SS'$ with equilibrium compressive forces
+``$w_{ij}\ew_{ij}'$'' in its edges.
+Rotating forces by 90 degrees leads to the reciprocal force diagram
+$\SS'^*$ (right).}
+  \label{fig:reciprocal}
+  \end{figure}
 
 \paragraph{Reciprocal Diagram.}
 
@@ -520,8 +537,8 @@ Equations \eqref{eq:deqtop} have a geometric interpretation: With edge
 vectors
 	$$\ew'_{ij} = \vw_j'-\vw_i'=(x_j, y_j) - (x_i, y_i),
 	$$
- \eqref{eq:deqtop} asserts that vectors $w_{ij} \ew_{ij}'$ form a closed
-cycle. Rotating them by 90 degrees, we see that likewise
+ Equation \eqref{eq:deqtop} asserts that vectors $w_{ij} \ew_{ij}'$ form a
+closed cycle. Rotating them by 90 degrees, we see that likewise
 	$$
 	\ew_{ij}^{\prime *} = w_{ij} J \ew_{ij}', \quad \text{with}\quad
 	J={\textstyle{0 \ -1 \choose 1 \ \hphantom{-}0}}.
@@ -530,8 +547,7 @@ cycle. Rotating them by 90 degrees, we see that likewise
 If the mesh $\SS$ is simply connected, there exists
 an entire {\em reciprocal diagram} $\SS^{\prime *}$ which is a
 combinatorial dual of $\SS$, and which has edge vectors $\ew_{ij}'^*$.
- Its vertices are denoted by $\vw_i^{\prime *}$.
-
+ Its vertices are denoted by $\vw_i^{\prime *}$. 
 
 \paragraph{Polyhedral Stress Potential.}
 
@@ -555,10 +571,12 @@ $\Phi$ as the Airy polyhedron introduced by \cite{Fraternali2002a} as a
 finite element discretization of the continuous Airy function (see also
 \cite{Fraternali2010}).
 
-
+{\it Remark:} In case the mesh is not simply connected, the reciprocal
+diagram and the Airy polyhedron exist only locally.
 
   \begin{figure}[t]
-	\centering
+ \centerline{\vphantom{\includegraphics[width=\columnwidth]
+		{fig/reciprocal}}\relax
   \begin{overpic}[width=.94\columnwidth]{fig/beide}
 	\lput(49,33){$\ww_k^*$}
 	\lput(49,15){$\vw_k^{*\prime}$}
@@ -569,7 +587,7 @@ finite element discretization of the continuous Airy function (see also
 	\cput(24,35){$\Phi$}
 	\put(0,0){$\Phi'=\SS'$}
 	\cput(4,31){$f_k$}
-  \end{overpic}
+  \end{overpic}}
 %  \begin{overpic}[width=.94\columnwidth]{fig/beide1}
 %        \put(46,30){$\ww_k^*$}
 %        \put(46,16){$\vw_k^{*\prime}$}
@@ -598,14 +616,18 @@ $(\alpha,\beta,-\gamma)$. Thus, applying polarity to $\Phi$ and projecting
 the result $\Phi^*$ into the $xy$ plane reconstructs the reciprocal
 diagram $\Phi^{*\prime}=\SS^{\prime *}$ (see Fig.~\ref{fig:polarity}).
 
-{\it Remark:} The edge weights $w_{ij}$ may be used to define a graph
-Laplacian $\Delta_\phi$ which acts on a vertex\dash based function $s$ by
-$\Delta_{\phi} s(\vw_i)=\sum_{j\sim i} w_{ij}(s_j-s_i)$. It is symmetric
-and semidefinite. Equation \eqref{eq:deqtop} directly implies linear
+\paragraph{Discrete Stress Laplacian.}
+
+The weights $w_{ij}$ may be used to define a graph
+Laplacian $\Delta_\phi$ which on vertex\dash based functions acts as
+	$$\Delta_{\phi} s(\vw_i)=\sum\nolimits_{j\sim i} w_{ij}(s_j-s_i).$$
+ This operator is a ``perfect'' discrete Laplacian in the sense
+of \cite{wardetzky07}, since it is symmetric
+by construction, Equation \eqref{eq:deqtop} implies linear
 precision for the planar `top view mesh' $\SS'$ (i.e., $\Delta_\phi f=0$
-if $f$ is a linear function). Furthermore, $\Delta_\phi$\dash harmonic
-functions enjoy a maximum principle. Equation \eqref{eq:deqz} can be
-written as $\Delta_\phi s = AF$.
+if $f$ is a linear function), and $w_{ij}\ge 0$ ensures semidefiniteness
+and a maximum principle for $\Delta_\phi$\dash harmonic
+functions. Equation \eqref{eq:deqz} can be written as $\Delta_\phi s = AF$.
 
 \subsection{Surfaces in Isotropic Geometry} \label{sec:smooth}
 
@@ -974,11 +996,11 @@ for any sampling of the surface.
 	%\includegraphics[width=0.24\textwidth]{fig/build-edited.png}
 	%\includegraphics[width=0.24\textwidth]{fig/build-edited-n.png}
 \centerline{
-	\begin{overpic}[width=0.25\textwidth]{fig/build.jpg}
+	\begin{overpic}[width=0.25\textwidth]{fig/build-white.jpg}
 	\end{overpic}\hfill
 	\begin{overpic}[width=0.25\textwidth]{fig/build-n.jpg}
 	\end{overpic}\hfill
-	\begin{overpic}[width=0.25\textwidth]{fig/build-edited.jpg}
+	\begin{overpic}[width=0.25\textwidth]{fig/build-edited-white.jpg}
 	\end{overpic}\hfill
 	\begin{overpic}[width=0.25\textwidth]{fig/build-edited-n.jpg}
 	\end{overpic}}
@@ -1205,17 +1227,14 @@ surface.
 
 \paragraph{Example: Swiss Cheese.}
 
-\begin{figure}[htb]
-\centering
-\includegraphics[width=0.4\columnwidth]{fig/cheese}
-\hfill
-\includegraphics[width=0.4\columnwidth]{fig/cheese-n}
-\caption{A surface with many, irregularly placed holes (left) almost never stands; those that do stand
-are surprising and their stability is not obvious by inspection. Our algorithm handles such surfaces,
-despite the large deformations to both the top view and heights needed to render the initial surface
-self-supporting.}
-\label{fig:cheese}
-\end{figure}
+  \begin{figure}[htb]
+  \centerline{\includegraphics[width=0.5\columnwidth]{fig/cheese.jpg}\hfill
+  \includegraphics[width=0.5\columnwidth]{fig/cheese-n.jpg}}
+  \caption{This mesh with holes (left) requires large deformations
+to both the top view and heights to render it self\dash supporting
+(right).}
+ 	\label{fig:cheese2}
+  \end{figure}
 
 Cutting a hole in a self-supporting surface interrupts force flow lines and causes dramatic global changes
 to the surface stresses, often to the point that the surface is no longer in equilibrium. Whether a given surface
@@ -1317,7 +1336,7 @@ as shown in Figure~\ref{fig:badpq}. Figures~\ref{fig:lilium:pq}b--d
 and~\ref{fig:cas}c further illustrates the result of applying this 
 procedure to self-supporting surfaces. 
 
-\paragraph{Koenigs Meshes.}
+\paragraph{Koenigs Meshes. UNFINISHED}
 
 Consider a self\dash supporting thrust network $\SS$ and corresponding 
 Airy mesh $\Phi$. Both $\SS$ and $\Phi$ are elements of the linear space 
@@ -1329,9 +1348,8 @@ s$.
 
 We ask: Which perturbations $\SS+\RR$, having $z$ coordinates $z_i = s_i+r_i$, 
 support the {\em same} vertical loads as $\SS$ does? Such a mesh must 
-satisfy $\Delta_\phi(s+r)=\Delta_\phi s$, so $\Delta_\phi r = 0$, i.e., 
-$r$ is a harmonic function. Such harmonic functions are easily computed, 
-given any boundary conditions.
+satisfy $\Delta_\phi(s+r)=\Delta_\phi s$, so $\Delta_\phi r = 0$.
+This linear system is easily solved in principle.
 
 \begin{figure*}
 	\begin{overpic}[width=.5\textwidth]{fig/enneper.jpg}
@@ -1352,7 +1370,7 @@ Christoffel\dash dual.} \label{fig:enneper}
 \end{minipage}
 \end{figure*}
 
-However there is a very nice explicit geometric construction of all
+There is a nice explicit geometric construction of all such
 harmonic functions in the case of quad meshes: Equation \eqref{eq:deqiso}
 immediately leads to $H^\rel_\SS=H^\rel_{\SS+\RR}$, which is equivalent to
 	$$
@@ -1367,6 +1385,9 @@ also called Christoffel duality, and which can be seen in
 Figure~\ref{fig:christoffel}. This condition determines $\RR^*$ uniquely
 up to translation and scaling; thus $\RR$ is unique up to
 scaling of $z$ coordinates and adding linear functions.
+
+In general, however, $\RR$ does not exist, since only the so\dash
+called {\em Koenigs meshes} possess a Christoffel dual.
 
 \nix{ \begin{figure}[b]
   \begin{overpic}[width=.45\columnwidth]{fig/enneper}
