@@ -1,4 +1,4 @@
-#include "build-common.inc" // declare r1,r2, camera, lights, surroundings
+#include "build/build-common.inc" // declare r1,r2, camera, lights, surroundings
 
 #include "build/be-vertices.inc" // declare NV,NF, V
 

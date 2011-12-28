@@ -290,14 +290,16 @@ this example in Figure~\ref{fig:cheese2} below.}
 
 \paragraph{Contributions.} 
 
-$\bullet$ We connect the physics of self\dash supporting surfaces with
+\begin{list}{$\bullet$}{\leftmargin0pt\itemindent1em}
+
+\item
+We connect the physics of self\dash supporting surfaces with
 vertical loads to the geometry of isotropic 3\dash space, whith the
 direction of gravity as the distinguished direction
 \secref{sec:smooth}. Taking the convex Airy potential as
 unit sphere, one can express the equations  
 governing self\dash supporting surfaces in terms of curvatures.
 
-\begin{list}{$\bullet$}{\leftmargin0pt\itemindent1em}
 
 \item We employ Maxwell's construction of polyhedral thrust networks
 and their reciprocal diagrams \secref{sec:discrete}, and give
@@ -340,11 +342,11 @@ Frauenkirche, Dres\-den}
 	\label{fig:tholos}
 	\end{minipage}
 	\bigskip}
-\includegraphics[height=.245\columnwidth]{fotos/project_24_77.png}\hfill
-\includegraphics[height=.245\columnwidth]{fotos/project_24_81.png}
-	\caption{Left: Freeform masonry vault. Right: Failure of the same
-(mock\dash up models, Block Research Group at
-ETH Z\"urich).}
+\includegraphics[height=.245\columnwidth]{fotos/block1.jpg}\hfill
+\includegraphics[height=.245\columnwidth]{fotos/block2.jpg}
+	\caption{Masonry fails via geometric
+catastrophe rather than material failure (models by 
+Block Research Group, ETH Z\"urich).}
 	\label{fig:block}
 	\end{figure}
 
@@ -390,7 +392,8 @@ of buildings.
 
 Algorithmic and mathematical methods relevant to this paper are work on 
 the geometry of quad meshes with planar faces (\cite{Glymph2004}, 
-\cite{Liu2006}), discrete curvatures for such meshes \cite{Pottmann2007b}, 
+\cite{Liu2006}), discrete curvatures for such meshes
+\cite{Pottmann2007b,bobenko-2010-ct}, 
 in particular curvatures in isotropic geometry \cite{Pottmann2007}. 
 Schiftner and Balzer \shortcite{Schiftner2010} discuss approximating a 
 reference surface by quad mesh with planar faces, whose layout is guided 
@@ -496,17 +499,17 @@ forces which is entirely contained within the structure.
 
   \begin{figure}[t]
   \centering
-  \begin{overpic}[width=\columnwidth]{fig/reciprocal}
-	\put(0,35){$\SS$}
-	\lput(13,32){$\vw_i$}
-	\cput(14,26){\contour{white}{$A_iF_i$}}
+  \begin{overpic}[width=.94\columnwidth]{fig/reciprocal}
+	\put(0,33){$\SS$}
+	\lput(13,33){$\vw_i$}
+	\cput(14,25){\contour{white}{$A_iF_i$}}
 	\color{gelb}
 	\lput(100,19){$\SS'^*$}
 	\color{blau}
-	\put(0,11){$\SS'$}
+	\put(0,9){$\SS'$}
 	\color{drot}
-	\put(1,2){$w_{ij} \ew_{ij}'$}
-	\lput(63,5){$\ew_{ij}^*$}
+	\put(1,0){$w_{ij} \ew_{ij}'$}
+	\lput(63,3){$\ew_{ij}^*$}
   \end{overpic}\nix{
  \begin{overpic}[width=\columnwidth]{fig/reciprocal1}
         \color{gelb}
@@ -520,13 +523,13 @@ forces which is entirely contained within the structure.
         \lput(13,8){\contour{white}{$w_{ij} \ew_{ij}'$}}
         \lput(66,11){\contour{white}{$\ew_{ij}^*$}}
   \end{overpic}}\relax
- \caption{Self-supporting thrust network $\SS$, dangling edges indicating
-the directions of external forces (left). This network
+ \caption{A thrust network $\SS$, with dangling edges indicating
+external forces (left). This network
 together with compressive forces which balance vertical loads
-``$A_iF_i$'' projects
+$A_iF_i$ projects
 onto a planar mesh $\SS'$ with equilibrium compressive forces
-``$w_{ij}\ew_{ij}'$'' in its edges.
-Rotating forces by 90 degrees leads to the reciprocal force diagram
+$w_{ij}\ew_{ij}'$ in its edges.
+Rotating forces by 90$^\circ$ leads to the reciprocal force diagram
 $\SS'^*$ (right).}
   \label{fig:reciprocal}
   \end{figure}
@@ -571,11 +574,12 @@ $\Phi$ as the Airy polyhedron introduced by \cite{Fraternali2002a} as a
 finite element discretization of the continuous Airy function (see also
 \cite{Fraternali2010}).
 
-{\it Remark:} In case the mesh is not simply connected, the reciprocal
-diagram and the Airy polyhedron exist only locally.
+If the mesh is not simply connected, the reciprocal
+diagram and the Airy polyhedron exist only locally, unique up to vertical
+tarnslation.
 
   \begin{figure}[t]
- \centerline{\vphantom{\includegraphics[width=\columnwidth]
+ \centerline{\vphantom{\includegraphics[width=.94\columnwidth]
 		{fig/reciprocal}}\relax
   \begin{overpic}[width=.94\columnwidth]{fig/beide}
 	\lput(49,33){$\ww_k^*$}
@@ -621,10 +625,10 @@ diagram $\Phi^{*\prime}=\SS^{\prime *}$ (see Fig.~\ref{fig:polarity}).
 The weights $w_{ij}$ may be used to define a graph
 Laplacian $\Delta_\phi$ which on vertex\dash based functions acts as
 	$$\Delta_{\phi} s(\vw_i)=\sum\nolimits_{j\sim i} w_{ij}(s_j-s_i).$$
- This operator is a ``perfect'' discrete Laplacian in the sense
+ This operator is a perfect discrete Laplacian in the sense
 of \cite{wardetzky07}, since it is symmetric
 by construction, Equation \eqref{eq:deqtop} implies linear
-precision for the planar `top view mesh' $\SS'$ (i.e., $\Delta_\phi f=0$
+precision for the planar ``top view mesh'' $\SS'$ (i.e., $\Delta_\phi f=0$
 if $f$ is a linear function), and $w_{ij}\ge 0$ ensures semidefiniteness
 and a maximum principle for $\Delta_\phi$\dash harmonic
 functions. Equation \eqref{eq:deqz} can be written as $\Delta_\phi s = AF$.
@@ -690,7 +694,7 @@ $(\Hess\phi)^{-1}(\Hess s)$.  By definition, curvatures of the surface $s$
 	\end{align*}
  The Maxwell paraboloid $\phi_0(x,y)={1\over 2}(x^2+y^2)$ is called the
 {\em unit sphere} of isotropic geometry, its Hessian equals $E_2$.
-Curvatures relative to that gauge body are not called `relative'. We get
+Curvatures relative to that gauge body are not called ``relative''. We get
 	\begin{align*}
 	K_s = \det \Hess s,
 		\
@@ -1125,13 +1129,117 @@ the most robust algorithm for solving this system, in practice we have
 observed that the method of conjugate gradients works well despite the
 potential ill-conditioning of the objective matrix.
 
-\paragraph{Convergence.}
+\paragraph{Limitations.}
 This algorithm is not guaranteed to always converge; this fact is not surprising from the physics of the problem (if the boundary of the reference mesh encloses too large of a region, $w_{\max}$ is set too low, and the density of the surface too high, a thrust network in equilibrium simply does not exist -- the vault is too ambitious and cannot be built to stand; pillars are needed.) We can, however, make a few remarks. Step~\ref{step3} always decreases the equilibrium energy
 	$$E=\sum_i \Big\| \Forcevector 
 		- \sum_{j\sim i} w_{ij} (\vw_j - \vw_i)\Big\|^2$$
 and Step~\ref{step4} does as well as $\beta \to 0$. Moreover, as $\alpha \to 0$ and $\beta \to 0$, Step~\ref{step4} approaches a linear system with as many equations as unknowns; if this system has full rank, its solution sets $E=0$. These facts suggest that the algorithm should generally converge to a thrust network in equilibrium, provided that Step~\ref{step2} does not increase the loads by too much at every iteration, and this is indeed what we observe in practice. One case where this assumption is guaranteed to hold is if the thickness of the surface is allowed to freely vary, so that it can be chosen so that the surface has uniform density over the top view.
 
 If the linear system in Step~\ref{step4} is singular and infeasible, the algorithm can stall at $E > 0$. This failure occurs, for instance, when an interior vertex has height $z_i$ lower than all of its neighbors, and Step~\ref{step3} assigns all incident edges to that vertex a weight of zero: clearly no amount of moving the vertex or its neighbors can bring the vertex into equilibrium. We avoid such degenerate configurations by bounding weights slightly away from zero in \eqref{eq:wbounds}, trading increased robustness for slight smoothing of the resulting surface.
+
+
+
+
+	\begin{figure*}[htb]
+	\centering
+	\includegraphics[height=0.15\textwidth]{fig/cas.jpg}
+	\includegraphics[height=0.15\textwidth]{fig/cas-n.jpg}
+	\hfill
+\caption{A freeform surface (a) needs adjustments around the entrance arch and between the two pillars in order to be self-supporting;
+our algorithm finds the nearby surface in equilibrium (b) that incorporates these changes. From this self-supporting surface and its
+\todo{corresponding discrete stress surface, a PQ remeshing of the surface can be found by discretizing relative principal curvature
+directions~\secref{sec:special}}. }
+ \label{fig:cas} 
+ \end{figure*}
+
+\section{Design of Self-Supporting Surfaces} \label{sec:design}
+
+The optimization algorithm described in the previous section forms the
+basis of an interactive design tool for self-supporting surfaces. Users
+manipulate a mesh representing a reference surface, and the computer
+searches for a nearby thrust network in equilibrium (see e.g.\
+Figure~\ref{fig:vault}). Fitting this thrust
+network does not require that the user specify boundary tractions, and
+although the top view of the reference mesh is used as an initial guess
+for the top view of the thrust network, the search is not restricted to
+this top view.
+
+Some features of the design tool include:
+
+\begin{itemize}\itemsep-\parsep
+
+\item Handle-based 3D editing of the reference mesh using Laplacian
+coordinates~\cite{Lipman2004,Sorkine2003} to extrude vaults, insert
+pillars, and apply other deformations to the reference mesh. Handle-based
+adjustments of the heights, keeping the top view fixed, and deformation of
+the top view, keeping the heights fixed, are also supported. The thrust
+network adjusts interactively to fit the deformed positions, giving the
+usual visual feedback about the effects of her edits on whether or not the
+surface can stand.
+
+\item Specification of boundary conditions. Points of contact between the
+reference surface and the ground or environment are specified by
+``pinning'' vertices of the surface, specifying that the thrust network
+must coincide with the reference mesh at this point, and relaxing the
+condition that forces must be in equilibrium there.
+
+\item Interactive adjustment of surface density $\rho$, external loads,
+and maximum permissible stress per edge $w_{\textrm{max}}$, with visual
+feedback of how these parameters affect the fitted thrust network.
+
+\item Upsampling of the thrust network through Catmull\dash Clark
+subdivision~\cite{catmull78} and polishing of the resulting refined thrust
+network using optimization \secref{sec:opt}.
+
+\item Visualization of the stress surface $\RR$ dual to the thrust network and corresponding reciprocal diagram.
+
+\end{itemize}
+
+
+
+\paragraph{Example: Vault with Pillars.} As an example of the design and optimization workflow, consider a rectangular vault with six pillars, free boundary conditions along one edge, fixed boundary conditions along the others, and a tower extruded from the top of the surface (see Figure \ref{fig:vault}). This surface is neither convex nor simply connected, and exhibits a mix of boundary conditions, none of which cause our algorithm any difficulty; it finds a self-supporting thrust network near the designed reference mesh. The user is now free to make edits to the reference mesh, and the thrust network adapts to these edits, providing the user feedback on whether these designs are physically realizable.
+
+
+\paragraph{Example: Top of the Lilium Tower.}
+
+Consider the top portion of the steel-glass exterior surface of the Lilium 
+Tower, which is currently being built in Warszaw (see Figure \ref{fig:Lilium}).
+This surface contains a local minimum 
+in its interior and so cannot possibly be self-supporting; more generally, 
+the entire central portion of the surface has positive Gaussian curvature 
+and points downwards, an impossible feature in a self-supporting mesh. 
+Given this surface as a reference mesh, our algorithm constructs a nearby 
+thrust network in equilibrium without the impossible feature. The user can 
+then explore how editing the reference mesh -- adding a pillar, for 
+example -- affects the thrust network and its deviation from the reference 
+surface.
+
+\paragraph{Example: Freeform Structure with Two Pillars.}
+
+The architect's experience and intuition has permitted him to design a freeform surface 
+(see Figure \ref{fig:cas}) that is nearly self-supporting. Our algorithm reveals those
+edits needed make the structure sound -- principally around the entrance arch, and the area
+between the two pillars. From the thrust network, we also compute the unique conjugate curve
+network that allows the surface to be remeshed using planar quads, using the algorithm
+discussed in the next section.
+
+\paragraph{Example: Swiss Cheese.}
+
+  \begin{figure}[htb]
+  \centerline{\includegraphics[width=0.5\columnwidth]{fig/cheese.jpg}\hfill
+  \includegraphics[width=0.5\columnwidth]{fig/cheese-n.jpg}}
+  \caption{This mesh with holes (left) requires large deformations
+to both the top view and heights to render it self\dash supporting
+(right).}
+ 	\label{fig:cheese2}
+  \end{figure}
+
+Cutting holes in a self-supporting surface interrupts force flow lines and causes dramatic global changes
+to the surface stresses, often to the point that the surface is no longer in equilibrium. Whether a given surface
+with many such holes can stand is far from obvious. Figures~\ref{fig:cheese2} 
+show such an implausible and unstable 
+surface; our optimization finds a nearby, equally implausible but stable surface without difficulty (see Figures~\ref{fig:cheese} and \ref{fig:cheese2}, right).
+
 
 \begin{figure*}[t]
 \centerline{\raise.02\textwidth
@@ -1161,108 +1269,6 @@ which is close to self\dash supporting;
 subsequent small changes make it self\dash supporting (d).}
  \label{fig:lilium:pq} 
  \end{figure*}
-
-
-
-
-\section{Design of Self-Supporting Surface} \label{sec:design}
-
-The optimization algorithm described in the previous section forms the
-basis of an interactive design tool for self-supporting surfaces. Users
-manipulate a mesh representing a reference surface, and the computer
-searches for a nearby thrust network in equilibrium. Fitting this thrust
-network does not require that the user specify boundary tractions, and
-although the top view of the reference mesh is used as an initial guess
-for the top view of the thrust network, the search is not restricted to
-this top view.
-
-Some features of the design tool include:
-
-\begin{itemize}
-
-\item Handle-based 3D editing of the reference mesh using Laplacian
-coordinates~\cite{Lipman2004,Sorkine2003} to extrude vaults, insert
-pillars, and apply other deformations to the reference mesh. Handle-based
-adjustments of the heights, keeping the top view fixed, and deformation of
-the top view, keeping the heights fixed, are also supported. The thrust
-network adjusts interactively to fit the deformed positions, giving the
-usual visual feedback about the effects of her edits on whether or not the
-surface can stand.
-
-\item Specification of boundary conditions. Points of contact between the
-reference surface and the ground or environment are specified by
-``pinning'' vertices of the surface, specifying that the thrust network
-must coincide with the reference mesh at this point, and relaxing the
-condition that forces must be in equilibrium there.
-
-\item Interactive adjustment of surface density $\rho$, external loads,
-and maximum permissible stress per edge $w_{\textrm{max}}$, with visual
-feedback of how these parameters affect the fitted thrust network.
-
-\item Upsampling of the thrust network through Catmull\dash Clark
-subdivision~\cite{catmull98} and polishing of the resulting refined thrust
-network using optimization \secref{sec:opt}.
-
-\item Visualization of the stress surface $\RR$ dual to the thrust network and corresponding reciprocal diagram.
-
-\end{itemize}
-
-
-
-\paragraph{Example: Vault with Pillars.} As an example of the design and optimization workflow, consider a rectangular vault with six pillars, free boundary conditions along one edge, fixed boundary conditions along the others, and a tower extruded from the top of the surface (see Figure \ref{fig:vault}). This surface is neither convex nor simply connected, and exhibits a mix of boundary conditions, none of which cause our algorithm any difficulty; it finds a self-supporting thrust network near the designed reference mesh. The user is now free to make edits to the reference mesh, and the thrust network adapts to these edits, providing the user feedback on whether these designs are physically realizable.
-
-
-\paragraph{Example: Top of the Lilium Tower.}
-
-Consider the top portion of the steel-glass exterior surface of the Lilium 
-Tower (see Figure \ref{fig:Lilium}). This surface contains a local minimum 
-in its interior and so cannot possibly be self-supporting; more generally, 
-the entire central portion of the surface has positive Gaussian curvature 
-and points downwards, an impossible feature in a self-supporting mesh. 
-Given this surface as a reference mesh, our algorithm constructs a nearby 
-thrust network in equilibrium without the impossible feature. The user can 
-then explore how editing the reference mesh -- adding a pillar, for 
-example -- affects the thrust network and its deviation from the reference 
-surface.
-
-\paragraph{Example: Swiss Cheese.}
-
-  \begin{figure}[htb]
-  \centerline{\includegraphics[width=0.5\columnwidth]{fig/cheese.jpg}\hfill
-  \includegraphics[width=0.5\columnwidth]{fig/cheese-n.jpg}}
-  \caption{This mesh with holes (left) requires large deformations
-to both the top view and heights to render it self\dash supporting
-(right).}
- 	\label{fig:cheese2}
-  \end{figure}
-
-Cutting a hole in a self-supporting surface interrupts force flow lines and causes dramatic global changes
-to the surface stresses, often to the point that the surface is no longer in equilibrium. Whether a given surface
-with many such holes can stand is far from obvious. Figure~\ref{fig:cheese} shows such an implausible and unstable 
-surface; our optimization finds a nearby, equally implausible but stable surface without difficulty.
-
-\paragraph{Example: Freeform Structure with Two Pillars.}
-
-\begin{figure*}[htb]
-\centering
-\includegraphics[width=0.3\textwidth]{fig/cas}
-\includegraphics[width=0.3\textwidth]{fig/cas-n}
-\hfill
-%\includegraphics[width=0.3\textwidth]{fig/cas-pq}
-%TODO
-\caption{A freeform surface (a) needs adjustments around the entrance arch and between the two pillars in order to be self-supporting;
-our algorithm finds the nearby surface in equilibrium (b) that incorporates these changes. From this self-supporting surface and its
-corresponding discrete stress surface, a PQ remeshing of the surface can be found by discretizing relative principal curvature
-directions~\secref{sec:special}. }
- \label{fig:cas} 
- \end{figure*}
-
-The architect's experience and intuition has permitted him to design a freeform surface 
-(see Figure \ref{fig:cas}) that is nearly self-supporting. Our algorithm reveals those
-edits needed make the structure sound -- principally around the entrance arch, and the area
-between the two pillars. From the thrust network, we also compute the unique conjugate curve
-network that allows the surface to be remeshed using planar quads, using the algorithm
-discussed in the next section.
 
 \section{Special Self-Supporting Surfaces} \label{sec:special}
 
@@ -1314,14 +1320,17 @@ approximating $s,\phi$ which follow those directions. Global
 optimization now makes $\SS,\Phi$ a valid thrust network with discrete stress
 potential. Convexity of $\Phi$ ensures that $\SS$ is self\dash supporting.
 
-\begin{figure}[htb]
-\centering
-\includegraphics[width=0.3\columnwidth]{fig/vault}
-\hfill
-\includegraphics[width=0.3\columnwidth]{fig/vault-flat}
-\hfill
-\includegraphics[width=0.3\columnwidth]{fig/vault-pq}
-\caption{Directly enforcing planarity of the faces of even a very simple self-supporting quad-mesh 
+	\begin{figure}[htb]
+  \centerline{\begin{overpic}[width=0.33\columnwidth]{fig/vault.jpg}
+	\put(0,0)({(a)}
+	\end{overpic}\hfill
+  \begin{overpic}[width=0.33\columnwidth]{fig/vault-flat.jpg}
+	\put(0,0)({(b)}
+	\end{overpic}\hfill
+  \begin{overpic}[width=0.33\columnwidth]{fig/vault-pq.jpg}
+	\put(0,0)({(c)}
+	\end{overpic}}
+	\caption{Directly enforcing planarity of the faces of even a very simple self-supporting quad-mesh 
 vault (a) results in a surface far removed from the original design (b). Starting instead from a
 remeshing of the surface with edges following relative principal curvature directions yields a
 self-supporting, PQ mesh far more faithful to the original (c).}

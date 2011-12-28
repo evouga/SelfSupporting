@@ -10,7 +10,8 @@
 
 camera {
 	orthographic
-	location <-1,0,.7>*22*factor rotate z*20
+	//location <-1,0,.7>*22*factor rotate z*20
+	location <-1,0,.5>*22*factor rotate z*20
 	angle 55
 	look_at <0,0,0.5>
 	sky <0,0,1>
