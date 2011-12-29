@@ -442,6 +442,7 @@ strictly convex. The balance condition \eqref{eq:conds} may be written as
 
 
 \subsection{Discrete Theory: Thrust Networks}
+\label{sec:thrustnetworks}
 
 We are discretizing a self-supporting surface by a polyhedral mesh 
 $\SS=(V,E,F)$ (see Figure~\ref{fig:reciprocal}). Loads are again vertical, 
@@ -1154,6 +1155,25 @@ bounding weights slightly away from zero in \eqref{eq:wbounds}, trading
 increased robustness for slight smoothing of the resulting surface.
 
 
+ \begin{figure*}[t]
+  \centerline{\begin{overpic}[width=0.25\textwidth]{fig/cheese.jpg}
+		\put(0,5){(a)}
+	\end{overpic}\relax
+	\begin{overpic}[width=0.25\textwidth]{fig/cheese-n.jpg}
+		\put(0,5){(b)}
+	\end{overpic}\relax
+	\begin{overpic}[width=0.25\textwidth]{fig/cheeseforces.jpg}
+		\put(0,5){(c)}
+	\end{overpic}\hfill
+	\begin{minipage}[b]{.23\textwidth}
+  \caption{A mesh with holes (a) requires large deformations
+to both the top view and heights to render it self\dash supporting
+(b). The magnitude of forces in the edges of this thrust\dash
+network is visualized by the cross\dash section of edges
+in (c).}\label{fig:cheese2}
+	\end{minipage}}
+	\end{figure*}
+
 
 
 
@@ -1235,14 +1255,6 @@ freeform surface (see Figure \ref{fig:cas}) that is nearly
 self-supporting. Our algorithm reveals those edits needed to make the 
 structure sound -- principally around the entrance arch, and the area 
 between the two pillars.
-
- \begin{figure}[t]
-  \centerline{\includegraphics[width=0.50\columnwidth]{fig/cheese.jpg}\hfill
-  \includegraphics[width=0.50\columnwidth]{fig/cheese-n.jpg}}
-  \caption{A mesh with holes (left) requires large deformations to both 
-the top view and heights to render it self\dash supporting 
-(right).}\label{fig:cheese2}
-	\end{figure}
 
 \paragraph{Example: Swiss Cheese.}
 
@@ -1383,77 +1395,60 @@ further illustrate the result of applying this procedure to
 self-supporting surfaces.
 
 
-\paragraph{Koenigs Meshes. UNFINISHED}
+\paragraph{Koenigs Meshes.}
 
-Consider a self\dash supporting thrust network $\SS$ and corresponding 
-Airy mesh $\Phi$. Both $\SS$ and $\Phi$ are elements of the linear space 
-of meshes which project onto $\SS'$. Any such mesh has vertices 
-$\vw_i=(x_i,y_i,z_i)$, where the choice $z_i=s_i$ leads to $\SS$ and 
-$z_i=\phi_i$ leads to $\Phi$. We already know that the vertical loads 
-$A_iF_i$ which put $\SS$ into equilibrium are computed as $AF=\Delta_\phi 
-s$.
+Given a self\dash supporting thrust network $\SS$ with stress surface
+$\Phi$, we ask the question:
+Which vertical perturbation $\SS+\RR$ is self\dash supporting, with the same
+loads as $\SS$? As to notation, all involved meshes $\SS,\RR,\Phi$ have the
+same top view, and arithmetic operations refer to the respective $z$
+coordinates
+$s_i,r_i,\phi_i$ of vertices.
 
-We ask: Which perturbations $\SS+\RR$, having $z$ coordinates $z_i = 
-s_i+r_i$, support the {\em same} vertical loads as $\SS$ does? Such a mesh 
-must satisfy $\Delta_\phi(s+r)=\Delta_\phi s$, so $\Delta_\phi r = 0$. 
-This linear system is easily solved in principle.
+The condition of equal loads then is expressed as
+$\Delta_\phi(s+r)=\Delta_\phi s$ in terms of Laplacians or
+as $H^\rel_\SS=H^\rel_{\SS+\RR}$ in terms of mean curvature, and is equivalent
+to 
+	\begin{align*}
+	\Delta_\phi r = 0, \quad \mbox{i.e.,}\quad
+	H^\rel_\RR = 0.
+	\end{align*}
+ So $\RR$ is a {\em minimal surface} relative to $\Phi$.  While in the
+triangle mesh case there are enough degrees of freedom for nontrivial
+solutions, the case of planar quad meshes is more intricate:
+Polar polyhedra $\RR^*,\Phi^*$ have to be
+Christoffel duals of each other \cite{Pottmann2007}, as illustrated by
+Figure~\ref{fig:christoffel}. Unfortunately not all quad meshes
+have such a dual; the condition is that the mesh is {\em Koenigs}, i.e.,
+the derived mesh formed by the intersection
+points of diagonals of faces again has planar faces.
 
-\begin{figure*}
-	\begin{overpic}[width=.5\textwidth]{fig/enneper.jpg}
+\begin{figure}[h]
+	\begin{overpic}[width=\columnwidth]{fig/enneper2.jpg}
 		\color{gelb}
 		\lput(12,0){$\Phi+\alpha\RR$}
 		\lput(45,0){$\Phi$}
-		\lput(77,0){$\Phi-\alpha\RR$}
-	\end{overpic}\relax
-	\begin{overpic}[width=.18\textwidth]{fig/enneper-minimal.jpg}
 		\color{blau}
-		\lput(35,0){$\RR$}
-	\end{overpic}\hfill
- \begin{minipage}[b]{.28\textwidth}
+		\lput(77,0){$\RR$}
+	\end{overpic}
  \caption{A `Koebe' mesh  $\Phi$ is self\dash supporting for unit dead
 load. An entire family of self-supporting meshes with the same top view
 is defined by $\SS_\alpha=\Phi+\alpha\RR$, where $\RR$ is chosen as $\Phi$'s 
 Christoffel\dash dual.} \label{fig:enneper}
-\end{minipage}
-\end{figure*}
+	\end{figure}
 
-There is a nice explicit geometric construction of all such
-harmonic functions in the case of quad meshes: Equation \eqref{eq:deqiso}
-immediately leads to $H^\rel_\SS=H^\rel_{\SS+\RR}$, which is equivalent to
-	\begin{align*}
-	H^\rel_\RR = 0.
-	\end{align*}
- So $\RR$ is a {\em minimal surface}. Recall that \ $H^\rel_\RR$ is the
-mean curvature of $\RR^*$ with respect to the Gauss image $\Phi^*$ in the
-sense of \cite{Pottmann2007b}, where the star indicates the polar
-polyhedron. We conclude that $\RR^*$ is constructed from $\Phi^*$ by the
-condition of {\em parallel non\dash corresponding diagonals}, which is
-also called Christoffel duality, and which can be seen in
-Figure~\ref{fig:christoffel}. This condition determines $\RR^*$ uniquely
-up to translation and scaling; thus $\RR$ is unique up to
-scaling of $z$ coordinates and adding linear functions.
+\paragraph{Koebe meshes.}
 
-In general, however, $\RR$ does not exist, since only the so\dash
-called {\em Koenigs meshes} possess a Christoffel dual.
-
-\nix{ \begin{figure}[b]
-  \begin{overpic}[width=.45\columnwidth]{fig/enneper}
-	\end{overpic}\hfill
-\begin{minipage}[b]{.48\columnwidth}
- \caption{From a self-supporting isotropic Koebe surface, it is possible
-to construct a family of new self-supporting meshes, with identical top
-view, using the Christoffel construction.} \label{fig:enneper}
-\end{minipage}
- \end{figure}}
-
-An interesting special case occurs if $\Phi$ is an \emph{isotropic Koebe 
-mesh}, i.e., a PQ mesh whose edges touch the Maxwell paraboloid. Since 
+An interesting special case occurs if $\Phi$ is a {\it Koebe 
+mesh} of isotropic geometry,
+i.e., a PQ mesh whose edges touch the Maxwell paraboloid. Since 
 $\Phi$ approximates the Maxwell paraboloid, we get 
-$2K(\vw_i)H^{\rel}(\vw_i)$ $ \approx 1$ which means $\Phi$ is self\dash 
+$2K(\vw_i)H^{\rel}(\vw_i)$ $ \approx 1$ and $\Phi$ consequentely is self\dash 
 supporting for unit load. Applying the Christoffel dual construction 
-described above yields a family a ``minimal'' mesh $\RR$ and a family of 
-meshes $\Phi+\alpha\RR$ which are self\dash supporting for unit load. 
-Figure~\ref{fig:enneper} shows an example.
+described above yields a minimal mesh $\RR$ and a family of 
+meshes $\Phi+\alpha\RR$ which are self\dash supporting for unit load
+(see Figure~\ref{fig:enneper}).
+
 
 \section{Conclusion and Future Work}
 
