@@ -1,13 +1,13 @@
 %\def\winkel{\sphericalangle}
 
-% % Schoenes epsilon (\epsilon <--> \varepsilon)
-\let\altepsilon=\epsilon
-\let\epsilon=\varepsilon
-\def\varepsilon{\altepsilon}
+% % change the shape of epsilon (\epsilon <--> \varepsilon)
+%\let\altepsilon=\epsilon
+%\let\epsilon=\varepsilon
+%\def\varepsilon{\altepsilon}
 
 \def\<{\langle}
 \def\>{\rangle}
-\def\wt{\widetilde}
+%\def\wt{\widetilde}
 
 %\def\be{\begin{equation}}
 %\def\ee{\end{equation}}
@@ -27,10 +27,36 @@
 
 \def\R{{\mathbb R}}
 
-\DeclareSymbolFont{symbolsy}{OMS}{zplm}{m}{n}
-\DeclareSymbolFontAlphabet{\mathcaly}{symbolsy}
-\DeclareSymbolFont{symbolsz}{OMS}{pzccm}{m}{n}
-\DeclareSymbolFontAlphabet{\mathcalz}{symbolsz}
+%\DeclareSymbolFont{symbolsy}{OMS}{zplm}{m}{n}
+%\DeclareSymbolFontAlphabet{\mathcaly}{symbolsy}
+%\DeclareSymbolFont{symbolsz}{OMS}{pzccm}{m}{n}
+%\DeclareSymbolFontAlphabet{\mathcalz}{symbolsz}
 
-\def\dash{{\sf -}}
 \def\Dash{{\sf -}}
+\newcommand{\allowhyphenation}{\penalty1000\hskip0pt}
+\newcommand{\dash}{\discretionary{\Dash}{}{\Dash}\allowhyphenation}
+\renewcommand{\slash}{\discretionary{/}{}{/}\allowhyphenation}
+
+
+%%% redefine equation, etc., so that lineno works
+
+\ifx\linenomath\ganzbestmmtundefiniert
+        \newenvironment{linenomath}{}{}
+\fi
+\def\cslet#1#2{\expandafter\expandafter\expandafter\let
+        \expandafter\expandafter\csname#1\endcsname\csname#2\endcsname}
+
+\def\csdef#1#2#3#4{\expandafter\def\csname#1\endcsname
+        {#2\csname#3\endcsname#4}}
+\def\Redefine#1{%
+        \cslet{S#1}{#1}%
+        \cslet{SE#1}{end#1}%
+        \csdef{#1}{\linenomath}{S#1}{}%
+        \csdef{end#1}{}{SE#1}{\endlinenomath}%
+}
+\Redefine{equation}
+\Redefine{equation*}
+\Redefine{align}
+\Redefine{align*}
+
+

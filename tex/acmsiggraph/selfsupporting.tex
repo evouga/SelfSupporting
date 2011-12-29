@@ -16,10 +16,10 @@
 
 \documentclass[annual]{acmsiggraph}
 
-\usepackage{par06}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsthm}
+\usepackage{par06}
 \usepackage{overpic}
 \usepackage{contour}\contourlength{1pt}
 \usepackage{color}
@@ -34,19 +34,11 @@
 %\def\rrr{\mathclose{\mbox{$\>\hskip-.5ex\>$}}}
 \def\wh{\widehat}
 %\def\II{\mbox{I\hskip-0.1exI}}
-%\def\pu{{\partial\over\partial u}}
-%\def\du{{d\over d u}}
-%\def\hinauf#1#2{{\mathop{#1}\limits^{\vbox to-.32564ex{\kern-.4652ex
-%   \hbox{\normalfont #2}\vss}}}}
-%\def\dddot#1{\hinauf{#1}{...}}
-%\def\ddddot#1{\hinauf{#1}{....}}
-%\def\str{/\penalty10000\hskip0pt}
-%\def\d#1dot#2{\dddddot{#2}}
 \newtheorem{theorem}{Theorem}
 \newtheorem{prop}[theorem]{Proposition}
 \def\Div{\mathop{{\rm div}}\nolimits}
 \def\tr{\mathop{{\rm tr}}\nolimits}
-\def\rel{{\mathord{\text{\rm rel}}}}
+\def\rel{{\mathord{{\rm rel}}}}
 \def\const{{\mathord{\textrm{const}}}}
 \def\ess{s}
 \def\Hess#1{{\def\testess{#1}\nabla^2\ifx\testess\ess\!s\else #1\fi}}
@@ -175,21 +167,20 @@ isotropic geometry, mean curvature}
 
 %%% Your paper's abstract goes in its own section.
 
-\begin{abstract}
-Self\dash supporting masonry is one of the most ancient and at the same
-time most elegant ways of building curved shapes, with their analysis and
-modeling being a topic of geometry processing
-rather than classical continuum mechanics, because of the very geometric
-nature of failure of such structures. In this paper we use the
-thrust network method of analysis and present 
-an iterative nonlinear optimization algorithm for efficiently approximating freeform shapes
-by self\dash supporting ones. This provides an interactive
-modeling tool for such shapes. The rich geometry of thrust networks which
-was first studied by Maxwell in the 1860s leads us to identify new viewpoints
-of discrete differential geometry: we find close connections between different
-objects such as a finite\dash element discretization of the Airy stress
-potential, perfect graph Laplacians, and computing admissible loads
-via curvatures of polyhedral surfaces.
+\begin{abstract} Self\dash supporting masonry is one of the most ancient 
+and at the same time most elegant ways of building curved shapes. Their 
+analysis and modeling is a topic of geometry processing rather than 
+classical continuum mechanics, because of the very geometric nature of 
+failure of such structures. In this paper we use the thrust network method 
+of analysis and present an iterative nonlinear optimization algorithm for 
+efficiently approximating freeform shapes by self\dash supporting ones. 
+This provides an interactive modeling tool for such shapes. The rich 
+geometry of thrust networks which was first studied by Maxwell in the 
+1860s leads us to new viewpoints of discrete differential geometry: We 
+find close connections between different objects such as a finite\dash 
+element discretization of the Airy stress potential, perfect graph 
+Laplacians, and computing admissible loads via curvatures of polyhedral 
+surfaces.
 
 \end{abstract}
 
@@ -226,62 +217,59 @@ via curvatures of polyhedral surfaces.
 %\todo{TODO gentle introduction to self-supporting surfaces, assumptions about the model, importance to architecture etc}
 
 
-Vaulted masonry structures are among the simplest and at the same time
-most elegant solutions for creating curved shapes in building
-construction. This is the reason why they have been an object of interest
-since antiquity, large non\dash convex examples being provided by gothic
-cathedrals. They continue to be an active topic of research in today's
+Vaulted masonry structures are among the simplest and at the same time 
+most elegant solutions for creating curved shapes in building 
+construction. This is the reason why they have been an object of interest 
+since antiquity, large non\dash convex examples being provided by gothic 
+cathedrals. They continue to be an active topic of research in today's 
 engineering community.
 
 
-Our paper is concerned with a combined geometry+statics analysis of {\em
-self\dash supporting} masonry and with tools for the interactive modeling
-of freeform self\dash supporting structures. Here `self\dash supporting'
-means that the structure, considered as an arrangement of blocks (bricks,
-stones), holds together by itself, and additional support, additional
-chains and similar are present only during construction. Our analysis is
-based on the following assumptions, which follow the classic
+Our paper is concerned with a combined geometry+statics analysis of {\em 
+self\dash supporting} masonry and with tools for the interactive modeling 
+of freeform self\dash supporting structures. Here ``self\dash supporting'' 
+means that the structure, considered as an arrangement of blocks (bricks, 
+stones), holds together by itself, and additional support, additional 
+chains and similar are present only during construction. Our analysis is 
+based on the following assumptions, which follow the classic 
 \cite{Heyman66}:
 
 
-{\it Assumption 1:} Masonry has no tensile strength, but the individual
-building blocks do not slip against each other (because of friction or
-mortar). On the other hand, their compressive strength is sufficiently
-high so that failure of the structure is by a sudden change in geometry,
+{\it Assumption 1:} Masonry has no tensile strength, but the individual 
+building blocks do not slip against each other (because of friction or 
+mortar). On the other hand, their compressive strength is sufficiently 
+high so that failure of the structure is by a sudden change in geometry, 
 such as shown by Figure \ref{fig:block}, and not by material failure.
 
-{\it Assumption 2 (The Safe Theorem)}: If a system of forces can be found
-which is in equilibrium with the load on the structure and which is
-contained within the masonry envelope then the structure will carry the
+{\it Assumption 2 (The Safe Theorem)}: If a system of forces can be found 
+which is in equilibrium with the load on the structure and which is 
+contained within the masonry envelope then the structure will carry the 
 loads, although the actually occurring forces may not be those postulated.
 
-Our approach is twofold: We first give an overview of the continuous case of a
-smooth surface under stress which turns out to be governed by the so\dash
-called Airy stress function, at least locally.
-This mathematical model is called a
-membrane in the engineering literature and has been applied to the
-analysis of masonry before. The surface is self\dash supporting if and
-only if stresses are entirely compressive (i.e., the Airy function is
-convex). For computational purposes, stresses are discretized as a
-fictitious {\em thrust network} \cite{Block07}
-contained in the masonry structure.
-This is a system of forces which together with the structure's deadload
-is in equilibrium. It can be interpreted as a finite element discretization
-of the continuous case, and it turns out to have very interesting geometry
-dating back to the work of J.\ C.\ Maxwell \shortcite{Maxwell64}, with the
-Airy stress function becoming a discrete polyhdron directly
-related to a reciprocal force diagram. 
-Our own contributions are the following:
+Our approach is twofold: We first give an overview of the continuous case 
+of a smooth surface under stress which turns out to be governed by the 
+so\dash called Airy stress function, at least locally. This mathematical 
+model is called a membrane in the engineering literature and has been 
+applied to the analysis of masonry before. The surface is self\dash 
+supporting if and only if stresses are entirely compressive (i.e., the 
+Airy function is convex). For computational purposes, stresses are 
+discretized as a fictitious {\em thrust network} \cite{Block07} contained 
+in the masonry structure. This is a system of forces which together with 
+the structure's deadload is in equilibrium. It can be interpreted as a 
+finite element discretization of the continuous case, and it turns out to 
+have very interesting geometry dating back to the work of J.\ C.\ Maxwell 
+\shortcite{Maxwell64}, with the Airy stress function becoming a polyhdral 
+surface directly related to a reciprocal force diagram. Our own 
+contributions are the following:
 
 
-\begin{figure}[t]
-\includegraphics[width=\columnwidth]{fig/cheesevault25.jpg}
-\caption{A surface with many, irregularly placed holes almost never stands
-by itself; those that do are surprising and their stability is not obvious
-by inspection. The surface shown is produced by out algorithm which finds,
-for a given freeform shape, the nearest self\dash supporting surface.
-This procedure sometimes requires large deformations, as seen for
-this example in Figure~\ref{fig:cheese2} below.}
+	\begin{figure}[t] 
+	\includegraphics[width=\columnwidth]{fig/cheesevault25.jpg} 
+	\caption{A surface with many, irregularly placed holes almost 
+never stands by itself; those that do are surprising and their stability 
+is not obvious by inspection. The surface shown is produced by our 
+algorithm which finds, for a given freeform shape, the nearest self\dash 
+supporting surface.}
 	\label{fig:cheese}
 \end{figure}
 
@@ -292,41 +280,36 @@ this example in Figure~\ref{fig:cheese2} below.}
 
 \begin{list}{$\bullet$}{\leftmargin0pt\itemindent1em}
 
-\item
-We connect the physics of self\dash supporting surfaces with
-vertical loads to the geometry of isotropic 3\dash space, whith the
-direction of gravity as the distinguished direction
-\secref{sec:smooth}. Taking the convex Airy potential as
-unit sphere, one can express the equations  
-governing self\dash supporting surfaces in terms of curvatures.
+\item We connect the physics of self\dash supporting surfaces with 
+vertical loads to the geometry of isotropic 3\dash space, with the 
+direction of gravity as the distinguished direction \secref{sec:smooth}. 
+Taking the convex Airy potential as unit sphere, one can express the 
+equations governing self\dash supporting surfaces in terms of curvatures.
 
 
-\item We employ Maxwell's construction of polyhedral thrust networks
-and their reciprocal diagrams \secref{sec:discrete}, and give
-an interpretation of the equilibrium conditions in terms of
-discrete curvatures (like the Airy function, this global construction
-works for simply connected connectivity, but is easily extended to
-the general case).
+\item We employ Maxwell's construction of polyhedral thrust networks and 
+their reciprocal diagrams \secref{sec:discrete}, and give an 
+interpretation of the equilibrium conditions in terms of discrete 
+curvatures
 
-\item The graph Laplacian derived from a thrust network with compressive
-forces is a `perfect' one. We show how it appears in the analysis and
-establish a connection with mean curvatures which are otherwise defined
+\item The graph Laplacian derived from a thrust network with compressive 
+forces is a ``perfect'' one. We show how it appears in the analysis and 
+establish a connection with mean curvatures which are otherwise defined 
 for polyhedral surfaces.
 
-\item We present an optimization algorithm for efficiently finding
-a thrust network near a given arbitrary reference surface \secref{sec:opt},
-and build a tool for interactive design of self\dash supporting surfaces based
-on this algorithm \secref{sec:design}.
+\item We present an optimization algorithm for efficiently finding a 
+thrust network near a given arbitrary reference surface \secref{sec:opt}, 
+and build a tool for interactive design of self\dash supporting surfaces 
+based on this algorithm \secref{sec:design}.
 
-\item We exploit the geometric relationships between a self\dash
-supporting surface and the `unit sphere' stress potential in order
-to find  particularly nice families of self\dash supporting surfaces,
-especially planar quadrilateral representations  of thrust networks
-\secref{sec:special}.
+\item We exploit the geometric relationships between a self\dash 
+supporting surface and the stress potential in order to find particularly 
+nice families of self\dash supporting surfaces, especially planar 
+quadrilateral representations of thrust networks \secref{sec:special}.
 
-\item We demonstrate the versatility and applicability of
-our approach to the design and analysis of large\dash scale masonry and
-steel\dash glass structures.
+\item We demonstrate the versatility and applicability of our approach to 
+the design and analysis of large\dash scale masonry and steel\dash glass 
+structures.
 
 \end{list}
 
@@ -357,12 +340,12 @@ Unsupported masonry has been an active topic of research in the
 engineering community. The foundations for the modern approach were laid 
 by Jacques Heyman \shortcite{Heyman66} and are available as the textbook 
 \cite{Heyman95}. A unifying view on polyhedral surfaces, compressive 
-forces and corresponding `convex' force diagrams is presented by 
+forces and corresponding ``convex'' force diagrams is presented by 
 \cite{Ash1988}. F.~Fraternali \shortcite{Fraternali2002a}, 
 \shortcite{Fraternali2010} established a connection between the continuous 
 theory of stresses in membranes and the discrete theory of forces in 
-thrust networks, by interpreting the latter as a certain non-conforming finite 
-element discretization of the former.
+thrust networks, by interpreting the latter as a certain non-conforming 
+finite element discretization of the former.
 
 Several authors have studied the problem of finding discrete compressive 
 force networks contained within the boundary of masonry structures; early 
@@ -370,30 +353,29 @@ work in this area includes \ \cite{schek74}, \cite{Livesley92}, and\
 \cite{O'Dwyer98}. Fraternali~\shortcite{Fraternali2010} proposed solving 
 for the structure's discrete stress surface, and examining its convex hull 
 to study the structure's stability and susceptibility to cracking. 
-Philippe Block's seminal thesis introduced the method 
-of {\it Thrust Network Analysis}, which linearizes the form-finding problem by 
-first seeking a reciprocal diagram of the top view, which guarantees 
-equilibrium of horizontal forces, then solving for the heights that 
-balance the vertical loads (see e.g.\ \cite{Block07,block09}). Recent work by Block and coauthors extends this 
-method in the case where the reciprocal diagram is not unique; for 
-different choices of reciprocal diagram, the optimal heights can be found 
-using the method of least squares~\cite{vanmele2011}, and the search for 
-the best such reciprocal diagram can be automated using a genetic 
-algorithm~\cite{Block2011}.
+Philippe Block's seminal thesis introduced the method of {\it Thrust 
+Network Analysis}, which linearizes the form-finding problem by first 
+seeking a reciprocal diagram of the top view, which guarantees equilibrium 
+of horizontal forces, then solving for the heights that balance the 
+vertical loads (see e.g.\ \cite{Block07,block09}). Recent work by Block 
+and coauthors extends this method in the case where the reciprocal diagram 
+is not unique; for different choices of reciprocal diagram, the optimal 
+heights can be found using the method of least squares~\cite{vanmele2011}, 
+and the search for the best such reciprocal diagram can be automated using 
+a genetic algorithm~\cite{Block2011}.
 
 Other approaches to the interactive design of self-supporting structures 
 include modeling these structures as damped particle-spring 
-systems~\cite{Kilian2005,barnes09}, and mirroring the rich tradition in architecture of 
-designing self-supporting surfaces using hanging chain 
+systems~\cite{Kilian2005,barnes09}, and mirroring the rich tradition in 
+architecture of designing self-supporting surfaces using hanging chain 
 models~\cite{Heyman98}. Alternatively, masonry structures can be 
 represented by networks of rigid blocks~\cite{Whiting09}, whose conditions 
-on the structural feasibility were incorporating into procedural modeling 
+on the structural feasibility were incorporated into procedural modeling 
 of buildings.
 
 Algorithmic and mathematical methods relevant to this paper are work on 
-the geometry of quad meshes with planar faces (\cite{Glymph2004}, 
-\cite{Liu2006}), discrete curvatures for such meshes
-\cite{Pottmann2007b,bobenko-2010-ct}, 
+the geometry of quad meshes with planar faces \cite{Glymph2004,Liu2006}, 
+discrete curvatures for such meshes \cite{Pottmann2007b,bobenko-2010-ct}, 
 in particular curvatures in isotropic geometry \cite{Pottmann2007}. 
 Schiftner and Balzer \shortcite{Schiftner2010} discuss approximating a 
 reference surface by quad mesh with planar faces, whose layout is guided 
@@ -405,56 +387,55 @@ by statics properties of that surface.
 
 \subsection{The Continuous Theory}
 
-We are here modeling masonry as a surface $S$ given by a height field
-$s(x,y)$ defined in some planar domain $\Omega$. We assume that there are
-vertical loads $F(x,y)$ --- usually $F$ represents the structure's own
-weight. By definition this surface is self\dash supporting, if and only if
-there exists a field of compressive stresses which are in equilibrium with
-the acting forces. This is equivalent to existence of a field $M(x,y)$ of
+We are here modeling masonry as a surface given by a height field $s(x,y)$ 
+defined in some planar domain $\Omega$. We assume that there are vertical 
+loads $F(x,y)$ --- usually $F$ represents the structure's own weight. By 
+definition this surface is self\dash supporting, if and only if there 
+exists a field of compressive stresses which are in equilibrium with the 
+acting forces. This is equivalent to existence of a field $M(x,y)$ of 
 $2\times 2$ symmetric positive semidefinite matrices satisfying
 	\begin{align}
 	\Div (M\nabla s) = F, \quad
 	\Div M &= 0,
 	  \label{eq:conds}
 	\end{align}
- where the divergence operator $\Div{u(x,y)\choose v(x,y}= u_x + v_y$ is
-understood to act on the columns of a matrix (see e.g.\
-\cite{Fraternali2010}, \cite{Giaquinta1985}). 
+ where the divergence operator $\Div{u(x,y)\choose v(x,y}= u_x + v_y$ is 
+understood to act on the columns of a matrix (see e.g.\ 
+\cite{Fraternali2010}, \cite{Giaquinta1985}).
 
-The condition $\Div M=0$ says that $M$ is essentially the Hessian of a
-real\dash valued function $\phi$ (the {\em Airy stress potential}): With
+The condition $\Div M=0$ says that $M$ is essentially the Hessian of a 
+real\dash valued function $\phi$ (the {\em Airy stress potential}): With 
 the notation
-	$$
+	\begin{align*}
 	M =
 	{\textstyle {m_{11} \ m_{12} \choose m_{12} \ m_{22}}}
 	\iff	
 	\wh M =
 	{\textstyle {\hphantom{-}m_{22} \ -m_{12} \choose -m_{12}
 		 \ \hphantom{-}m_{11}}}
-	$$
+	\end{align*}
  it is clear that $\Div M=0$ is an integrability condition for $\wh M$, so
 locally there is a potential $\phi$ with
-	$$
+	\begin{align*}
 	\wh M = \Hess\phi, \quad \text{i.e.,}\quad
 	M = \wh{\Hess\phi}.
-	$$
- If the domain $\Omega$ is simply connected, this relation holds globally.
+	\end{align*}
+ If the domain $\Omega$ is simply connected, this relation holds globally. 
 Positive semidefiniteness of $M$ (or equivalently of $\wh M$) 
-characterizes {\em convexity} of the Airy potential $\phi$.
-The Airy function enters computations only by way of its derivatives,
-so global existence is not an issue.
+characterizes {\em convexity} of the Airy potential $\phi$. The Airy 
+function enters computations only by way of its derivatives, so global 
+existence is not an issue.
 
-{\it Remark:} Stresses at boundary points depend on the way the surface is
-anchored: A fixed anchor means no condition, but a free boundary with
+{\it Remark:} Stresses at boundary points depend on the way the surface is 
+anchored: A fixed anchor means no condition, but a free boundary with 
 outer normal vector $\nw$ means $\<M \nabla s, \nw \> = 0$.
 
 
-\paragraph{Stress Laplacian.}
-Note that $\Div M =0$ yields $\Div(M\nabla s)$ $ =$ $ \tr(M\Hess
-s)$, which we like to call $\Delta_\phi s$. The operator $\Delta_\phi$ is
-symmetric. It is elliptic (as a Laplace operator should be) if and
-only if $M$ is positive definite, i.e., $\phi$ is strictly convex. The
-balance condition \eqref{eq:conds} may be written as
+\paragraph{Stress Laplacian.} Note that $\Div M =0$ yields $\Div(M\nabla 
+s)$ $ =$ $ \tr(M\Hess s)$, which we like to call $\Delta_\phi s$. The 
+operator $\Delta_\phi$ is symmetric. It is elliptic (as a Laplace operator 
+should be) if and only if $M$ is positive definite, i.e., $\phi$ is 
+strictly convex. The balance condition \eqref{eq:conds} may be written as
 	$
 	\Delta_\phi s = F.
 	$
@@ -462,23 +443,23 @@ balance condition \eqref{eq:conds} may be written as
 
 \subsection{Discrete Theory: Thrust Networks}
 
-We are discretizing a self-supporting surface by a polyhedral
-mesh $\SS=(V,E,F)$ (see Figure~\ref{fig:reciprocal}). Loads are again
-vertical, and we discretize them as force densities $F_i$ associated with
-vertices $\vw_i$. The load acting on this vertex is then given by
-$F_iA_i$, where $A_i$ is an area of influence (using a prime to indicate
-projection onto the $xy$ plane, $A_i$ is the area of the Voronoi cell of
-$\vw_i'$ w.r.t.\ $V'$). We assume that stresses are carried by the edges
-of the mesh: the force exerted on the vertex $\vw_i$ by the edge
-connecting $\vw_i,\vw_j$ is given by
-	$$
+We are discretizing a self-supporting surface by a polyhedral mesh 
+$\SS=(V,E,F)$ (see Figure~\ref{fig:reciprocal}). Loads are again vertical, 
+and we discretize them as force densities $F_i$ associated with vertices 
+$\vw_i$. The load acting on this vertex is then given by $F_iA_i$, where 
+$A_i$ is an area of influence (using a prime to indicate projection onto 
+the $xy$ plane, $A_i$ is the area of the Voronoi cell of $\vw_i'$ w.r.t.\ 
+$V'$). We assume that stresses are carried by the edges of the mesh: the 
+force exerted on the vertex $\vw_i$ by the edge connecting $\vw_i,\vw_j$ 
+is given by
+	\begin{align*}
 	w_{ij} (\vw_j-\vw_i),
 	\quad
 	\text{where}\quad
 	w_{ij}=w_{ji}\ge 0.
-	$$
- The nonnegativity of the individual weights $w_{ij}$ expresses the
-compressive nature of forces. The balance conditions at vertices then read
+	\end{align*}
+ The nonnegativity of the individual weights $w_{ij}$ expresses the 
+compressive nature of forces. The balance conditions at vertices then read 
 as follows: With $\vw_i=(x_i,y_i,s_i)$ we have
 	\begin{align}
 	\sum\nolimits_{j\sim i}
@@ -523,14 +504,12 @@ forces which is entirely contained within the structure.
         \lput(13,8){\contour{white}{$w_{ij} \ew_{ij}'$}}
         \lput(66,11){\contour{white}{$\ew_{ij}^*$}}
   \end{overpic}}\relax
- \caption{A thrust network $\SS$, with dangling edges indicating
-external forces (left). This network
-together with compressive forces which balance vertical loads
-$A_iF_i$ projects
-onto a planar mesh $\SS'$ with equilibrium compressive forces
-$w_{ij}\ew_{ij}'$ in its edges.
-Rotating forces by 90$^\circ$ leads to the reciprocal force diagram
-$\SS'^*$ (right).}
+ \caption{A thrust network $\SS$, with dangling edges indicating external 
+forces (left). This network together with compressive forces which balance 
+vertical loads $A_iF_i$ projects onto a planar mesh $\SS'$ with 
+equilibrium compressive forces $w_{ij}\ew_{ij}'$ in its edges. Rotating 
+forces by 90$^\circ$ leads to the reciprocal force diagram $\SS'^*$ 
+(right).}
   \label{fig:reciprocal}
   \end{figure}
 
@@ -538,44 +517,45 @@ $\SS'^*$ (right).}
 
 Equations \eqref{eq:deqtop} have a geometric interpretation: With edge
 vectors
-	$$\ew'_{ij} = \vw_j'-\vw_i'=(x_j, y_j) - (x_i, y_i),
-	$$
+	\begin{align*}
+	\ew'_{ij} = \vw_j'-\vw_i'=(x_j, y_j) - (x_i, y_i),
+	\end{align*}
  Equation \eqref{eq:deqtop} asserts that vectors $w_{ij} \ew_{ij}'$ form a
 closed cycle. Rotating them by 90 degrees, we see that likewise
-	$$
+	\begin{align*}
 	\ew_{ij}^{\prime *} = w_{ij} J \ew_{ij}', \quad \text{with}\quad
 	J={\textstyle{0 \ -1 \choose 1 \ \hphantom{-}0}}.
-	$$
- form a closed cycle (see Figure \ref{fig:reciprocal}).
-If the mesh $\SS$ is simply connected, there exists
-an entire {\em reciprocal diagram} $\SS^{\prime *}$ which is a
-combinatorial dual of $\SS$, and which has edge vectors $\ew_{ij}'^*$.
- Its vertices are denoted by $\vw_i^{\prime *}$. 
+	\end{align*}
+ form a closed cycle (see Figure \ref{fig:reciprocal}). If the mesh $\SS$ 
+is simply connected, there exists an entire {\em reciprocal diagram} 
+$\SS^{\prime *}$ which is a combinatorial dual of $\SS$, and which has 
+edge vectors $\ew_{ij}'^*$. Its vertices are denoted by $\vw_i^{\prime 
+*}$.
 
 \paragraph{Polyhedral Stress Potential.}
 
-We can go further and construct a convex polyhedral `Airy stress potential'
-surface $\Phi$ with
-vertices $\ww_i=(x_i,y_i,\phi_i)$ combinatorially equivalent to $\SS$ by
-requiring that a primal face of $\Phi$ lies in the plane $z=\alpha x +
-\beta y + \gamma$ if and only if $(\alpha,\beta)$ is the corresponding
-dual vertex of $\SS'^*$ (see Figure~\ref{fig:polarity}). Obviously this
-condition determines $\Phi$ up to vertical translation. For existence see
-\cite{Ash1988}. The inverse procedure constructs a reciprocal diagram from
-$\Phi$. This procedure obviously works also if forces are not compressive:
-we can construct an Airy mesh $\Phi$ which has planar faces, but it will
-no longer be a convex polyhedron.
+We can go further and construct a convex polyhedral `Airy stress 
+potential' surface $\Phi$ with vertices $\ww_i=(x_i,y_i,\phi_i)$ 
+combinatorially equivalent to $\SS$ by requiring that a primal face of 
+$\Phi$ lies in the plane $z=\alpha x + \beta y + \gamma$ if and only if 
+$(\alpha,\beta)$ is the corresponding dual vertex of $\SS'^*$ (see 
+Figure~\ref{fig:polarity}). Obviously this condition determines $\Phi$ up 
+to vertical translation. For existence see \cite{Ash1988}. The inverse 
+procedure constructs a reciprocal diagram from $\Phi$. This procedure 
+obviously works also if forces are not compressive: we can construct an 
+Airy mesh $\Phi$ which has planar faces, but it will no longer be a convex 
+polyhedron.
 
-The vertices of $\Phi$ can be interpolated by a piecewise\dash linear
-function $\phi(x,y)$. It is easy to see that the derivative of $\phi(x,y)$
-jumps by the amount $\|\ew_{ij}'^*\| = w_{ij}\|\ew_{ij}'\|$, when crossing
-over the edge $\ew'_{ij}$ at right angle, with unit speed. This identifies
-$\Phi$ as the Airy polyhedron introduced by \cite{Fraternali2002a} as a
-finite element discretization of the continuous Airy function (see also
+The vertices of $\Phi$ can be interpolated by a piecewise\dash linear 
+function $\phi(x,y)$. It is easy to see that the derivative of $\phi(x,y)$ 
+jumps by the amount $\|\ew_{ij}'^*\| = w_{ij}\|\ew_{ij}'\|$, when crossing 
+over the edge $\ew'_{ij}$ at right angle, with unit speed. This identifies 
+$\Phi$ as the Airy polyhedron introduced by \cite{Fraternali2002a} as a 
+finite element discretization of the continuous Airy function (see also 
 \cite{Fraternali2010}).
 
-If the mesh is not simply connected, the reciprocal
-diagram and the Airy polyhedron exist only locally.
+If the mesh is not simply connected, the reciprocal diagram and the Airy 
+polyhedron exist only locally.
 
   \begin{figure}[t]
  \centerline{\vphantom{\includegraphics[width=.94\columnwidth]
@@ -602,49 +582,49 @@ diagram and the Airy polyhedron exist only locally.
 %        \lput(8,1){$\Phi'=\SS'$}
 %        \cput(4,33){$f_k$}
 %  \end{overpic}
- \caption{Airy stress potential $\Phi$ and its polar dual $\Phi^*$.
-$\Phi$ projects onto the same planar mesh as $\SS$ does, while
-$\Phi^*$ projects onto the reciprocal force diagram.  A primal face
-$f_k$ lies in the plane $z=\alpha x + \beta y + \gamma$ $\iff$
-the corresponding dual vertex is $\ww_k^*=(\alpha,\beta,-\gamma)$.}
+ \caption{Airy stress potential $\Phi$ and its polar dual $\Phi^*$. $\Phi$ 
+projects onto the same planar mesh as $\SS$ does, while $\Phi^*$ projects 
+onto the reciprocal force diagram.  A primal face $f_k$ lies in the plane 
+$z=\alpha x + \beta y + \gamma$ $\iff$ the corresponding dual vertex is 
+$\ww_k^*=(\alpha,\beta,-\gamma)$.}
   \label{fig:polarity}
   \end{figure}
 
 
 \paragraph{Polarity.}
 
-Polarity with respect to the {\em Maxwell paraboloid} $z={1\over 2}
-(x^2+y^2)$ maps the plane $z=\alpha x + \beta y + \gamma$ to the point
-$(\alpha,\beta,-\gamma)$. Thus, applying polarity to $\Phi$ and projecting
-the result $\Phi^*$ into the $xy$ plane reconstructs the reciprocal
+Polarity with respect to the {\em Maxwell paraboloid} $z={1\over 2} 
+(x^2+y^2)$ maps the plane $z=\alpha x + \beta y + \gamma$ to the point 
+$(\alpha,\beta,-\gamma)$. Thus, applying polarity to $\Phi$ and projecting 
+the result $\Phi^*$ into the $xy$ plane reconstructs the reciprocal 
 diagram $\Phi^{*\prime}=\SS^{\prime *}$ (see Fig.~\ref{fig:polarity}).
 
 \paragraph{Discrete Stress Laplacian.}
 
-The weights $w_{ij}$ may be used to define a graph
-Laplacian $\Delta_\phi$ which on vertex\dash based functions acts as
-	$$p
+The weights $w_{ij}$ may be used to define a graph Laplacian $\Delta_\phi$ 
+which on vertex\dash based functions acts as
+	\begin{align*}
 	\Delta_{\phi} s(\vw_i)=\sum\nolimits_{j\sim i} w_{ij}(s_j-s_i).
-	$$
- This operator is a perfect discrete Laplacian in the sense
-of \cite{wardetzky07}, since it is symmetric
-by construction, Equation \eqref{eq:deqtop} implies linear
-precision for the planar ``top view mesh'' $\SS'$ (i.e., $\Delta_\phi f=0$
-if $f$ is a linear function), and $w_{ij}\ge 0$ ensures semidefiniteness
-and a maximum principle for $\Delta_\phi$\dash harmonic
-functions. Equation \eqref{eq:deqz} can be written as $\Delta_\phi s = AF$.
+	\end{align*}
+ This operator is a perfect discrete Laplacian in the sense of 
+\cite{wardetzky07}, since it is symmetric by construction, Equation 
+\eqref{eq:deqtop} implies linear precision for the planar ``top view 
+mesh'' $\SS'$ (i.e., $\Delta_\phi f=0$ if $f$ is a linear function), and 
+$w_{ij}\ge 0$ ensures semidefiniteness and a maximum principle for 
+$\Delta_\phi$\dash harmonic functions. Equation \eqref{eq:deqz} can be 
+written as $\Delta_\phi s = AF$.
 
-Note that $\Delta_\phi$ is well defined also in case the underlying meshes
+Note that $\Delta_\phi$ is well defined also in case the underlying meshes 
 are not simply connected.
 
 \subsection{Surfaces in Isotropic Geometry} \label{sec:smooth}
 
-It is worth wile to reconsider the basics of self\dash supporting surfaces
-in the language of dual\dash isotropic geometry, which takes place in
-$\R^3$ with the $z$ axis as a distinguished vertical direction. The basic
-elements of this geometry are planes, having equation $z=f(x,y) = \alpha
-x+\beta y+\gamma$. The gradient vector $\nabla f = (\alpha,\beta)$
-determines the plane up to translation. A plane tangent to the graph of
+It is worth wile to reconsider the basics of self\dash supporting surfaces 
+in the language of dual\dash isotropic geometry, which takes place in 
+$\R^3$ with the $z$ axis as a distinguished vertical direction. The basic 
+elements of this geometry are planes, having equation $z=f(x,y) = \alpha 
+x+\beta y+\gamma$. The gradient vector $\nabla f = (\alpha,\beta)$ 
+determines the plane up to translation. A plane tangent to the graph of 
 the function $s(x,y)$ has gradient vector $\nabla s$.
 
 There is the notion of {\em parallel points}:
@@ -653,25 +633,25 @@ There is the notion of {\em parallel points}:
 	x=x',\ y=y'
 	.$
 
-Generally speaking,
-in the differential geometry of surfaces one considers the {\em Gauss map}
-$\sigma$ from a surface $S$ to a convex unit sphere $\Phi$ by requiring
-that corresponding points have parallel tangent planes.  Subsequently mean
-curvature $H^\rel$ and Gaussian curvature $K^\rel$ {\em relative to
-$\Phi$} are computed from the derivative $d\sigma$. Classically $\Phi$ is
-the ordinary unit sphere $x^2+y^2+z^2=1$, so that $\sigma$ maps each point
-its unit normal vector.
+Generally speaking, in the differential geometry of surfaces one considers 
+the {\em Gauss map} $\sigma$ from a surface $S$ to a convex unit sphere 
+$\Phi$ by requiring that corresponding points have parallel tangent 
+planes.  Subsequently mean curvature $H^\rel$ and Gaussian curvature 
+$K^\rel$ {\em relative to $\Phi$} are computed from the derivative 
+$d\sigma$. Classically $\Phi$ is the ordinary unit sphere $x^2+y^2+z^2=1$, 
+so that $\sigma$ maps each point its unit normal vector.
 
 
 \paragraph{Computing Curvatures.}
 
-In our setting, parallelity is a property of {\em points} rather than
-lines, and the Gauss map $\sigma$ goes the other way, mapping the tangent
-planes of the unit sphere $z=\phi(x,y)$ to the corresponding tangent plane
-of the surface $z=s(x,y)$. If we know which point a plane is attached to,
+In our setting, parallelity is a property of {\em points} rather than 
+lines, and the Gauss map $\sigma$ goes the other way, mapping the tangent 
+planes of the unit sphere $z=\phi(x,y)$ to the corresponding tangent plane 
+of the surface $z=s(x,y)$. If we know which point a plane is attached to, 
 then it is determined by its gradient. So we simply write
-	$$\nabla \phi\overset\sigma\longmapsto\nabla s.
-	$$
+	\begin{align*}
+	\nabla \phi\overset\sigma\longmapsto\nabla s.
+	\end{align*}
  By moving along a curve $\uw(t)=(x(t),y(t))$ in the parameter domain we
 get the first variation of tangent planes:
 	$
@@ -682,8 +662,8 @@ get the first variation of tangent planes:
 	$	
 	(\Hess\phi)\dot\uw \overset{d\sigma}\longmapsto
 	(\Hess s)\dot\uw $,
- for all $\dot\uw$, and the matrix of $d\sigma$ is found as
-$(\Hess\phi)^{-1}(\Hess s)$.  By definition, curvatures of the surface $s$
+ for all $\dot\uw$, and the matrix of $d\sigma$ is found as 
+$(\Hess\phi)^{-1}(\Hess s)$.  By definition, curvatures of the surface $s$ 
 {\em relative} to $\phi$ are found as
 	\begin{align*}
 		K_s^\rel
@@ -697,11 +677,11 @@ $(\Hess\phi)^{-1}(\Hess s)$.  By definition, curvatures of the surface $s$
 		= {1\over 2}\tr \left({M\over\det\Hess\phi} \Hess s\right)
 		=  {\Delta_\phi s \over 2\det\Hess\phi}.
 	\end{align*}
- The Maxwell paraboloid $\phi_0(x,y)={1\over 2}(x^2+y^2)$ is the
-canonical unit sphere of isotropic geometry, its Hessian equals $E_2$.
-Curvatures relative to $\phi_0$ are not called ``relative'' and are denoted
-by the symbols $H,K$ instead of $H^\rel,K^\rel$. The formulas above together
-with the observation $\tr (M\Hess\phi)=\tr(E_2)=2$ immediately imply
+ The Maxwell paraboloid $\phi_0(x,y)={1\over 2}(x^2+y^2)$ is the canonical 
+unit sphere of isotropic geometry, its Hessian equals $E_2$. Curvatures 
+relative to $\phi_0$ are not called ``relative'' and are denoted by the 
+symbols $H,K$ instead of $H^\rel,K^\rel$. The formulas above together with 
+the observation $\tr (M\Hess\phi)=\tr(E_2)=2$ immediately imply
 	\begin{align*}
 	K_s = \det \Hess s,
 		\
@@ -715,8 +695,8 @@ with the observation $\tr (M\Hess\phi)=\tr(E_2)=2$ immediately imply
 
 \paragraph{Relation to Self-supporting Surfaces.}
 
-Applying the definitions above to the convex Airy stress potential $\phi$
-of a self\dash supporting surface, we rewrite the balance conditions
+Applying the definitions above to the convex Airy stress potential $\phi$ 
+of a self\dash supporting surface, we rewrite the balance conditions 
 \eqref{eq:conds} as
 	\begin{equation}
 	2 K_\phi H_s^\rel  = F.
@@ -726,20 +706,20 @@ of a self\dash supporting surface, we rewrite the balance conditions
 
 \begin{itemize}\itemsep-\parsep
 
-\item Since $H^\rel_\phi=1$ we see that the load $F_\phi=2K_\phi$ is
-admissible for the stress surface $\phi(x,y)$, which is hereby shown as
+\item Since $H^\rel_\phi=1$ we see that the load $F_\phi=2K_\phi$ is 
+admissible for the stress surface $\phi(x,y)$, which is hereby shown as 
 self\dash supporting. The quotient of admissible loads yields
 	$
 	 H_s^\rel = F/F_\phi.
 	$
 
-\item If the stress surface coincides with the Maxwell paraboloid, then
-{\em constant loads characterize constant mean curvature surfaces},
+\item If the stress surface coincides with the Maxwell paraboloid, then 
+{\em constant loads characterize constant mean curvature surfaces}, 
 because we get $K_\phi=1$ and $H_s=F/2$.
 
-\item If $s_1,s_2$ have the same stress potential $\phi$, then
-$H^\rel_{s_1-s_2}=H^\rel_{s_1}-H^\rel_{s_2}=0$, so $s_1-s_2$ is a
-`relative' minimal surface.
+\item If $s_1,s_2$ have the same stress potential $\phi$, then 
+$H^\rel_{s_1-s_2}=H^\rel_{s_1}-H^\rel_{s_2}=0$, so $s_1-s_2$ is a 
+(relative) minimal surface.
 
 \end{itemize}
 
@@ -747,15 +727,14 @@ $H^\rel_{s_1-s_2}=H^\rel_{s_1}-H^\rel_{s_2}=0$, so $s_1-s_2$ is a
 
 \subsection{Meshes in Isotropic Geometry} \label{sec:discrete}
 
-A general theory of curvatures of polyhedral surfaces with respect to a
-polyhedral unit sphere was proposed by \cite{Pottmann2007b,bobenko-2010-ct},
-and its dual complement
-in isotropic geometry was elaborated by \cite{Pottmann2007}. As also
-illustrated by Figure~\ref{fig:christoffel}, the mean curvature of a
-self\dash supporting surface $\SS$ {\em relative} to its discrete Airy
-stress potential is associated with the vertices of $\SS$. It is computed
-from areas and mixed areas of faces in the polar polyhedra $\SS^*$ and
-$\Phi^*$ which correspond to the vertex $\vw_i$:
+A general theory of curvatures of polyhedral surfaces with respect to a 
+polyhedral unit sphere was proposed by 
+\cite{Pottmann2007b,bobenko-2010-ct}, and its dual complement in isotropic 
+geometry was elaborated by \cite{Pottmann2007}. As illustrated by 
+Figure~\ref{fig:christoffel}, the mean curvature of a self\dash supporting 
+surface $\SS$ {\em relative} to its discrete Airy stress potential is 
+associated with the vertices of $\SS$. It is computed from areas and mixed 
+areas of faces in the polar polyhedra $\SS^*$ and $\Phi^*$:
 	\begin{align*}
 	H^\rel(\vw_i)
 	&= {A_i(\SS,\Phi) \over A_i(\Phi,\Phi)},
@@ -782,11 +761,9 @@ Replacing $\vw_k^*$ by $\ww_k^*$ yields
 \begin{figure}[h]
  \centering
  \begin{overpic}[width=.8\columnwidth]{fig/christoffel}
-	\put(0,8){$\SS$}
 	\put(17,12){$\vw_i$}
+	\put(0,8){$\SS$}
 	\put(0,30){$\Phi$}
-	\cput(70,37){$\SS^*$}
-	\cput(80,0){$\Phi^*$}
 	\color{blau}
 	\lput(52,18){$\ww_0^*$}
 	\lput(65,22){$\vw_0^*$}
@@ -805,19 +782,20 @@ Replacing $\vw_k^*$ by $\ww_k^*$ yields
 	\cput(29,12){$f_2^\SS$}
 	\cput(22,42){$f_3^\Phi$}
 	\cput(22,22){$f_3^\SS$}
+	\cput(70,37){$\SS^*$}
+	\cput(80,0){$\Phi^*$}
  \end{overpic}
- \caption{Mean curvature of a vertex $\vw_i$ of $\SS$: Corresponding
-edges of the polar duals $\SS^*$, $\Phi^*$ are parallel, and mean curvature
-according to \protect\cite{Pottmann2007b} is computed from the
-vertices polar to faces adjacent to $\vw_i$. For valence 4 vertices
-the case of zero mean curvature shown here is characterized
-by parallelity of non\dash corresponding diagonals of corresponding
-quads in $\SS^*,\Phi^*$.}
+ \caption{Mean curvature of a vertex $\vw_i$ of $\SS$: Corresponding edges 
+of the polar duals $\SS^*$, $\Phi^*$ are parallel, and mean curvature 
+according to \protect\cite{Pottmann2007b} is computed from the vertices 
+polar to faces adjacent to $\vw_i$. For valence 4 vertices the case of 
+zero mean curvature shown here is characterized by parallelity of non\dash 
+corresponding diagonals of corresponding quads in $\SS^*,\Phi^*$.}
  \label{fig:christoffel}
  \end{figure}
 
 \proclaim Proposition.
- If $\Phi$ is the Airy surface of a thrust network $\SS$, then the mean
+ If $\Phi$ is the Airy surface of a thrust network $\SS$, then the mean 
 curvature of $\SS$ relative to $\Phi$ is computable as
 	\begin{equation}
 	\label{eq:Hrel}
@@ -829,27 +807,23 @@ curvature of $\SS$ relative to $\Phi$ is computable as
 		{\Delta_\phi s\over \Delta_\phi \phi}\Big|_{\vw_i}.
 	\end{equation}
 
-This is an immediate consequence of the following
-
-\proclaim Lemma.
-	$
+\begin{proof} It is sufficient to show the formula
+	\begin{align*}
 	2A_i(\SS,\Phi)
 	= \sum_{j\sim i} w_{ij} (s_j-s_i).
-	$
+ 	\end{align*}
+ For that, consider edges $\ew'_1,\dots,\ew'_n$ emanating from $\vw_i'$. 
+The dual cycles in $\Phi^{*\prime}$ and $\SS^{*\prime}$ without loss of 
+generality are given by vertices $(\vw^{*\prime}_1,\dots,\vw^{*\prime}_n)$ 
+and $(\ww^{*\prime}_1,\dots,\ww^{*\prime}_n)$, respectively. The latter 
+has edges $\ww'^*_{j+1}-\ww'^*_j = w_{ij} J\ew'_j$ (indices modulo $n$).
 
-\begin{proof} Consider edges $\ew'_1,\dots,\ew'_n$ emanating from
-$\vw_i'$, and the dual cycles in $\Phi^{*\prime}$ and $\SS^{*\prime}$
-which without loss of generality are given by vertices
-$(\vw^{*\prime}_1,\dots,\vw^{*\prime}_n)$ and
-$(\ww^{*\prime}_1,\dots,\ww^{*\prime}_n)$, respectively. The former has
-edges $\ww'^*_{j+1}-\ww'^*_j = w_{ij} J\ew'_j$ (indices modulo $n$).
-
-Without loss of generality $\vw_i=0$, so the vertex $\vw'^*_j$ equals the
-gradient of the linear function $\xw\mapsto \<\vw'^*_j,\xw\>$ defined by
-the properties $\ew'_{j-1}\mapsto s_{j-1}-s_i$, $\ew'_j\mapsto s_j-s_i$.
-Corresponding edge vectors $\vw'^*_{j+1}-\vw'^*_j$ and
-$\ww'^*_{j+1}-\ww'^*_j$ are parallel, because
-$\<\vw'_{j+1}-\vw'_j,\ew'_j\>=(s_j-s_i)-(s_j-s_i)=0$. Now expand
+Without loss of generality $\vw_i=0$, so the vertex $\vw'^*_j$ by 
+construction equals the gradient of the linear function $\xw\mapsto 
+\<\vw'^*_j,\xw\>$ defined by the properties $\ew'_{j-1}\mapsto 
+s_{j-1}-s_i$, $\ew'_j\mapsto s_j-s_i$. Corresponding edge vectors 
+$\vw'^*_{j+1}-\vw'^*_j$ and $\ww'^*_{j+1}-\ww'^*_j$ are parallel, because 
+$\<\vw'_{j+1}-\vw'_j,\ew'_j\>=(s_j-s_i)-(s_j-s_i)=0$. Expand 
 $2A_i(\SS,\Phi)$:
 	\begin{align*}
 	& \mathrel{\hphantom{=}}
@@ -877,11 +851,11 @@ $2A_i(\SS,\Phi)$:
 In order to discretize \eqref{equigeo}, we also need a discrete Gaussian
 curvature, which is usually defined as a quotient of areas which
 correspond under the Gauss mapping. We define
-	$$
+	\begin{align*}
 	K_\Phi(\vw_i) = {A_i(\Phi,\Phi) \over A_i},
-	$$
+	\end{align*}
  where $A_i$ is the Voronoi area of vertex $\vw_i'$ in the projected mesh
-$\SS'$, which was used in \eqref{eq:deqz}.
+$\SS'$ used in \eqref{eq:deqz}.
 
 
 
@@ -917,12 +891,12 @@ $\SS'$, which was used in \eqref{eq:deqz}.
 		\put(0,0){(d)}
 	\end{overpic}}
  \caption{The top of the Lilium Tower (a) cannot stand as a masonry 
-structure, because of its central part is concave.
-Our algorithm finds a nearby self-supporting mesh (b) without 
-this impossible feature. (c) shows the corresponding Airy mesh $\Phi$ and 
-reciprocal force diagram $\SS'^*$. (d) The user can edit the original 
-surface, such as by specifying that the center of the surface is supported 
-by a vertical pillar, and the self-supporting network adjusts accordingly}
+structure, because of its central part is concave. Our algorithm finds a 
+nearby self-supporting mesh (b) without this impossible feature. (c) shows 
+the corresponding Airy mesh $\Phi$ and reciprocal force diagram $\SS'^*$. 
+(d) The user can edit the original surface, such as by specifying that the 
+center of the surface is supported by a vertical pillar, and the 
+self-supporting network adjusts accordingly}
  \label{fig:Lilium}
  \end{figure*}
 
@@ -947,11 +921,11 @@ $\SS$ relative to $\Phi$ obey
 can be put into compressive static equilibrium if and only if there exists
 a convex such $\Phi$.
 
-\begin{proof} The relation between equilibrium forces $w_{ij}\ew_{ij}$ in
-$\SS$ and the polyhedral stress potential $\Phi$ has been discussed above,
-and so has the equivalence ``$w_{ij}\ge 0$ $\iff$ $\Phi$ convex'' (see
-e.g.\ \cite{Ash1988} for a survey of this and related results). It remains
-to show that Equations \eqref{eq:deqtop} and \eqref{eq:deqiso} are
+\begin{proof} The relation between equilibrium forces $w_{ij}\ew_{ij}$ in 
+$\SS$ and the polyhedral stress potential $\Phi$ has been discussed above, 
+and so has the equivalence ``$w_{ij}\ge 0$ $\iff$ $\Phi$ convex'' (see 
+e.g.\ \cite{Ash1988} for a survey of this and related results). It remains 
+to show that Equations \eqref{eq:deqtop} and \eqref{eq:deqiso} are 
 equivalent. This is the case because the proposition above implies
 	$
 	2 K(\vw_i) H^\rel(\vw_i) =
@@ -965,46 +939,44 @@ equivalent. This is the case because the proposition above implies
 
 \paragraph{Existence of Discretizations.}
 
-When considering discrete thrust networks as discretizations of
-continuous self\dash supporting surfaces, the following question is
-important: For a given smooth surface $s(x,y)$ with Airy stress function
-$\phi$, does there exist a polyhedral surface 
-$\SS$ in equilibrium approximating $s(x,y)$, whose top view is a given
-planar mesh $\SS'$? We restrict our attention to 
+When considering discrete thrust networks as discretizations of continuous 
+self\dash supporting surfaces, the following question is important: For a 
+given smooth surface $s(x,y)$ with Airy stress function $\phi$, does there 
+exist a polyhedral surface $\SS$ in equilibrium approximating $s(x,y)$, 
+whose top view is a given planar mesh $\SS'$? We restrict our attention to 
 triangle meshes, where planarity of the faces of the discrete stress 
-surface $\Phi$ is not an issue.
-This question has several equivalent reformulations:
+surface $\Phi$ is not an issue. This question has several equivalent 
+reformulations:
 
 \begin{itemize}\itemsep-\parsep
 
-\item Does $\SS'$ have a reciprocal diagram whose corresponding
-Airy polyhedron $\Phi$ approximates the continuous Airy potential $\phi$?
-(if the surfaces involved are not simply connected, these objects are
-defined locally).
+\item Does $\SS'$ have a reciprocal diagram whose corresponding Airy 
+polyhedron $\Phi$ approximates the continuous Airy potential $\phi$? (if 
+the surfaces involved are not simply connected, these objects are defined 
+locally).
 
-\item Does $\SS'$ possess a ``perfect'' discrete Laplace\dash Beltrami operator 
-$\Delta_\phi$ in the sense of Wardetzky et al.~\shortcite{wardetzky07}
-whose weights are the edge length scalars of such a reciprocal diagram?
+\item Does $\SS'$ possess a ``perfect'' discrete Laplace\dash Beltrami 
+operator $\Delta_\phi$ in the sense of Wardetzky et 
+al.~\shortcite{wardetzky07} whose weights are the edge length scalars of 
+such a reciprocal diagram?
 
 \end{itemize}
 
-From \cite{wardetzky07} we know that perfect Laplacians exist only
-on regular triangulations which are projections of convex polyhedra. 
-The answer to our question turns out to be affirmative after a possible
-re\dash triangulation: {\it A smooth self-supporting surface can be
-approximated by a discrete self\dash supporting triangular mesh
-for any sampling of the surface.}
+From \cite{wardetzky07} we know that perfect Laplacians exist only on 
+regular triangulations which are projections of convex polyhedra. On the 
+other hand, previous sections show how to appropriately re\dash 
+triangulate:Let $\Phi$ be a triangle mesh convex hull of the vertices 
+$(x_i,y_i,\phi(x_i,y_i))$, where $(x_i,y_i)$ are vertices of $\SS'$. Then 
+its polar dual $\Phi^*$ projects onto a reciprocal diagram with positive 
+edge weights, so $\Delta_\phi$ has positive weights, and the vertices 
+$(x_i,y_i,s_i)$ of $\SS$ can be found by solving the discrete Poisson 
+problem $(\Delta_\phi s)_i=A_iF_i$, which yields a mesh approximating 
+$s(x,y)$.
 
-Previous sections suggest how to do this: Let $\Phi$ be a triangle mesh
-convex hull of the vertices $(x_i,y_i,\phi(x_i,y_i))$, where $(x_i,y_i)$
-are vertices of $\SS'$. Then its polar dual
-$\Phi^*$ projects onto a reciprocal diagram with positive edge weights,
-so $\Delta_\phi$ has positive weights, and the vertices $(x_i,y_i,s_i)$
-of $\SS$ can be found by solving the discrete Poisson problem
-$(\Delta_\phi s)_i=A_iF_i$, which yields a mesh approximating $s(x,y)$.
-
-{\em Remark:} For $\phi=\phi_0$ this constructs the cotan Laplacian,
-and $\SS'$ will be a Delaunay triangulation.
+Assuming the discrete operator $\Delta_\phi$ approximates its continuous 
+counterpart, we conclude: {\it A smooth self-supporting surface can be 
+approximated by a discrete self\dash supporting triangular mesh for any 
+sampling of the surface.}
 
 
 \begin{figure*}[t]
@@ -1036,23 +1008,23 @@ our algorithm finds the nearby surface in equilibrium (right) that incorporates 
 
 \section{Thrust Networks from Reference Meshes} \label{sec:opt} 
 
-Consider now the problem of taking a given reference mesh, say $\RR$,
-and finding a combinatorially equivalent mesh $\SS$ in static equilibrium
-approximating $\RR$. The loads on $\SS$ include user-prescribed loads as
-well as the dead load caused by the mesh's own weight.
-Conceptually, finding $\SS$ amounts to minimizing some
-formulation of distance between $\RR$ and $\SS$, subject to constraints
-\eqref{eq:deqtop}, \eqref{eq:deqz}, and $w_{ij} \geq 0$. For any choice of
-distance this minimization will be a nonlinear, non-convex,
-inequality-constrained variational problem that cannot be efficiently
-solved in practice. Instead we propose a staggered optimization algorithm:
+Consider now the problem of taking a given reference mesh, say $\RR$, and 
+finding a combinatorially equivalent mesh $\SS$ in static equilibrium 
+approximating $\RR$. The loads on $\SS$ include user-prescribed loads as 
+well as the dead load caused by the mesh's own weight. Conceptually, 
+finding $\SS$ amounts to minimizing some formulation of distance between 
+$\RR$ and $\SS$, subject to constraints \eqref{eq:deqtop}, 
+\eqref{eq:deqz}, and $w_{ij} \geq 0$. For any choice of distance this 
+minimization will be a nonlinear, non-convex, inequality-constrained 
+variational problem that cannot be efficiently solved in practice. Instead 
+we propose a staggered optimization algorithm:
 
 \begin{enumerate}\itemsep-\parsep\setcounter{enumi}{-1}
 
 \item Start with an initial guess $\SS = \RR$.
 
-\item \label{step2} Estimate the self\dash load on the vertices of $\SS$, using
-their current positions.
+\item \label{step2} Estimate the self\dash load on the vertices of $\SS$, 
+using their current positions.
 
 \item \label{step3} Fixing $\SS$, fit an associated stress surface $\Phi$.
 
@@ -1064,109 +1036,122 @@ their current positions.
 
 \paragraph{Step~\ref{step2}: Estimating Self-Load.}
 
-The dead load due to the surface's own weight 
-depends not only on the top view of $\SS$, but
-also on the surface area of its faces. To avoid adding nonlinearity to the
-algorithm, we estimate the load coefficients $F_i$ at the beginning of each
-iteration, and assume they remain constant until the next iteration.
-We estimate the load ``$A_iF_i$''
-associated with each vertex by calculating its Voronoi area on
-each of its incident faces, and then multiplying by a user-specified
-surface density $\rho$.
+The dead load due to the surface's own weight depends not only on the top 
+view of $\SS$, but also on the surface area of its faces. To avoid adding 
+nonlinearity to the algorithm, we estimate the load coefficients $F_i$ at 
+the beginning of each iteration, and assume they remain constant until the 
+next iteration. We estimate the load ``$A_iF_i$'' associated with each 
+vertex by calculating its Voronoi area on each of its incident faces, and 
+then multiplying by a user-specified surface density $\rho$.
 
 \paragraph{Step~\ref{step3}: Fit a Stress Surface.}
 
-In this step, we fix $\SS$ and try to
-fit a stress surface $\Phi$ subordinate to the top view $\SS'$ of the
-primal mesh. We do so by searching for dihedral angles between the faces of $\Phi$
-which minimize, in the least-squares sense, the error in force equilibrium
-\eqref{eq:deqiso} and local integrability of $\Phi$. Doing so is
-equivalent to minimizing the squared residuals of Equations
-\eqref{eq:deqz} and \eqref{eq:deqtop}, respectively, with the positions
-held fixed. With the {\em equilibrium energy}
+In this step, we fix $\SS$ and try to fit a stress surface $\Phi$ 
+subordinate to the top view $\SS'$ of the primal mesh. We do so by 
+searching for dihedral angles between the faces of $\Phi$ which minimize, 
+in the least-squares sense, the error in force equilibrium 
+\eqref{eq:deqiso} and local integrability of $\Phi$. Doing so is 
+equivalent to minimizing the squared residuals of Equations 
+\eqref{eq:deqz} and \eqref{eq:deqtop}, respectively, with the positions 
+held fixed. Defining the {\em equilibrium energy}
 	\begin{align}
 	E = \sum\nolimits_i \Big\| \Forcevector -
 		\sum\nolimits_{j\sim i} w_{ij} (\vw_j-\vw_i) \Big\|^2
 	\label{eq:eenergy}
 	\end{align}
- where the outer sum is over the interior and free boundary vertices.
-This means that we solve
+ where the outer sum is over the interior and free boundary vertices,
+we solve
 	\begin{align}
 	\min_{w_{ij}} E,
 	\quad
 	\textrm{s.t.}\ \
-		0 \leq w_{ij} \leq w_{\max}, \label{eq:wbounds}
+		0 \leq w_{ij} \leq w_{\max}.
+	\label{eq:wbounds}
 	\end{align}
- where $w_{\max}$ is an optional maximum weight we are willing to assign
-(to limit the amount of stress in the surface). This convex, sparse,
-box-constrained least-squares problem \cite{BCLS} always has a solution. If the
-objective is $0$ at this solution, the faces of $\Phi$ locally integrate
-to a stress surface satisfying \eqref{eq:deqiso}, and so $\Phi$ certifies
-that $\SS$ is self-supporting -- we are done. Otherwise, $\SS$ is not
-self-supporting and its vertices must be moved.
+ Here $w_{\max}$ is an optional maximum weight we are willing to assign 
+(to limit the amount of stress in the surface). This convex, sparse, 
+box-constrained least-squares problem \cite{BCLS} always has a solution. 
+If the objective is $0$ at this solution, the faces of $\Phi$ locally 
+integrate to a stress surface satisfying \eqref{eq:deqiso}, and so $\Phi$ 
+certifies that $\SS$ is self-supporting -- we are done. Otherwise, $\SS$ 
+is not self-supporting and its vertices must be moved.
 
-\paragraph{Step~\ref{step4}: Alter Positions.} In the previous step we fit as best as
-possible a stress surface $\Phi$ to $\SS$. There are two possible kinds of
-error with this fit: the faces around a vertex (equivalently, the
-reciprocal diagram) might not close up; and the resulting stress forces
-might not be exactly in equilibrium with the loads. These errors can be
-decreased by modifying the top view and heights of $\SS$, respectively. It
-is possible to simply solve for new vertex positions that put $\SS$ in
-static equilibrium, since equations \eqref{eq:deqtop} and \eqref{eq:deqz}
-with $w_{ij}$ fixed form a square linear system that is typically
-nonsingular.
+\paragraph{Step~\ref{step4}: Alter Positions.} In the previous step we fit 
+as best as possible a stress surface $\Phi$ to $\SS$. There are two 
+possible kinds of error with this fit: the faces around a vertex 
+(equivalently, the reciprocal diagram) might not close up; and the 
+resulting stress forces might not be exactly in equilibrium with the 
+loads. These errors can be decreased by modifying the top view and heights 
+of $\SS$, respectively. It is possible to simply solve for new vertex 
+positions that put $\SS$ in static equilibrium, since Equations 
+\eqref{eq:deqtop} and \eqref{eq:deqz} with $w_{ij}$ fixed form a square 
+linear system that is typically nonsingular.
 
-While this approach would yield a self-supporting $\SS$, this mesh is
-often far from the reference mesh $\RR$, since any local errors in the
-stress surface from Step~\ref{step3} amplify into global errors in $\SS$. We propose
-instead to look for new positions that decrease the imbalance in the
-stresses and loads, while also penalizing drift away from the reference
-mesh:
+While this approach would yield a self-supporting $\SS$, this mesh is 
+often far from the reference mesh $\RR$, since any local errors in the 
+stress surface from Step~\ref{step3} amplify into global errors in $\SS$. 
+We propose instead to look for new positions that decrease the imbalance 
+in the stresses and loads, while also penalizing drift away from the 
+reference mesh:
 	\begin{align*}
-	\min_{\vw}
-	\nix{\ &
-	\sum_i \Big\|
-		\Forcevector -
-		\sum_{j\sim i} w_{ij} (\vw_j - \vw_i)
-		\Big\|^2
-	\\ &}
-	E
-	+ \alpha \sum_i
+	\min_{\vw} E
+	+ \alpha \sum\nolimits_i
 		\<\nw_i, \vw_i - \vw^0_i \>^2
 		+ \beta \big\|\vw - \vw^0_P\big\|^2,
-\end{align*}
- where $\vw^0_i$ is the position of the $i$-th vertex at the start of this
-step of the optimization, $\nw_i$ is the starting vertex normal (computed
-as the average of the incident face normals), $\vw^0_P$ is the projection
-of $\vw^0$ onto the reference mesh, and $\alpha > \beta$ are penalty
-coefficients that are decreased every iteration of steps \ref{step2}--
-\ref{step4} of the
-algorithm. The second term allows $\SS$ to slide over itself (if doing so
-improves equilibrium) but penalizes drift in the normal direction. The
-third term, weaker than the second, regularizes the optimization by
-preventing large drift away from the reference surface or excessive
-tangetial sliding.
+	\end{align*}
+ where $\vw^0_i$ is the position of the $i$-th vertex at the start of this 
+step of the optimization, $\nw_i$ is the starting vertex normal (computed 
+as the average of the incident face normals), $\vw^0_P$ is the projection 
+of $\vw^0$ onto the reference mesh, and $\alpha > \beta$ are penalty 
+coefficients that are decreased every iteration of Steps 
+\ref{step2}--\ref{step4} of the algorithm. The second term allows $\SS$ to 
+slide over itself (if doing so improves equilibrium) but penalizes drift 
+in the normal direction. The third term, weaker than the second, 
+regularizes the optimization by preventing large drift away from the 
+reference surface or excessive tangetial sliding.
 
 \paragraph{Implementation Details.}
 
-Solving the weighted least\dash squares problem of Step~\ref{step4}
-amounts to solving a sparse,
-symmetric linear system. While the MINRES algorithm~\cite{paige75} is likely
-the most robust algorithm for solving this system, in practice we have
-observed that the method of conjugate gradients works well despite the
-potential ill-conditioning of the objective matrix.
+Solving the weighted least\dash squares problem of Step~\ref{step4} 
+amounts to solving a sparse, symmetric linear system. While the MINRES 
+algorithm~\cite{paige75} is likely the most robust algorithm for solving 
+this system, in practice we have observed that the method of conjugate 
+gradients works well despite the potential ill-conditioning of the 
+objective matrix.
 
 \paragraph{Limitations.}
 
-This algorithm is not guaranteed to always converge; this fact is not surprising from the physics of the problem (if the boundary of the reference mesh encloses too large of a region, $w_{\max}$ is set too low, and the density of the surface too high, a thrust network in equilibrium simply does not exist -- the vault is too ambitious and cannot be built to stand; pillars are needed.) 
+This algorithm is not guaranteed to always converge; this fact is not 
+surprising from the physics of the problem (if the boundary of the 
+reference mesh encloses too large of a region, $w_{\max}$ is set too low, 
+and the density of the surface too high, a thrust network in equilibrium 
+simply does not exist -- the vault is too ambitious and cannot be built to 
+stand; pillars are needed.)
 
-We can, however, make a few remarks. Step~\ref{step3} always decreases the equilibrium
+We can, however, make a few remarks. Step~\ref{step3} always decreases the 
+equilibrium
  energy $E$ of Equation~\eqref{eq:eenergy}
-	\nix{$$E=\sum_i \Big\| \Forcevector 
+	\nix{$$E=\sum_i \Big\| \Forcevector
 		- \sum_{j\sim i} w_{ij} (\vw_j - \vw_i)\Big\|^2$$}
- and Step~\ref{step4} does as well as $\beta \to 0$. Moreover, as $\alpha \to 0$ and $\beta \to 0$, Step~\ref{step4} approaches a linear system with as many equations as unknowns; if this system has full rank, its solution sets $E=0$. These facts suggest that the algorithm should generally converge to a thrust network in equilibrium, provided that Step~\ref{step2} does not increase the loads by too much at every iteration, and this is indeed what we observe in practice. One case where this assumption is guaranteed to hold is if the thickness of the surface is allowed to freely vary, so that it can be chosen so that the surface has uniform density over the top view.
+ and Step~\ref{step4} does as well as $\beta \to 0$. Moreover, as $\alpha 
+\to 0$ and $\beta \to 0$, Step~\ref{step4} approaches a linear system with 
+as many equations as unknowns; if this system has full rank, its solution 
+sets $E=0$. These facts suggest that the algorithm should generally 
+converge to a thrust network in equilibrium, provided that 
+Step~\ref{step2} does not increase the loads by too much at every 
+iteration, and this is indeed what we observe in practice. One case where 
+this assumption is guaranteed to hold is if the thickness of the surface 
+is allowed to freely vary, so that it can be chosen so that the surface 
+has uniform density over the top view.
 
-If the linear system in Step~\ref{step4} is singular and infeasible, the algorithm can stall at $E > 0$. This failure occurs, for instance, when an interior vertex has height $z_i$ lower than all of its neighbors, and Step~\ref{step3} assigns all incident edges to that vertex a weight of zero: clearly no amount of moving the vertex or its neighbors can bring the vertex into equilibrium. We avoid such degenerate configurations by bounding weights slightly away from zero in \eqref{eq:wbounds}, trading increased robustness for slight smoothing of the resulting surface.
+If the linear system in Step~\ref{step4} is singular and infeasible, the 
+algorithm can stall at $E > 0$. This failure occurs, for instance, when an 
+interior vertex has height $z_i$ lower than all of its neighbors, and 
+Step~\ref{step3} assigns all incident edges to that vertex a weight of 
+zero: clearly no amount of moving the vertex or its neighbors can bring 
+the vertex into equilibrium. We avoid such degenerate configurations by 
+bounding weights slightly away from zero in \eqref{eq:wbounds}, trading 
+increased robustness for slight smoothing of the resulting surface.
 
 
 
@@ -1174,87 +1159,100 @@ If the linear system in Step~\ref{step4} is singular and infeasible, the algorit
 
 
 \section{Results}
+\label{sec:design}
 
 \paragraph{Interactive Design of Self-Supporting Surfaces.}
 
-The optimization algorithm described in the previous section forms the
-basis of an interactive design tool for self-supporting surfaces. Users
-manipulate a mesh representing a reference surface, and the computer
-searches for a nearby thrust network in equilibrium (see e.g.\
-Figure~\ref{fig:vault}). Fitting this thrust
-network does not require that the user specify boundary tractions, and
-although the top view of the reference mesh is used as an initial guess
-for the top view of the thrust network, the search is not restricted to
-this top view. The features of the design tool include:
+The optimization algorithm described in the previous section forms the 
+basis of an interactive design tool for self-supporting surfaces. Users 
+manipulate a mesh representing a reference surface, and the computer 
+searches for a nearby thrust network in equilibrium (see e.g.\ 
+Figure~\ref{fig:vault}). Fitting this thrust network does not require that 
+the user specify boundary tractions, and although the top view of the 
+reference mesh is used as an initial guess for the top view of the thrust 
+network, the search is not restricted to this top view. The features of 
+the design tool include:
 
 \begin{itemize}\itemsep-\parsep
 
-\item Handle-based 3D editing of the reference mesh using Laplacian
-coordinates~\cite{Lipman2004,Sorkine2003} to extrude vaults, insert
-pillars, and apply other deformations to the reference mesh. Handle-based
-adjustments of the heights, keeping the top view fixed, and deformation of
-the top view, keeping the heights fixed, are also supported. The thrust
-network adjusts interactively to fit the deformed positions, giving the
-usual visual feedback about the effects of her edits on whether or not the
+\item Handle-based 3D editing of the reference mesh using Laplacian 
+coordinates~\cite{Lipman2004,Sorkine2003} to extrude vaults, insert 
+pillars, and apply other deformations to the reference mesh. Handle-based 
+adjustments of the heights, keeping the top view fixed, and deformation of 
+the top view, keeping the heights fixed, are also supported. The thrust 
+network adjusts interactively to fit the deformed positions, giving the 
+usual visual feedback about the effects of her edits on whether or not the 
 surface can stand.
 
-\item Specification of boundary conditions. Points of contact between the
-reference surface and the ground or environment are specified by
-``pinning'' vertices of the surface, specifying that the thrust network
-must coincide with the reference mesh at this point, and relaxing the
+\item Specification of boundary conditions. Points of contact between the 
+reference surface and the ground or environment are specified by 
+``pinning'' vertices of the surface, specifying that the thrust network 
+must coincide with the reference mesh at this point, and relaxing the 
 condition that forces must be in equilibrium there.
 
-\item Interactive adjustment of surface density $\rho$, external loads,
-and maximum permissible stress per edge $w_{\textrm{max}}$, with visual
+\item Interactive adjustment of surface density $\rho$, external loads, 
+and maximum permissible stress per edge $w_{\textrm{max}}$, with visual 
 feedback of how these parameters affect the fitted thrust network.
 
-\item Upsampling of the thrust network through Catmull\dash Clark
-subdivision~\cite{catmull78} and polishing of the resulting refined thrust
+\item Upsampling of the thrust network through Catmull\dash Clark 
+subdivision~\cite{catmull78} and polishing of the resulting refined thrust 
 network using optimization \secref{sec:opt}.
 
-\item Visualization of the stress surface $\RR$ dual to the thrust network and corresponding reciprocal diagram.
+\item Visualization of the stress surface $\RR$ dual to the thrust network 
+and corresponding reciprocal diagram.
 
 \end{itemize}
 
 
 
-\paragraph{Example: Vault with Pillars.} As an example of the design and optimization workflow, consider a rectangular vault with six pillars, free boundary conditions along one edge, fixed boundary conditions along the others, and a tower extruded from the top of the surface (see Figure \ref{fig:vault}). This surface is neither convex nor simply connected, and exhibits a mix of boundary conditions, none of which cause our algorithm any difficulty; it finds a self-supporting thrust network near the designed reference mesh. The user is now free to make edits to the reference mesh, and the thrust network adapts to these edits, providing the user feedback on whether these designs are physically realizable.
+\paragraph{Example: Vault with Pillars.} As an example of the design and 
+optimization workflow, consider a rectangular vault with six pillars, free 
+boundary conditions along one edge, fixed boundary conditions along the 
+others, and a tower extruded from the top of the surface (see Figure 
+\ref{fig:vault}). This surface is neither convex nor simply connected, and 
+exhibits a mix of boundary conditions, none of which cause our algorithm 
+any difficulty; it finds a self-supporting thrust network near the 
+designed reference mesh. The user is now free to make edits to the 
+reference mesh, and the thrust network adapts to these edits, providing 
+the user feedback on whether these designs are physically realizable.
 
 
 \paragraph{Example: Top of the Lilium Tower.}
 
 Consider the top portion of the steel-glass exterior surface of the Lilium 
-Tower, which is currently being built in Warszaw (see Figure \ref{fig:Lilium}).
-This surface contains a concave part with local minimum 
-in its interior and so cannot possibly be self-supporting. 
-Given this surface as a reference mesh, our algorithm constructs a nearby 
-thrust network in equilibrium without the impossible feature. The user can 
-then explore how editing the reference mesh -- adding a pillar, for 
-example -- affects the thrust network and its deviation from the reference 
-surface.
+Tower, which is currently being built in Warszaw (see Figure 
+\ref{fig:Lilium}). This surface contains a concave part with local minimum 
+in its interior and so cannot possibly be self-supporting. Given this 
+surface as a reference mesh, our algorithm constructs a nearby thrust 
+network in equilibrium without the impossible feature. The user can then 
+explore how editing the reference mesh -- adding a pillar, for example -- 
+affects the thrust network and its deviation from the reference surface.
 
 \paragraph{Example: Freeform Structure with Two Pillars.}
 
-Suppose an architect's experience and intuition has permitted the design a freeform surface 
-(see Figure \ref{fig:cas}) that is nearly self-supporting. Our algorithm reveals those
-edits needed to make the structure sound -- principally around the entrance arch, and the area
+Suppose an architect's experience and intuition has permitted the design a 
+freeform surface (see Figure \ref{fig:cas}) that is nearly 
+self-supporting. Our algorithm reveals those edits needed to make the 
+structure sound -- principally around the entrance arch, and the area 
 between the two pillars.
 
  \begin{figure}[t]
   \centerline{\includegraphics[width=0.50\columnwidth]{fig/cheese.jpg}\hfill
   \includegraphics[width=0.50\columnwidth]{fig/cheese-n.jpg}}
-  \caption{A mesh with holes (left) requires large deformations
-to both the top view and heights to render it self\dash supporting
+  \caption{A mesh with holes (left) requires large deformations to both 
+the top view and heights to render it self\dash supporting 
 (right).}\label{fig:cheese2}
 	\end{figure}
 
 \paragraph{Example: Swiss Cheese.}
 
-Cutting holes in a self-supporting surface interrupts force flow lines and causes dramatic global changes
-to the surface stresses, often to the point that the surface is no longer in equilibrium. Whether a given surface
-with many such holes can stand is far from obvious. Figures~\ref{fig:cheese2} 
-show such an implausible and unstable 
-surface; our optimization finds a nearby, equally implausible but stable surface without difficulty (see Figures~\ref{fig:cheese} and \ref{fig:cheese2}, right).
+Cutting holes in a self-supporting surface interrupts force flow lines and 
+causes dramatic global changes to the surface stresses, often to the point 
+that the surface is no longer in equilibrium. Whether a given surface with 
+many such holes can stand is far from obvious. Figures~\ref{fig:cheese2} 
+show such an implausible and unstable surface; our optimization finds a 
+nearby, equally implausible but stable surface without difficulty (see 
+Figures~\ref{fig:cheese} and \ref{fig:cheese2}, right).
 
 
 
@@ -1270,11 +1268,11 @@ mesh $\SS$ with vertices $\vw_{ij}=(x_{ij},y_{ij},s_{ij})$ which
 approximates a given continuous surface $s(x,y)$ equipped with an 
 equilibrium stress potential $\phi(x,y)$.
 
-It is known that $\SS$ must approximately follow a network of conjugate
-curves in the surface (see e.g.\ \cite{Liu2006}). We can derive this
-condition in an elementary way as follows: Using a Taylor expansion, we
-compute the volume of the convex hull of the quadrilateral $\vw_{ij}$,
-$\vw_{i+1,j}$, $\vw_{i+1,j+1}$, $\vw_{i,j+1}$, assuming the vertices lie
+It is known that $\SS$ must approximately follow a network of conjugate 
+curves in the surface (see e.g.\ \cite{Liu2006}). We can derive this 
+condition in an elementary way as follows: Using a Taylor expansion, we 
+compute the volume of the convex hull of the quadrilateral $\vw_{ij}$, 
+$\vw_{i+1,j}$, $\vw_{i+1,j+1}$, $\vw_{i,j+1}$, assuming the vertices lie 
 exactly on the surface $s(x,y)$. This results in
 	\begin{align*}
 	&\textstyle
@@ -1286,16 +1284,17 @@ exactly on the surface $s(x,y)$. This results in
 	\aw_1={x_{i+1,j}-x_{ij}\choose y_{i+1,j}-y_{ij}},\quad
 	\aw_2={x_{i,j+1}-x_{ij}\choose y_{i,j+1}-y_{ij}},
 	\end{align*}
- and the dots indicate higher order terms. We see that planarity requires
-$(\aw_1)^T\,\Hess s\,\aw_2=0$. In addition to the mesh $\SS$ approximating the surface $s(x,y)$, the corresponding polyhedral
-Airy surface $\Phi$ must approximate $\phi(x,y)$; thus we get the conditions
-	$$
+ and the dots indicate higher order terms. We see that planarity requires 
+$(\aw_1)^T\,\Hess s\,\aw_2=0$. In addition to the mesh $\SS$ approximating 
+the surface $s(x,y)$, the corresponding polyhedral Airy surface $\Phi$ 
+must approximate $\phi(x,y)$; thus we get the conditions
+	\begin{align*}
 	(\aw_1)^T\,\Hess s\,\,\aw_2=
 	(\aw_1)^T\,\Hess \phi\,\,\aw_2= 0.
-	$$
- $\aw_1,\aw_2$ are therefore eigenvectors of $(\Hess\phi)^{-1}\Hess s$. In view
-of \S\ref{sec:smooth}, $\aw_1,\aw_2$ indicate the principal directions of
-the surface $s(x,y)$ relative to $\phi(x,y)$ (see
+	\end{align*}
+ $\aw_1,\aw_2$ are therefore eigenvectors of $(\Hess\phi)^{-1}\Hess s$. In 
+view of \S\ref{sec:smooth}, $\aw_1,\aw_2$ indicate the principal 
+directions of the surface $s(x,y)$ relative to $\phi(x,y)$ (see 
 Figure~\ref{fig:relative}).
 
 
@@ -1305,22 +1304,22 @@ Figure~\ref{fig:relative}).
 		\put(55,51){$s(x,y)$}
 	\end{overpic}\hfill
 	\begin{minipage}[b]{.55\columnwidth}
-\caption{Planar quad remeshing of a self-supporting surface $s(x,y)$
-with stress potential $\phi$ is guided by the 
-principal curvature directions of $s$ relative to $\phi$
-(found from eigenvectors of $(\protect\Hess\phi)^{-1}\protect\Hess s$).}
- \label{fig:relative} 
+ \caption{Planar quad remeshing of a self-supporting surface $s(x,y)$ with 
+stress potential $\phi$ is guided by the principal curvature directions of 
+$s$ relative to $\phi$ (found from eigenvectors of 
+$(\protect\Hess\phi)^{-1}\protect\Hess s$).}
+ \label{fig:relative}
 	\end{minipage}
  \end{figure}
 
-In the discrete case, where $s,\phi$ are not given as continuous surfaces,
-but are represented by a mesh in equilibrium and its Airy mesh, we use the
-techniques of Schiftner~\shortcite{Schiftner2007} and Cohen\dash Steiner
-and Morvan \shortcite{Cohen-Steiner2003} to approximate the Hessians
-$\Hess s$, $\Hess\phi$, compute principal directions as eigenvectors of
-$(\Hess\phi)^{-1}\Hess s$, and subsequently find meshes $\SS,\Phi$
-approximating $s,\phi$ which follow those directions. Global
-optimization now makes $\SS,\Phi$ a valid thrust network with discrete stress
+In the discrete case, where $s,\phi$ are not given as continuous surfaces, 
+but are represented by a mesh in equilibrium and its Airy mesh, we use the 
+techniques of Schiftner~\shortcite{Schiftner2007} and Cohen\dash Steiner 
+and Morvan \shortcite{Cohen-Steiner2003} to approximate the Hessians 
+$\Hess s$, $\Hess\phi$, compute principal directions as eigenvectors of 
+$(\Hess\phi)^{-1}\Hess s$, and subsequently find meshes $\SS,\Phi$ 
+approximating $s,\phi$ which follow those directions. Global optimization 
+now makes $\SS,\Phi$ a valid thrust network with discrete stress 
 potential. Convexity of $\Phi$ ensures that $\SS$ is self\dash supporting.
 
 	\begin{figure}[h]
@@ -1333,50 +1332,55 @@ potential. Convexity of $\Phi$ ensures that $\SS$ is self\dash supporting.
   \begin{overpic}[width=0.33\columnwidth]{fig/vault-pq.jpg}
 	\put(0,0)({(c)}
 	\end{overpic}}
-	\caption{Directly enforcing planarity of the faces of even a very simple self-supporting quad-mesh 
-vault (a) results in a surface far removed from the original design (b). Starting instead from a
-remeshing of the surface with edges following relative principal curvature directions yields a
-self-supporting, PQ mesh far more faithful to the original (c).}
+	\caption{Directly enforcing planarity of the faces of even a very 
+simple self-supporting quad-mesh vault (a) results in a surface far 
+removed from the original design (b). Starting instead from a remeshing of 
+the surface with edges following relative principal curvature directions 
+yields a self-supporting, PQ mesh far more faithful to the original (c).}
 	\label{fig:badpq}
 	\end{figure}
 
 \begin{figure*}[t]
-\centerline{\raise.02\textwidth
-	\hbox{\begin{overpic}[width=.25\textwidth]{fig/curvature1}
-		\put(55,5){$\phi(x,y)$}
-		\put(55,51){$s(x,y)$}
-		\put(0,-4){(a)}
-	\end{overpic}}\hfill
-	\begin{overpic}[width=0.25\textwidth]{fig/lilium-vf.jpg}
-		\put(0,4){(b)}
+\centerline{\begin{overpic}[width=0.24\textwidth]{fig/lilium-vf.jpg}
+		\put(0,30){(a)}
+	\end{overpic}\relax
+	\begin{overpic}[width=0.24\textwidth]{fig/lilium-pq.jpg}
+		\put(0,30){(b)}
+	\end{overpic}\relax
+	\begin{overpic}[width=0.24\textwidth]{fig/lilium-pq-n.jpg}
+		\put(0,30){(c)}
 	\end{overpic}\hfill
-	\begin{overpic}[width=0.25\textwidth]{fig/lilium-pq.jpg}
-		\put(0,4){(c)}
+	\begin{minipage}[b]{.26\textwidth}
+	\caption{Planar quad remeshing of the ``Lilium tower'' surface of 
+Figure~\protect\ref{fig:Lilium}. (b) Principal directions. (c) Quad mesh 
+guided by principal directions is close to planar and close to self\dash 
+supporting. (c) Small changes make it self\dash supporting.}
+ \label{fig:lilium:pq}\end{minipage}}
+
+\centerline{\begin{overpic}[width=0.24\textwidth]{fig/cas-vf.jpg}
+		\put(0,35){(a)}
+	\end{overpic}\relax
+	\begin{overpic}[width=0.24\textwidth]{fig/cas-pq.jpg}
+		\put(0,35){(b)}
+	\end{overpic}\relax
+	\begin{overpic}[width=0.24\textwidth]{fig/cas-pq-n.jpg}
+		\put(0,35){(c)}
 	\end{overpic}\hfill
-	\begin{overpic}[width=0.25\textwidth]{fig/lilium-pq-n.jpg}
-		\put(0,4){(d)}
-	\end{overpic}}
-	\vspace*{-0.01\textwidth}
-\caption{Planar quad remeshing of self-supporting surfaces.
-(a) A planar quad mesh approximating a self\dash supporting surface
-$s(x,y)$ with stress potential $\phi(x,y)$ is guided by the principal
-curvature directions of $s$ relative to $\phi$ (found from eigenvectors of
-$(\protect\Hess\phi)^{-1}\protect\Hess s$). For the 
-`Lilium tower' surface of Figure~\protect\ref{fig:Lilium}, the
-principal directions (b) yield the planar quad remeshing (c) 
-which is close to self\dash supporting;
-subsequent small changes make it self\dash supporting (d).}
- \label{fig:lilium:pq} 
- \end{figure*}
+	\begin{minipage}[b]{.26\textwidth}
+	\caption{Planar quad remeshing of the surface of 
+Figure~\protect\ref{fig:cas}, analogous to 
+Figure~\ref{fig:lilium:pq}.}\label{fig:cas:pq}\end{minipage}}
+  \end{figure*}
 
 
-Note that the relative principal curvature directions give the \emph{unique}
-curve network along which a planar quad discretization of a self\dash supporting surface
-is possible. Taking an arbitrary non-planar quad mesh and attempting naive, simultaneous
-enforcement of planarity and static equilibrium does not yield good results,
-as shown in Figure~\ref{fig:badpq}. Figures~\ref{fig:lilium:pq}b--d 
-and~\todo{\ref{fig:casxx}c} further illustrate the result of applying this 
-procedure to self-supporting surfaces. 
+Note that the relative principal curvature directions give the 
+\emph{unique} curve network along which a planar quad discretization of a 
+self\dash supporting surface is possible. Taking an arbitrary non-planar 
+quad mesh and attempting naive, simultaneous enforcement of planarity and 
+static equilibrium does not yield good results, as shown in 
+Figure~\ref{fig:badpq}. Figures~\ref{fig:lilium:pq} and \ref{fig:cas:pq} 
+further illustrate the result of applying this procedure to 
+self-supporting surfaces.
 
 
 \paragraph{Koenigs Meshes. UNFINISHED}
@@ -1389,9 +1393,9 @@ $z_i=\phi_i$ leads to $\Phi$. We already know that the vertical loads
 $A_iF_i$ which put $\SS$ into equilibrium are computed as $AF=\Delta_\phi 
 s$.
 
-We ask: Which perturbations $\SS+\RR$, having $z$ coordinates $z_i = s_i+r_i$, 
-support the {\em same} vertical loads as $\SS$ does? Such a mesh must 
-satisfy $\Delta_\phi(s+r)=\Delta_\phi s$, so $\Delta_\phi r = 0$.
+We ask: Which perturbations $\SS+\RR$, having $z$ coordinates $z_i = 
+s_i+r_i$, support the {\em same} vertical loads as $\SS$ does? Such a mesh 
+must satisfy $\Delta_\phi(s+r)=\Delta_\phi s$, so $\Delta_\phi r = 0$. 
 This linear system is easily solved in principle.
 
 \begin{figure*}
@@ -1416,9 +1420,9 @@ Christoffel\dash dual.} \label{fig:enneper}
 There is a nice explicit geometric construction of all such
 harmonic functions in the case of quad meshes: Equation \eqref{eq:deqiso}
 immediately leads to $H^\rel_\SS=H^\rel_{\SS+\RR}$, which is equivalent to
-	$$
+	\begin{align*}
 	H^\rel_\RR = 0.
-	$$
+	\end{align*}
  So $\RR$ is a {\em minimal surface}. Recall that \ $H^\rel_\RR$ is the
 mean curvature of $\RR^*$ with respect to the Gauss image $\Phi^*$ in the
 sense of \cite{Pottmann2007b}, where the star indicates the polar
@@ -1442,14 +1446,14 @@ view, using the Christoffel construction.} \label{fig:enneper}
 \end{minipage}
  \end{figure}}
 
-An  interesting special case occurs if $\Phi$ is an
-\emph{isotropic Koebe mesh}, i.e., a PQ mesh whose edges
-touch the Maxwell paraboloid. Since $\Phi$ approximates the Maxwell
-paraboloid, we get $2K(\vw_i)H^{\rel}(\vw_i)$ $ \approx 1$ which means
-$\Phi$ is self\dash supporting for unit load. Applying the Christoffel
-dual construction described above yields a family a `minimal' mesh
-$\RR$ and a family of meshes $\Phi+\alpha\RR$ which are self\dash 
-supporting for unit load. Figure~\ref{fig:enneper} shows an example.
+An interesting special case occurs if $\Phi$ is an \emph{isotropic Koebe 
+mesh}, i.e., a PQ mesh whose edges touch the Maxwell paraboloid. Since 
+$\Phi$ approximates the Maxwell paraboloid, we get 
+$2K(\vw_i)H^{\rel}(\vw_i)$ $ \approx 1$ which means $\Phi$ is self\dash 
+supporting for unit load. Applying the Christoffel dual construction 
+described above yields a family a ``minimal'' mesh $\RR$ and a family of 
+meshes $\Phi+\alpha\RR$ which are self\dash supporting for unit load. 
+Figure~\ref{fig:enneper} shows an example.
 
 \section{Conclusion and Future Work}
 
