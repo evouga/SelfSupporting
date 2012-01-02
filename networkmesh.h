@@ -2,6 +2,7 @@
 #define NETWORKMESH_H
 
 #include "mesh.h"
+#include <Eigen/Sparse>
 
 class ReferenceMesh;
 class NetworkMeshRenderer;
@@ -22,7 +23,7 @@ public:
 
     // Given a (possibly non-self-supporting) 3D mesh, finds non-negative weights that come as close as possible to
     // satisfying the force-equilibrium constraints
-    double computeBestWeights(double maxweight);
+    double computeBestWeights(double maxstress, double thickness);
 
 
     // Given non-negative weights, finds the closest mesh to the given mesh that is self-supporting with those weights
@@ -43,6 +44,7 @@ public:
     void solveLaplacian();
     void exportVectorFields(const char *name);
     bool exportReciprocalMesh(const char *name);
+    bool exportWeights(const char *name);
 
 private:
     Eigen::Matrix2d approximateStressHessian(MyMesh::FaceHandle face);
@@ -53,6 +55,7 @@ private:
     double computeLaplacianAlpha(MyMesh::HalfedgeHandle heh);
     void computeLaplacianCurvatures();
     void triangleSubdivide();
+    void addToStrippedMatrix(Eigen::DynamicSparseMatrix<double> &M, Eigen::VectorXd &rhs, int v, int k, int j, double val, std::map<int, int> &vidx2midx);
 
     MyMesh subdreference_;
 

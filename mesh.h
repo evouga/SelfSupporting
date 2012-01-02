@@ -127,9 +127,9 @@ public:
 
     void getNRing(int vidx, int n, std::set<int> &nring);
 
-    void setPlaneAreaLoads(double density);
-    void setSurfaceAreaLoads(double density);
-    void setConstantLoads(double density);
+    void setPlaneAreaLoads(double density, double thickness);
+    void setSurfaceAreaLoads(double density, double thickness);
+    void setConstantLoads(double density, double thickness);
 
     void subdivide(bool subdivideBoundary);
     void triangulate();
@@ -150,6 +150,7 @@ public:
     Eigen::Matrix2d approximateHessian(MyMesh::FaceHandle face);
     Eigen::Matrix2d approximateHessianVertex(MyMesh::VertexHandle vert);
     double faceAreaOnPlane(MyMesh::FaceHandle face);
+    void dilate(double factor);
 
     friend class MeshLock;
 protected:

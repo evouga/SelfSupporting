@@ -289,22 +289,6 @@
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QSlider" name="maxWeightHorizontalSlider">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>20</y>
-      <width>160</width>
-      <height>29</height>
-     </rect>
-    </property>
-    <property name="value">
-     <number>50</number>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
-   </widget>
    <widget class="QCheckBox" name="maxWeightCheckBox">
     <property name="geometry">
      <rect>
@@ -315,7 +299,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Constrain Max Weight</string>
+     <string>Constrain Max Stress</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton">
@@ -331,33 +315,17 @@
      <string>Laplacian Test</string>
     </property>
    </widget>
-   <widget class="QSlider" name="densitySlider">
-    <property name="geometry">
-     <rect>
-      <x>710</x>
-      <y>670</y>
-      <width>160</width>
-      <height>29</height>
-     </rect>
-    </property>
-    <property name="value">
-     <number>10</number>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
-   </widget>
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>890</x>
-      <y>670</y>
+      <x>710</x>
+      <y>680</y>
       <width>67</width>
-      <height>31</height>
+      <height>20</height>
      </rect>
     </property>
     <property name="text">
-     <string>Density</string>
+     <string>Density:</string>
     </property>
    </widget>
    <widget class="QPushButton" name="avgHeightsButton">
@@ -415,6 +383,110 @@
      </property>
     </widget>
    </widget>
+   <widget class="QLineEdit" name="maxStressEdit">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>61</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>1e9</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>20</y>
+      <width>71</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>N/m^2</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="densityEdit">
+    <property name="geometry">
+     <rect>
+      <x>780</x>
+      <y>680</y>
+      <width>51</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>2500</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>840</x>
+      <y>680</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>kg/m^3</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_4">
+    <property name="geometry">
+     <rect>
+      <x>950</x>
+      <y>680</y>
+      <width>81</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Thickness:</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="thicknessEdit">
+    <property name="geometry">
+     <rect>
+      <x>1030</x>
+      <y>680</y>
+      <width>51</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0.02</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>1090</x>
+      <y>680</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>m</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="dilateButton">
+    <property name="geometry">
+     <rect>
+      <x>840</x>
+      <y>10</y>
+      <width>97</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Dilate</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -461,6 +533,7 @@
     <addaction name="separator"/>
     <addaction name="actionExport_OM"/>
     <addaction name="actionExport_Network"/>
+    <addaction name="actionExport_Weights"/>
     <addaction name="actionExport_Everything"/>
     <addaction name="separator"/>
     <addaction name="actionIterate_Fit"/>
@@ -686,6 +759,11 @@
   <action name="actionExport_Everything">
    <property name="text">
     <string>Export Everything</string>
+   </property>
+  </action>
+  <action name="actionExport_Weights">
+   <property name="text">
+    <string>Export Weights</string>
    </property>
   </action>
  </widget>

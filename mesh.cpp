@@ -251,37 +251,35 @@ double Mesh::edgeArea(MyMesh::EdgeHandle edge)
     return tot;
 }
 
-void Mesh::setConstantLoads(double density)
+void Mesh::setConstantLoads(double density,double thickness)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
     for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
     {
-        mesh_.data(vi).set_load(density);
+        mesh_.data(vi).set_load(9.8*density*thickness);
     }
     invalidateMesh();
 }
 
-void Mesh::setPlaneAreaLoads(double density)
+void Mesh::setPlaneAreaLoads(double density, double thickness)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
     for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
     {
         double area = vertexAreaOnPlane(vi);
-        mesh_.data(vi).set_load(density*area);
+        mesh_.data(vi).set_load(9.8*density*area*thickness);
     }
     invalidateMesh();
 }
 
-void Mesh::setSurfaceAreaLoads(double density)
+void Mesh::setSurfaceAreaLoads(double density, double thickness)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
 
-    double total = 0;
     for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
     {
         double area = vertexArea(vi);
-        total += density*area;
-        mesh_.data(vi).set_load(density*area);
+        mesh_.data(vi).set_load(9.8*density*area*thickness);
     }
     invalidateMesh();
 }
@@ -1039,4 +1037,15 @@ int Mesh::findEnclosingPlaneTriangle(const Eigen::Vector2d &pt, double &alpha, d
         }
     }
     return -1;
+}
+
+void Mesh::dilate(double factor)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
+    {
+        MyMesh::Point &pt = mesh_.point(vi.handle());
+        pt *= factor;
+    }
+    invalidateMesh();
 }

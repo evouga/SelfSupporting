@@ -288,18 +288,13 @@ void MainWindow::on_maxWeightCheckBox_stateChanged(int arg1)
     c_.resetNetworkMesh();
 }
 
-void MainWindow::on_maxWeightHorizontalSlider_valueChanged(int value)
-{
-    c_.setMaxWeight(value);
-    c_.resetNetworkMesh();
-}
-
 void MainWindow::reportParams()
 {
     c_.enforceMaxWeight(ui->maxWeightCheckBox->isChecked());
     c_.setEnforcePlanarity(ui->enforcePlanarityCheckBox->isChecked());
-    c_.setMaxWeight(ui->maxWeightHorizontalSlider->value());
-    c_.setDensity(ui->densitySlider->value());
+    c_.setMaxStress(ui->maxStressEdit->text().toDouble());
+    c_.setDensity(ui->densityEdit->text().toDouble());
+    c_.setThickness(ui->thicknessEdit->text().toDouble());
 }
 
 void MainWindow::on_actionSubdivide_triggered()
@@ -331,13 +326,6 @@ void MainWindow::on_actionMake_Planar_triggered()
 {
     c_.planarizeThrustNetwork();
 }
-
-void MainWindow::on_densitySlider_valueChanged(int value)
-{
-    c_.setDensity(value);
-    c_.resetNetworkMesh();
-}
-
 
 void MainWindow::on_conjugateVectorsCheckBox_clicked()
 {
@@ -435,4 +423,42 @@ void MainWindow::on_actionExport_Everything_triggered()
             c_.saveNetworkEverything(filename.toStdString().c_str());
         }
     }
+}
+
+void MainWindow::on_actionExport_Weights_triggered()
+{
+    QFileDialog savedialog(this, "Save Weights", ".", "TXT Files (*.txt)");
+    savedialog.setFileMode(QFileDialog::AnyFile);
+    savedialog.setViewMode(QFileDialog::List);
+    savedialog.setAcceptMode(QFileDialog::AcceptSave);
+    savedialog.setDefaultSuffix("txt");
+    if(savedialog.exec())
+    {
+        QStringList filenames = savedialog.selectedFiles();
+        if(filenames.size() > 0)
+        {
+            QString filename = filenames[0];
+            c_.saveNetworkWeights(filename.toStdString().c_str());
+        }
+    }
+}
+
+void MainWindow::on_maxStressEdit_editingFinished()
+{
+    c_.setMaxStress(ui->maxStressEdit->text().toDouble());
+}
+
+void MainWindow::on_densityEdit_editingFinished()
+{
+    c_.setDensity(ui->densityEdit->text().toDouble());
+}
+
+void MainWindow::on_thicknessEdit_editingFinished()
+{
+    c_.setThickness(ui->thicknessEdit->text().toDouble());
+}
+
+void MainWindow::on_dilateButton_clicked()
+{
+    c_.dilate();
 }

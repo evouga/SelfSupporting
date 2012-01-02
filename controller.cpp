@@ -118,6 +118,16 @@ void Controller::saveNetwork(const char *filename)
     p_.statusmsg = "Saved thrust network " + QString(filename) + ".";
 }
 
+void Controller::saveNetworkWeights(const char *filename)
+{
+    if(!nm_->exportWeights(filename))
+    {
+        QString msg = "Couldn't write weights file " + QString(filename) + ". Save failed.";
+        QMessageBox::warning(&w_, "Couldn't Write File", msg, QMessageBox::Ok);
+        return;
+    }
+}
+
 void Controller::saveNetworkEverything(const char *filename)
 {
     string name(filename);
@@ -171,10 +181,9 @@ void Controller::exportNetworkOBJ(const char *filename)
     p_.statusmsg = "Exported network geometry to " + QString(filename) + ".";
 }
 
-
 void Controller::computeWeightsFromTopView()
 {
-    rm_->setPlaneAreaLoads(p_.density);
+    rm_->setPlaneAreaLoads(p_.density, p_.thickness);
     double wresidual = nm_->computeWeightsOnPlane(*rm_, p_.weightsum);
     double hresidual = nm_->updateHeights();
     p_.statusmsg = "Computed weights, with residual " + QString::number(wresidual) + ", heights with residual " + QString::number(hresidual) + ".";
@@ -210,29 +219,33 @@ void Controller::projectNetwork()
 
 void Controller::iterateNetwork()
 {
-    nm_->setSurfaceAreaLoads(p_.density);
-    double maxweight = p_.maxWeight;
+    nm_->setSurfaceAreaLoads(p_.density, p_.thickness);
+    double maxstress = p_.maxStress;
     if(!p_.enforceMaxWeight)
-        maxweight = std::numeric_limits<double>::infinity();
-    nm_->computeBestWeights(maxweight);
+        maxstress = std::numeric_limits<double>::infinity();
+    nm_->computeBestWeights(maxstress, p_.thickness);
     double residualp = nm_->computeBestPositionsTangentLS(p_.alpha, p_.beta, p_.planarity);
 
 //    p_.statusmsg = "Projected onto best weights and positions. Residual after calculating best weights " + QString::number(residualw)
 //            + ", and after adjusting position " + QString::number(residualp) + "." + " Alpha: " + QString::number(p_.alpha) + " Beta: " + QString::number(p_.beta);
     p_.alpha /= 2.;
     p_.alpha = std::max(p_.alpha, 1e-15);
-    p_.beta *= 2;
-    p_.beta = std::min(p_.beta, 1e15);
+    if(p_.nmresidual < 2*residualp)
+    {
+        p_.beta *= 2;
+        p_.beta = std::min(p_.beta, 1e15);
+        cout << "increasing beta to " << p_.beta << endl;
+    }
     p_.nmresidual = residualp;
 }
 
 void Controller::computeBestWeights()
 {
-    nm_->setPlaneAreaLoads(p_.density);
-    double maxweight = p_.maxWeight;
+    nm_->setSurfaceAreaLoads(p_.density, p_.thickness);
+    double maxstress = p_.maxStress;
     if(!p_.enforceMaxWeight)
-        maxweight = std::numeric_limits<double>::infinity();
-    p_.nmresidual = nm_->computeBestWeights(maxweight);
+        maxstress = std::numeric_limits<double>::infinity();
+    p_.nmresidual = nm_->computeBestWeights(maxstress, p_.thickness);
     updateGLWindows();
 }
 
@@ -265,8 +278,8 @@ void Controller::subdivideMesh(bool andboundary)
 {
     nm_->subdivide(andboundary);
     nm_->saveSubdivisionReference();
-    p_.alpha = 0.1;
-    p_.beta = .2;
+    p_.alpha = 1;
+    p_.beta = .1;
     p_.nmresidual = std::numeric_limits<double>::infinity();
     p_.statusmsg = "Subdivided thrust network.";
     w_.updateGLWindows();
@@ -452,8 +465,8 @@ void Controller::deleteFace(int fidx)
 void Controller::resetParams()
 {
     p_.statusmsg = "Ready";
-    p_.alpha = 0.1;
-    p_.beta = 0.2;
+    p_.alpha = 1;
+    p_.beta = .1;
     p_.weightsum = 50;
     p_.nmresidual = std::numeric_limits<double>::infinity();
     w_.reportParams();
@@ -496,14 +509,19 @@ void Controller::enforceMaxWeight(bool state)
     p_.enforceMaxWeight = state;
 }
 
-void Controller::setMaxWeight(double weight)
+void Controller::setMaxStress(double stress)
 {
-    p_.maxWeight = 0.1*weight;
+    p_.maxStress = stress;
 }
 
 void Controller::setDensity(double density)
 {
-    p_.density = 0.1*density;
+    p_.density = density;
+}
+
+void Controller::setThickness(double thickness)
+{
+    p_.thickness = thickness;
 }
 
 void Controller::copyThrustNetwork()
@@ -571,4 +589,11 @@ vector<int> Controller::selectRectangle(const Vector2d &c1, const Vector2d &c2, 
 void Controller::averageHeights()
 {
     rm_->averageHandledHeights();
+}
+
+void Controller::dilate()
+{
+    rm_->dilate(0.5);
+    resetNetworkMesh();
+    w_.updateGLWindows();
 }

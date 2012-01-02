@@ -64,8 +64,6 @@ private slots:
 
     void on_maxWeightCheckBox_stateChanged(int arg1);
 
-    void on_maxWeightHorizontalSlider_valueChanged(int value);
-
     void on_actionSubdivide_triggered();
 
     void on_actionSave_Mesh_triggered();
@@ -83,8 +81,6 @@ private slots:
     void on_actionImport_OBJ_triggered();
 
     void on_actionMake_Planar_triggered();
-
-    void on_densitySlider_valueChanged(int value);
 
     void on_actionExport_OM_triggered();
 
@@ -125,6 +121,16 @@ private slots:
     void on_actionSmooth_Boundary_2_triggered();
 
     void on_actionExport_Everything_triggered();
+
+    void on_actionExport_Weights_triggered();
+
+    void on_maxStressEdit_editingFinished();
+
+    void on_densityEdit_editingFinished();
+
+    void on_thicknessEdit_editingFinished();
+
+    void on_dilateButton_clicked();
 
 protected:
     void moveEvent(QMoveEvent *);

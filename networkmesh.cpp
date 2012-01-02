@@ -78,7 +78,7 @@ double NetworkMesh::calculateEquilibriumViolation()
     return sqrt(result);
 }
 
-double NetworkMesh::computeBestWeights(double maxweight)
+double NetworkMesh::computeBestWeights(double maxstress, double thickness)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
 
@@ -143,6 +143,7 @@ double NetworkMesh::computeBestWeights(double maxweight)
         if(edgePinned(eh))
         {
             Md.coeffRef(row, i) = 1.0;
+            rhs[row] = 1.0;
             row++;
         }
     }
@@ -155,8 +156,16 @@ double NetworkMesh::computeBestWeights(double maxweight)
     for(int i=0; i<e; i++)
     {
         MyMesh::EdgeHandle eh = mesh_.edge_handle(i);
+        double maxweight = numeric_limits<double>::infinity();
+        if(maxstress!= numeric_limits<double>::infinity())
+        {
+            double areaofinfluence = edgeArea(eh);
+            double e2 = mesh_.calc_edge_sqr_length(eh);
+            maxweight = maxstress*thickness*areaofinfluence/e2;
+            maxweight /= 8;
+        }
         ub[i] = maxweight;
-        lb[i] = 0.00;
+        lb[i] = 0.0;
         result[i] = mesh_.data(eh).weight();
     }
 
@@ -164,11 +173,26 @@ double NetworkMesh::computeBestWeights(double maxweight)
     int oldid = getMeshID();
     ml.reset();
 
-    cont_.getSolvers().solveBCLS(M, rhs, lb, ub, result);
+    //cout << 3*interiorn << " + " << boundarye << " nz: " << M.nonZeros() << " ( " << double(M.nonZeros())/(M.rows()*M.cols()) * 100.0 << "%)" << endl;
+
 /*    DynamicSparseMatrix<double> MTM(M.transpose()*M);
     SparseMatrix<double> MTMd(MTM);
     VectorXd Mrhs = M.transpose()*rhs;
-    cont_.getSolvers().linearSolveCG(MTMd, Mrhs, result);*/
+    cont_.getSolvers().linearSolveCG(MTMd, Mrhs, result);
+    bool resultgood = true;
+    for(int i=0; i<e; i++)
+        if(result[i] < -1e-4)
+        {
+            cout << "BCLS " << result[i] << endl;
+            resultgood = false;
+            break;
+        }
+    if(!resultgood)
+    {*/
+        cont_.getSolvers().solveBCLS(M, rhs, lb, ub, result);
+    /*}
+    else
+        cout << "no BCLS" << endl;*/
 
     ml = acquireMesh();
     if(getMeshID() == oldid)
@@ -191,21 +215,48 @@ double NetworkMesh::computeBestWeights(double maxweight)
 double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, bool planarity)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
+    cout << computeBoundingCircle(computeCentroid()) << endl;
+    double fac = 1.0/calculateEquilibriumViolation();
+    fac *= fac;
+    beta *= fac;
+
     int n = mesh_.n_vertices();
+
     if(n==0)
         return 0;
 
-    VectorXd q0(3*n);
+    map<int, int> vidx2midx;
+    map<int, int> midx2vidx;
+    int nummdofs=0;
 
     for(int i=0; i<n; i++)
     {
-        const MyMesh::Point &pt = mesh_.point(mesh_.vertex_handle(i));
-        for(int j=0; j<3; j++)
-            q0[3*i+j] = pt[j];
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+        if(!mesh_.data(vh).pinned() && !mesh_.data(vh).anchored())
+        {
+            vidx2midx[i] = nummdofs;
+            midx2vidx[nummdofs] = i;
+            nummdofs++;
+        }
     }
-    //q0[3*n] = 1.0;
 
-    DynamicSparseMatrix<double> L(3*n,3*n);
+    VectorXd q0(3*nummdofs);
+
+    for(int i=0; i<n; i++)
+    {
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+        if(!mesh_.data(vh).pinned() && !mesh_.data(vh).anchored())
+        {
+            const MyMesh::Point &pt = mesh_.point(vh);
+            for(int j=0; j<3; j++)
+                q0[3*vidx2midx[i]+j] = pt[j];
+        }
+    }
+
+    DynamicSparseMatrix<double> L(3*n,3*nummdofs);
+    VectorXd Lrhs(3*n);
+    Lrhs.setZero();
+
     for(int i=0; i<n; i++)
     {
 
@@ -213,38 +264,44 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, boo
         if(!mesh_.data(vh).pinned())
         {
             int valence = mesh_.valence(vh);
-            for(int j=0; j<3; j++)
-                L.coeffRef(3*i+j, 3*i+j) = 1.0;
+            if(!mesh_.data(vh).anchored())
+            {
+                for(int j=0; j<3; j++)
+                    L.coeffRef(3*i+j, 3*vidx2midx[i]+j) = 1.0;
+            }
             for(MyMesh::VertexVertexIter vv = mesh_.vv_iter(vh); vv; ++vv)
             {
                 MyMesh::VertexHandle adj = vv;
                 int adjidx = adj.idx();
-                for(int j=0; j<3; j++)
-                    L.coeffRef(3*i+j, 3*adjidx+j) = -1.0/valence;
+                if(!mesh_.data(adj).pinned() && !mesh_.data(adj).anchored())
+                {
+                    for(int j=0; j<3; j++)
+                        L.coeffRef(3*i+j, 3*vidx2midx[adjidx]+j) = -1.0/valence;
+                }
+                else
+                {
+                    MyMesh::Point pt = mesh_.point(adj);
+                    for(int j=0; j<3; j++)
+                        Lrhs[3*i+j] += 1.0/valence * pt[j];
+                }
             }
         }
     }
 
-    DynamicSparseMatrix<double> LTL(L.transpose()*L);
-
-    DynamicSparseMatrix<double> Md(3*n,3*n);
+    DynamicSparseMatrix<double> Md(3*nummdofs,3*nummdofs);
     for(int i=0; i<n; i++)
     {
-        MyMesh::Point normal;
-        mesh_.calc_vertex_normal_correct(mesh_.vertex_handle(i),normal);
-        for(int j=0; j<3; j++)
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+        if(!mesh_.data(vh).pinned() && !mesh_.data(vh).anchored())
         {
-            for(int k=0; k<3; k++)
+            MyMesh::Point normal;
+            mesh_.calc_vertex_normal_correct(vh,normal);
+            for(int j=0; j<3; j++)
             {
-                Md.coeffRef(3*i+j,3*i+k) = normal[j]*normal[k];
-            }
-            //Md.coeffRef(3*i+j, 3*i+j) = 1.0;
-        }
-        if(mesh_.data(mesh_.vertex_handle(i)).pinned() || mesh_.data(mesh_.vertex_handle(i)).anchored())
-        {
-            for(int k=0; k<3; k++)
-            {
-                Md.coeffRef(3*i+k, 3*i+k) += 100*beta;
+                for(int k=0; k<3; k++)
+                {
+                    Md.coeffRef(3*vidx2midx[i]+j,3*vidx2midx[i]+k) = normal[j]*normal[k];
+                }
             }
         }
     }
@@ -254,15 +311,19 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, boo
 
     for(int i=0; i<n; i++)
     {
-        MyMesh::Point pt = mesh_.point(mesh_.vertex_handle(i));
-
-        Vector3d ptv(pt[0],pt[1],pt[2]);
-        //Vector3d projpt = approximateClosestPoint(subdreference_, ptv);
-        Vector3d projpt = approximateClosestZParallel(subdreference_, ptv);
-        for(int j=0; j<3; j++)
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+        if(!mesh_.data(vh).pinned() && !mesh_.data(vh).anchored())
         {
-            rhs[3*i+j] += alpha/beta*(projpt[j]);
-            Md.coeffRef(3*i+j,3*i+j) += alpha/beta;
+            MyMesh::Point pt = mesh_.point(mesh_.vertex_handle(i));
+
+            Vector3d ptv(pt[0],pt[1],pt[2]);
+            Vector3d projpt = approximateClosestPoint(subdreference_, ptv);
+            //Vector3d projpt = approximateClosestZParallel(subdreference_, ptv);
+            for(int j=0; j<3; j++)
+            {
+                rhs[3*vidx2midx[i]+j] += alpha/beta*(projpt[j]);
+                Md.coeffRef(3*vidx2midx[i]+j,3*vidx2midx[i]+j) += alpha/beta;
+            }
         }
     }
 
@@ -273,9 +334,9 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, boo
             numunpinned++;
     }
 
-    DynamicSparseMatrix<double> CEd(3*n, 3*numunpinned);
-    VectorXd ce0(3*numunpinned);
-    ce0.setZero();
+    DynamicSparseMatrix<double> CEd(3*nummdofs, 3*numunpinned);
+    VectorXd cerhs(3*numunpinned);
+    cerhs.setZero();
     int row = 0;
     for(int i=0; i<n; i++)
     {
@@ -287,16 +348,30 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, boo
                 MyMesh::HalfedgeHandle heh = voh;
                 MyMesh::EdgeHandle eh = mesh_.edge_handle(heh);
                 double weight = mesh_.data(eh).weight();
-                int vidx = mesh_.to_vertex_handle(heh).idx();
+                MyMesh::VertexHandle adj = mesh_.to_vertex_handle(heh);
+                int vidx = adj.idx();
                 for(int j=0; j<3; j++)
                 {
-                    CEd.coeffRef(3*i+j, 3*row+j) += weight;
-                    CEd.coeffRef(3*vidx+j, 3*row+j) -= weight;
+/*                    if(mesh_.data(vh).anchored())
+                    {
+                        MyMesh::Point pt = mesh_.point(vh);
+                        ce0[3*row+j] -= weight*pt[j];
+                    }
+                    else
+                        CEd.coeffRef(3*vidx2midx[i]+j, 3*row+j) += weight;*/
+                    addToStrippedMatrix(CEd, cerhs, i, j, 3*row+j,weight,vidx2midx);
+
+/*                    if(!mesh_.data(adj).pinned() && !mesh_.data(adj).anchored())
+                        CEd.coeffRef(3*vidx2midx[vidx]+j, 3*row+j) -= weight;
+                    else
+                    {
+                        MyMesh::Point adjpt = mesh_.point(adj);
+                        ce0[3*row+j] += weight*adjpt[j];
+                    }*/
+                    addToStrippedMatrix(CEd, cerhs, vidx, j, 3*row+j, -weight, vidx2midx);
                 }
             }
-            ce0[3*row+0] = 0;
-            ce0[3*row+1] = mesh_.data(vh).load();
-            ce0[3*row+2] = 0;
+            cerhs[3*row+1] -= mesh_.data(vh).load();
             row++;
         }
     }
@@ -311,9 +386,9 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, boo
         }
     }
 
-    DynamicSparseMatrix<double> Pd(3*n, numplanarity);
-    VectorXd p0(numplanarity);
-    p0.setZero();
+    DynamicSparseMatrix<double> Pd(3*nummdofs, numplanarity);
+    VectorXd prhs(numplanarity);
+    prhs.setZero();
 
     row=0;
     for(MyMesh::FaceIter fi = mesh_.faces_begin(); fi != mesh_.faces_end(); ++fi)
@@ -358,52 +433,57 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, boo
                 sumtheta += theta;
                 for(int k=0; k<3; k++)
                 {
-                    Pd.coeffRef(3*curtoidx+k,row) += grade2[k];
-                    Pd.coeffRef(3*curfromidx+k, row) -= grade2[k];
-                    Pd.coeffRef(3*curfromidx+k, row) -= grade1[k];
-                    Pd.coeffRef(3*prevfromidx+k,row) += grade1[k];
+                    addToStrippedMatrix(Pd, prhs, curtoidx, k, row, grade2[k], vidx2midx);
+                    //Pd.coeffRef(3*curtoidx+k,row) += grade2[k];
+                    addToStrippedMatrix(Pd, prhs, curfromidx, k, row, -grade2[k], vidx2midx);
+                    //Pd.coeffRef(3*curfromidx+k, row) -= grade2[k];
+                    addToStrippedMatrix(Pd, prhs, curfromidx, k, row, -grade1[k], vidx2midx);
+                    //Pd.coeffRef(3*curfromidx+k, row) -= grade1[k];
+                    addToStrippedMatrix(Pd, prhs, prevfromidx, k, row, grade1[k], vidx2midx);
+                    //Pd.coeffRef(3*prevfromidx+k,row) += grade1[k];
                 }
 
                 prev = cur;
                 cur = mesh_.next_halfedge_handle(cur);
             }
             sumtheta -= 2*3.1415926535898;
-            p0[row] = sumtheta;
+            prhs[row] -= sumtheta;
             row++;
         }
     }
     assert(row == numplanarity);
 
-    p0 -= Pd.transpose()*q0;
+    prhs += Pd.transpose()*q0;
 
 
-    rhs -= CEd*ce0;
+    rhs += CEd*cerhs;
     Md += CEd*CEd.transpose();
 
     if(planarity)
     {
-        rhs -= 0.1*Pd*p0;
+        rhs += 0.1*Pd*prhs;
         Md += 0.1*Pd*Pd.transpose();
     }
 
-    Md += 0.0/beta * LTL;
-
-    SparseMatrix<double> M(Md);
+    double smoothing = 0.0;
+    Md += smoothing/beta * L.transpose()*L;
+    rhs += smoothing/beta * L.transpose()*Lrhs;
 
     VectorXd result = q0;
 
     int oldid = getMeshID();
     ml.reset();
+    SparseMatrix<double> M(Md);
     cont_.getSolvers().linearSolveCG(M, rhs, result);
     double residual = std::numeric_limits<double>::infinity();
 
     ml = acquireMesh();
     if(oldid == getMeshID())
     {
-        for(int i=0; i<n; i++)
+        for(int i=0; i<nummdofs; i++)
         {
-            MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
-            if(!mesh_.data(vh).pinned() && !mesh_.data(vh).anchored())
+            MyMesh::VertexHandle vh = mesh_.vertex_handle(midx2vidx[i]);
+           // if(!mesh_.data(vh).pinned() && !mesh_.data(vh).anchored())
             {
                 MyMesh::Point &pt = mesh_.point(vh);
                 for(int j=0; j<3; j++)
@@ -423,6 +503,19 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, boo
     return residual;
 }
 
+void NetworkMesh::addToStrippedMatrix(DynamicSparseMatrix<double> &M, VectorXd &rhs, int v, int k, int j, double val, std::map<int, int> &vidx2midx)
+{
+    MyMesh::VertexHandle vh = mesh_.vertex_handle(v);
+    if(!mesh_.data(vh).pinned() && !mesh_.data(vh).anchored())
+    {
+        M.coeffRef(3*vidx2midx[v] + k, j) += val;
+    }
+    else
+    {
+        MyMesh::Point pt = mesh_.point(vh);
+        rhs[j] -= pt[k]*val;
+    }
+}
 
 double NetworkMesh::computeWeightsOnPlane(ReferenceMesh &rm, double sum)
 {
@@ -1203,6 +1296,23 @@ void NetworkMesh::exportVectorFields(const char *name)
         Vector3d v = mesh_.data(fi.handle()).rel_principal_v();
         ofs << u.transpose() << " " << v.transpose() << endl;
     }
+}
+
+bool NetworkMesh::exportWeights(const char *name)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    ofstream ofs(name);
+    if(!ofs)
+        return false;
+
+    for(MyMesh::EdgeIter ei = mesh_.edges_begin(); ei != mesh_.edges_end(); ++ei)
+    {
+        MyMesh::HalfedgeHandle heh = mesh_.halfedge_handle(ei.handle(), 0);
+        MyMesh::VertexHandle tov = mesh_.to_vertex_handle(heh);
+        MyMesh::VertexHandle frv = mesh_.from_vertex_handle(heh);
+        ofs << frv.idx() + 1 << "\t" << tov.idx()+1 << "\t" << mesh_.data(ei).weight() << endl;
+    }
+    return ofs;
 }
 
 bool NetworkMesh::exportReciprocalMesh(const char *name)

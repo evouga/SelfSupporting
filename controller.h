@@ -23,8 +23,9 @@ struct Params
 
     bool enforceMaxWeight;
     bool planarity;
-    double maxWeight;
+    double maxStress;
     double density;
+    double thickness;
 };
 
 class Controller
@@ -52,6 +53,7 @@ public:
     void saveMesh(const char *filename);
     void saveNetwork(const char *filename);
     void saveNetworkEverything(const char *filename);
+    void saveNetworkWeights(const char *filename);
     void importOBJ(const char *filename);
     void exportOBJ(const char *filename);
     void addMesh(const char *filename);
@@ -94,8 +96,9 @@ public:
     void setAutoIterate(bool state);
     void setEnforcePlanarity(bool state);
     void enforceMaxWeight(bool state);
-    void setMaxWeight(double weight);
+    void setMaxStress(double stress);
     void setDensity(double density);
+    void setThickness(double thickness);
     void laplacianTest();
     void computeConjugateDirs();
 
@@ -106,6 +109,7 @@ public:
     void invertY();
 
     void averageHeights();
+    void dilate();
 
     void updateGLWindows();
     const Params &getParams();
