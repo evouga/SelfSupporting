@@ -295,6 +295,7 @@ void MainWindow::reportParams()
     c_.setMaxStress(ui->maxStressEdit->text().toDouble());
     c_.setDensity(ui->densityEdit->text().toDouble());
     c_.setThickness(ui->thicknessEdit->text().toDouble());
+    c_.setExtraMass(ui->extraMassEdit->text().toDouble());
 }
 
 void MainWindow::on_actionSubdivide_triggered()
@@ -461,4 +462,9 @@ void MainWindow::on_thicknessEdit_editingFinished()
 void MainWindow::on_dilateButton_clicked()
 {
     c_.dilate();
+}
+
+void MainWindow::on_extraMassEdit_editingFinished()
+{
+    c_.setExtraMass(ui->extraMassEdit->text().toDouble());
 }

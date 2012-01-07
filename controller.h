@@ -26,6 +26,7 @@ struct Params
     double maxStress;
     double density;
     double thickness;
+    double extramass;
 };
 
 class Controller
@@ -99,6 +100,7 @@ public:
     void setMaxStress(double stress);
     void setDensity(double density);
     void setThickness(double thickness);
+    void setExtraMass(double extramass);
     void laplacianTest();
     void computeConjugateDirs();
 

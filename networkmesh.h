@@ -46,6 +46,7 @@ public:
     bool exportReciprocalMesh(const char *name);
     bool exportWeights(const char *name);
 
+
 private:
     Eigen::Matrix2d approximateStressHessian(MyMesh::FaceHandle face);
     void fixBadVertices();
@@ -56,6 +57,8 @@ private:
     void computeLaplacianCurvatures();
     void triangleSubdivide();
     void addToStrippedMatrix(Eigen::DynamicSparseMatrix<double> &M, Eigen::VectorXd &rhs, int v, int k, int j, double val, std::map<int, int> &vidx2midx);
+    double planarityViolation();
+    void distanceFromReference(MyMesh &rm);
 
     MyMesh subdreference_;
 

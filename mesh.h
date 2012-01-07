@@ -128,7 +128,7 @@ public:
     void getNRing(int vidx, int n, std::set<int> &nring);
 
     void setPlaneAreaLoads(double density, double thickness);
-    void setSurfaceAreaLoads(double density, double thickness);
+    void setSurfaceAreaLoads(double density, double thickness, double extramass);
     void setConstantLoads(double density, double thickness);
 
     void subdivide(bool subdivideBoundary);

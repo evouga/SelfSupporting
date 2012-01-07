@@ -140,6 +140,11 @@ void ReferenceMeshRenderer::renderSurface3D(int renderFlags)
             else
                 continue;
         }
+/*        else if(v.handle().idx() == 774)
+        {
+            glColor3d(0,0,0);
+        }
+*/
         else if(mesh_.data(v).handled() && mesh_.data(v).pinned())
         {
             glColor3f(1.0, 0.4, 0.0);

@@ -272,14 +272,17 @@ void Mesh::setPlaneAreaLoads(double density, double thickness)
     invalidateMesh();
 }
 
-void Mesh::setSurfaceAreaLoads(double density, double thickness)
+void Mesh::setSurfaceAreaLoads(double density, double thickness, double extramass)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
 
     for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
     {
         double area = vertexArea(vi);
-        mesh_.data(vi).set_load(9.8*density*area*thickness);
+        double extra = 0.0;
+        if(mesh_.data(vi).handled())
+            extra = extramass;
+        mesh_.data(vi).set_load(9.8*(extra + density*area*thickness ));
     }
     invalidateMesh();
 }

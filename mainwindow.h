@@ -132,6 +132,8 @@ private slots:
 
     void on_dilateButton_clicked();
 
+    void on_extraMassEdit_editingFinished();
+
 protected:
     void moveEvent(QMoveEvent *);
     void resizeEvent(QResizeEvent *);

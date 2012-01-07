@@ -215,7 +215,6 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness)
 double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, bool planarity)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
-    cout << computeBoundingCircle(computeCentroid()) << endl;
     double fac = 1.0/calculateEquilibriumViolation();
     fac *= fac;
     beta *= fac;
@@ -261,7 +260,7 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, boo
     {
 
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
-        if(!mesh_.data(vh).pinned())
+        if(!mesh_.data(vh).pinned() && !mesh_.is_boundary(vh))
         {
             int valence = mesh_.valence(vh);
             if(!mesh_.data(vh).anchored())
@@ -317,8 +316,8 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, boo
             MyMesh::Point pt = mesh_.point(mesh_.vertex_handle(i));
 
             Vector3d ptv(pt[0],pt[1],pt[2]);
-            Vector3d projpt = approximateClosestPoint(subdreference_, ptv);
-            //Vector3d projpt = approximateClosestZParallel(subdreference_, ptv);
+            //Vector3d projpt = approximateClosestPoint(subdreference_, ptv);
+            Vector3d projpt = approximateClosestZParallel(subdreference_, ptv);
             for(int j=0; j<3; j++)
             {
                 rhs[3*vidx2midx[i]+j] += alpha/beta*(projpt[j]);
@@ -352,22 +351,8 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, boo
                 int vidx = adj.idx();
                 for(int j=0; j<3; j++)
                 {
-/*                    if(mesh_.data(vh).anchored())
-                    {
-                        MyMesh::Point pt = mesh_.point(vh);
-                        ce0[3*row+j] -= weight*pt[j];
-                    }
-                    else
-                        CEd.coeffRef(3*vidx2midx[i]+j, 3*row+j) += weight;*/
                     addToStrippedMatrix(CEd, cerhs, i, j, 3*row+j,weight,vidx2midx);
 
-/*                    if(!mesh_.data(adj).pinned() && !mesh_.data(adj).anchored())
-                        CEd.coeffRef(3*vidx2midx[vidx]+j, 3*row+j) -= weight;
-                    else
-                    {
-                        MyMesh::Point adjpt = mesh_.point(adj);
-                        ce0[3*row+j] += weight*adjpt[j];
-                    }*/
                     addToStrippedMatrix(CEd, cerhs, vidx, j, 3*row+j, -weight, vidx2midx);
                 }
             }
@@ -400,6 +385,37 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, boo
 
             MyMesh::HalfedgeHandle cur = mesh_.next_halfedge_handle(prev);
             double sumtheta = 0;
+
+            for(int i=0; i<4; i++)
+            {
+                MyMesh::Point e1p1, e1p2, e2p1, e2p2;
+                e2p2 = mesh_.point(mesh_.to_vertex_handle(cur));
+                e2p1 = mesh_.point(mesh_.from_vertex_handle(cur));
+                e1p1 = e2p1;
+                e1p2 = mesh_.point(mesh_.from_vertex_handle(prev));
+
+                Vector3d e1,e2;
+                for(int j=0; j<3; j++)
+                {
+                    e1[j] = e1p2[j]-e1p1[j];
+                    e2[j] = e2p2[j]-e2p1[j];
+                }
+                double denom = e1.dot(e1)*e2.dot(e2)-(e1.dot(e2))*(e1.dot(e2));
+                if(denom < 0)
+                    denom = 0;
+                denom = sqrt(denom);
+                double arg = -e1.dot(e2)/sqrt(e1.dot(e1)*e2.dot(e2));
+                if(arg < -1.0) arg = -1.0;
+                if(arg > 1.0) arg = 1.0;
+                double theta = acos(arg);
+                sumtheta += theta;
+                prev = cur;
+                cur = mesh_.next_halfedge_handle(cur);
+            }
+
+            prev = fhi.handle();
+            cur = mesh_.next_halfedge_handle(prev);
+
             for(int i=0; i<4; i++)
             {
                 MyMesh::Point e1p1, e1p2, e2p1, e2p2;
@@ -426,20 +442,16 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, boo
                 denom = sqrt(denom);
                 Vector3d grade1 = (e2 - e1.dot(e2)/(e1.dot(e1))*e1)/denom;
                 Vector3d grade2 = (e1 - e2.dot(e1)/(e2.dot(e2))*e2)/denom;
-                double arg = -e1.dot(e2)/sqrt(e1.dot(e1)*e2.dot(e2));
-                if(arg < -1.0) arg = -1.0;
-                if(arg > 1.0) arg = 1.0;
-                double theta = acos(arg);
-                sumtheta += theta;
+                VectorXd back(prhs.size());
                 for(int k=0; k<3; k++)
                 {
-                    addToStrippedMatrix(Pd, prhs, curtoidx, k, row, grade2[k], vidx2midx);
+                    addToStrippedMatrix(Pd, back, curtoidx, k, row, grade2[k], vidx2midx);
                     //Pd.coeffRef(3*curtoidx+k,row) += grade2[k];
-                    addToStrippedMatrix(Pd, prhs, curfromidx, k, row, -grade2[k], vidx2midx);
+                    addToStrippedMatrix(Pd, back, curfromidx, k, row, -grade2[k], vidx2midx);
                     //Pd.coeffRef(3*curfromidx+k, row) -= grade2[k];
-                    addToStrippedMatrix(Pd, prhs, curfromidx, k, row, -grade1[k], vidx2midx);
+                    addToStrippedMatrix(Pd, back, curfromidx, k, row, -grade1[k], vidx2midx);
                     //Pd.coeffRef(3*curfromidx+k, row) -= grade1[k];
-                    addToStrippedMatrix(Pd, prhs, prevfromidx, k, row, grade1[k], vidx2midx);
+                    addToStrippedMatrix(Pd, back, prevfromidx, k, row, grade1[k], vidx2midx);
                     //Pd.coeffRef(3*prevfromidx+k,row) += grade1[k];
                 }
 
@@ -461,11 +473,11 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, boo
 
     if(planarity)
     {
-        rhs += 0.1*Pd*prhs;
-        Md += 0.1*Pd*Pd.transpose();
+        rhs += 0.1*fac*Pd*prhs;
+        Md += 0.1*fac*Pd*Pd.transpose();
     }
 
-    double smoothing = 0.0;
+    double smoothing = 0;
     Md += smoothing/beta * L.transpose()*L;
     rhs += smoothing/beta * L.transpose()*Lrhs;
 
@@ -474,6 +486,7 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, boo
     int oldid = getMeshID();
     ml.reset();
     SparseMatrix<double> M(Md);
+
     cont_.getSolvers().linearSolveCG(M, rhs, result);
     double residual = std::numeric_limits<double>::infinity();
 
@@ -483,21 +496,17 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, boo
         for(int i=0; i<nummdofs; i++)
         {
             MyMesh::VertexHandle vh = mesh_.vertex_handle(midx2vidx[i]);
-           // if(!mesh_.data(vh).pinned() && !mesh_.data(vh).anchored())
+            MyMesh::Point &pt = mesh_.point(vh);
+            for(int j=0; j<3; j++)
             {
-                MyMesh::Point &pt = mesh_.point(vh);
-                for(int j=0; j<3; j++)
-                {
-                    pt[j] = result[3*i+j];
-                }
+                pt[j] = result[3*i+j];
             }
         }
 
         //double planresidual = (Pd.transpose()*result+p0).norm();
-        //cout << "Planarity residual " << planresidual << endl;
-
 
         residual = calculateEquilibriumViolation();
+        distanceFromReference(subdreference_);
         invalidateMesh();
     }
     return residual;
@@ -741,6 +750,31 @@ void NetworkMesh::projectOntoReference(ReferenceMesh &rm)
     projectOnto(rm.getMesh());
 }
 
+void NetworkMesh::distanceFromReference(MyMesh &rm)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+
+    double farthest = 0;
+    int farthestidx = 0;
+    for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
+    {
+        MyMesh::Point pt = mesh_.point(vi.handle());
+        Vector3d p(pt[0],pt[1],pt[2]);
+        Vector3d closest = approximateClosestPoint(rm, p);
+        double dist = (closest-p).norm();
+        MyMesh::Point cheatpt = rm.point(rm.vertex_handle(vi.handle().idx()));
+        Vector3d cheatp(cheatpt[0], cheatpt[1],cheatpt[2]);
+        double dist2 = (cheatp-p).norm();
+        if(std::min(dist,dist2) > farthest)
+        {
+            farthest = std::min(dist,dist2);
+            farthestidx = vi.handle().idx();
+        }
+    }
+    double radius = this->computeBoundingCircle(this->computeCentroid());
+    cout << "Farthest distance: " << farthest << " radius " << radius << " " << farthestidx << endl;
+}
+
 void NetworkMesh::fixBadVertices()
 {
     auto_ptr<MeshLock> ml = acquireMesh();
@@ -793,6 +827,67 @@ bool NetworkMesh::fixBadVerticesNew()
         }
     }
     return done;
+}
+
+double NetworkMesh::planarityViolation()
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+
+    int numplanarity = 0;
+    for(MyMesh::FaceIter fi = mesh_.faces_begin(); fi != mesh_.faces_end(); ++fi)
+    {
+        if(numFaceVerts(mesh_, fi.handle()) == 4)
+        {
+            numplanarity++;
+        }
+    }
+    double result = 0;
+    for(MyMesh::FaceIter fi = mesh_.faces_begin(); fi != mesh_.faces_end(); ++fi)
+    {
+        if(numFaceVerts(mesh_, fi.handle()) == 4)
+        {
+            MyMesh::FaceHalfedgeIter fhi = mesh_.fh_iter(fi.handle());
+            MyMesh::HalfedgeHandle prev = fhi.handle();
+
+            MyMesh::HalfedgeHandle cur = mesh_.next_halfedge_handle(prev);
+            double sumtheta = 0;
+            for(int i=0; i<4; i++)
+            {
+                MyMesh::Point e1p1, e1p2, e2p1, e2p2;
+//                int curtoidx = mesh_.to_vertex_handle(cur).idx();
+//                int curfromidx = mesh_.from_vertex_handle(cur).idx();
+//                assert(curfromidx == mesh_.to_vertex_handle(prev).idx());
+//                int prevfromidx = mesh_.from_vertex_handle(prev).idx();
+
+                e2p2 = mesh_.point(mesh_.to_vertex_handle(cur));
+                e2p1 = mesh_.point(mesh_.from_vertex_handle(cur));
+                e1p1 = e2p1;
+                e1p2 = mesh_.point(mesh_.from_vertex_handle(prev));
+
+                Vector3d e1,e2;
+                for(int j=0; j<3; j++)
+                {
+                    e1[j] = e1p2[j]-e1p1[j];
+                    e2[j] = e2p2[j]-e2p1[j];
+                }
+
+                double denom = e1.dot(e1)*e2.dot(e2)-(e1.dot(e2))*(e1.dot(e2));
+                assert(denom > 0);
+                denom = sqrt(denom);
+//                Vector3d grade1 = (e2 - e1.dot(e2)/(e1.dot(e1))*e1)/denom;
+//                Vector3d grade2 = (e1 - e2.dot(e1)/(e2.dot(e2))*e2)/denom;
+                double arg = -e1.dot(e2)/sqrt(e1.dot(e1)*e2.dot(e2));
+                assert(arg >= -1.0 && arg <= 1.0);
+                double theta = acos(arg);
+                sumtheta += theta;
+                prev = cur;
+                cur = mesh_.next_halfedge_handle(cur);
+            }
+            sumtheta -= 2*3.1415926535898;
+            result += sumtheta*sumtheta;
+        }
+    }
+    return result;
 }
 
 double NetworkMesh::enforcePlanarity()
@@ -888,15 +983,15 @@ double NetworkMesh::enforcePlanarity()
     SparseMatrix<double> P(Pd);
 
     cont_.getSolvers().solveWeightedLSE(M, q0, P, p0, result);
-    double resbefore = (P.transpose()*q0+p0).norm();
-    double residual = (P.transpose()*result+p0).norm();
-    cout << "res " << resbefore << " -> " << residual << endl;
+    double resbefore = planarityViolation();
     for(int i=0; i<n; i++)
     {
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
         for(int j=0; j<3; j++)
             mesh_.point(vh)[j] = result[3*i+j];
     }
+    double residual = planarityViolation();
+    cout << "res " << resbefore << " -> " << residual << endl;
 
     invalidateMesh();
     return residual;

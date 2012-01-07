@@ -219,7 +219,7 @@ void Controller::projectNetwork()
 
 void Controller::iterateNetwork()
 {
-    nm_->setSurfaceAreaLoads(p_.density, p_.thickness);
+    nm_->setSurfaceAreaLoads(p_.density, p_.thickness, p_.extramass);
     double maxstress = p_.maxStress;
     if(!p_.enforceMaxWeight)
         maxstress = std::numeric_limits<double>::infinity();
@@ -241,7 +241,7 @@ void Controller::iterateNetwork()
 
 void Controller::computeBestWeights()
 {
-    nm_->setSurfaceAreaLoads(p_.density, p_.thickness);
+    nm_->setSurfaceAreaLoads(p_.density, p_.thickness, p_.extramass);
     double maxstress = p_.maxStress;
     if(!p_.enforceMaxWeight)
         maxstress = std::numeric_limits<double>::infinity();
@@ -522,6 +522,11 @@ void Controller::setDensity(double density)
 void Controller::setThickness(double thickness)
 {
     p_.thickness = thickness;
+}
+
+void Controller::setExtraMass(double extramass)
+{
+    p_.extramass = extramass;
 }
 
 void Controller::copyThrustNetwork()

@@ -16,10 +16,24 @@ void NetworkMeshRenderer::render3D()
     glDisable(GL_LIGHTING);
     glEnable(GL_DITHER);
 
-    glLineWidth(2.0);
-    glBegin(GL_LINES);
+    double maxweight = 0;
+    for(MyMesh::ConstEdgeIter e = mesh_.edges_begin(); e != mesh_.edges_end(); ++e)
+        maxweight = std::max(maxweight, mesh_.data(e).weight());
+    if(maxweight < 1e-8)
+    {
+        return;
+    }
+
     for(MyMesh::ConstEdgeIter e = mesh_.edges_begin(); e != mesh_.edges_end(); ++e)
     {
+        double weight = mesh_.data(e).weight();
+        weight *= 4.0/maxweight;
+        if(weight != 0)
+        {
+            glLineWidth(weight);
+        }
+
+        glBegin(GL_LINES);
         if(m_.edgePinned(e.handle()))
             glColor4f(1.0, 0.0, 0.0, 1.0);
         else if(mesh_.data(e).weight() < -1e-6)
@@ -32,8 +46,8 @@ void NetworkMeshRenderer::render3D()
         m_.edgeEndpoints(e, p1, p2);
         glVertex3f(p1[0],p1[1],p1[2]);
         glVertex3f(p2[0],p2[1],p2[2]);
+        glEnd();
     }
-    glEnd();
 }
 
 void NetworkMeshRenderer::renderSurface()
@@ -62,6 +76,9 @@ void NetworkMeshRenderer::renderSurface()
 
             double viol = 1+log(mesh_.data(v.handle()).violation())/24.0;
             glColor4f(viol, 213/255., 86/255., 1);
+
+            if(mesh_.data(v.handle()).handled())
+                glColor4f(1.0,0.0,0.0,1.0);
             //glColor4f(umbilic, 0, 0, 1.0);
 
 
