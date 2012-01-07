@@ -225,7 +225,7 @@ quad mesh with planar faces.
 
 %%% This is the first section of the body of your paper.
 
-\insert\footins{\vspace*{4cm}}
+%\insert\footins{\vspace*{4cm}}
 
 \section{Introduction}
 
@@ -284,12 +284,15 @@ contributions are the following:
 
 
 	\begin{figure}[t] 
-	\includegraphics[width=\columnwidth]{arch-fig/cheesevault25.jpg} 
-	\caption{A surface with many, irregularly placed holes almost 
-never stands by itself; those that do are surprising and their stability 
-is not obvious by inspection. The surface shown is produced by our 
-algorithm which finds, for a given freeform shape, the nearest self\dash 
-supporting surface.}
+	\includegraphics[width=\columnwidth]{arch-fig/cheesevault76.jpg} 
+	\caption{A surface with irregularly placed holes almost 
+never stands by itself when built from bricks; for those that do,
+stability is not obvious by inspection. The surface shown is produced by 
+finding the nearest self\dash supporting shape from a given freeform
+geometry. The image also illustrates
+the ficticious thrust network used in our algorithm,
+with edges' cross-section and coloring visualizing the magnitude of
+forces.}
 	\label{fig:cheese}
 \end{figure}
 
@@ -864,7 +867,7 @@ corresponding diagonals of corresponding quads in $\SS^*,\Phi^*$.}
 		\lput(45,0){$\SS'^*=\Phi'^*$}
 	\end{overpic}\hfill
 	\begin{overpic}[width=0.25\textwidth]{fig/lilium-pillar-n2.jpg}
-		\put(0,0){(d)}
+		\put(0,0){(d) \small (view from below)}
 	\end{overpic}}
  \caption{The top of the Lilium Tower (a) cannot stand as a masonry 
 structure, because its central part is concave. Our algorithm finds a 
@@ -1200,24 +1203,6 @@ bounding weights slightly away from zero in \eqref{eq:wbounds}, trading
 increased robustness for slight smoothing of the resulting surface.
 
 
- \begin{figure*}[t]
-  \centerline{\begin{overpic}[width=0.25\textwidth]{fig/cheese.jpg}
-		\put(0,5){(a)}
-	\end{overpic}\relax
-	\begin{overpic}[width=0.25\textwidth]{fig/cheese-n.jpg}
-		\put(0,5){(b)}
-	\end{overpic}\relax
-	\begin{overpic}[width=0.25\textwidth]{fig/cheeseforces.jpg}
-		\put(0,5){(c)}
-	\end{overpic}\hfill
-	\begin{minipage}[b]{.23\textwidth}
-  \caption{A mesh with holes (a) requires large deformations
-to both the top view and heights to render it self\dash supporting
-(b). The magnitude of forces in the edges of this thrust\dash
-network is visualized by the cross\dash section of edges
-in (c).}\label{fig:cheese2}
-	\end{minipage}}
-	\end{figure*}
 
 
 
@@ -1269,6 +1254,17 @@ and corresponding reciprocal diagram.
 
 \end{itemize}
 
+ \begin{figure}[t]
+  \centerline{\begin{overpic}[width=0.5\columnwidth]{fig/cheese.jpg}
+		\put(0,5){(a)}
+	\end{overpic}\relax
+	\begin{overpic}[width=0.5\columnwidth]{fig/cheese-n.jpg}
+		\put(0,5){(b)}
+	\end{overpic}}
+  \caption{A mesh with holes (a) requires large deformations
+to both the top view and heights to render it self\dash supporting
+(b)}\label{fig:cheese2}
+  \end{figure}
 
 
 \paragraph{Example: Vault with Pillars.} As an example of the design and 
@@ -1302,6 +1298,7 @@ self-supporting. Our algorithm reveals those edits needed to make the
 structure sound -- principally around the entrance arch, and the area 
 between the two pillars.
 
+
 \paragraph{Example: Swiss Cheese.}
 
 Cutting holes in a self-supporting surface interrupts force flow lines and 
@@ -1328,7 +1325,29 @@ a self\dash supporting structure which is in perfect force equilibrium
 (without moments in the nodes) if only the deadload is applied.
 
 
-For this purpose we first discuss a quad mesh $\SS$ with vertices
+	\begin{figure}[h]
+  \centerline{\begin{overpic}[width=0.33\columnwidth]{fig/vault.jpg}
+	\put(0,0)({(a)}
+	\end{overpic}\hfill
+  \begin{overpic}[width=0.33\columnwidth]{fig/vault-flat.jpg}
+	\put(0,0)({(b)}
+	\end{overpic}\hfill
+  \begin{overpic}[width=0.33\columnwidth]{fig/vault-pq.jpg}
+	\put(0,0)({(c)}
+	\end{overpic}}
+	\caption{Directly enforcing planarity of the faces of even a very 
+simple self-supporting quad-mesh vault (a) results in a surface far 
+removed from the original design (b). Starting instead from a remeshing of 
+the surface with edges following relative principal curvature directions 
+yields a self-supporting, PQ mesh far more faithful to the original (c).}
+	\label{fig:badpq}
+\end{figure}
+
+Taking an arbitrary non-planar 
+quad mesh and attempting naive, simultaneous enforcement of planarity and 
+static equilibrium does not yield good results, as shown in 
+Figure~\ref{fig:badpq}. To identify the necessary conditions,
+we first discuss a quad mesh $\SS$ with vertices
 $\vw_{ij}=(x_{ij},y_{ij},s_{ij})$ which approximates a given continuous
 surface $s(x,y)$. It is known that $\SS$ must approximately follow a network
 of conjugate curves in the surface (see e.g.\ \cite{Liu2006}). We can derive
@@ -1420,43 +1439,12 @@ potential. Convexity of $\Phi$ ensures that $\SS$ is self\dash supporting.
 
 Note that the relative principal curvature directions give the 
 \emph{unique} curve network along which a planar quad discretization of a 
-self\dash supporting surface is possible. Taking an arbitrary non-planar 
-quad mesh and attempting naive, simultaneous enforcement of planarity and 
-static equilibrium does not yield good results, as shown in 
-Figure~\ref{fig:badpq}. Figures~\ref{fig:lilium:pq} and \ref{fig:cas:pq} 
+self\dash supporting surface is possible. Other networks lead to results
+like the one shown by Figure~\ref{fig:badpq}.
+Figures~\ref{fig:lilium:pq} and \ref{fig:cas:pq} 
 further illustrate the result of applying this procedure to 
 self-supporting surfaces.
 
-	\begin{figure}[h]
-  \centerline{\begin{overpic}[width=0.33\columnwidth]{fig/vault.jpg}
-	\put(0,0)({(a)}
-	\end{overpic}\hfill
-  \begin{overpic}[width=0.33\columnwidth]{fig/vault-flat.jpg}
-	\put(0,0)({(b)}
-	\end{overpic}\hfill
-  \begin{overpic}[width=0.33\columnwidth]{fig/vault-pq.jpg}
-	\put(0,0)({(c)}
-	\end{overpic}}
-	\caption{Directly enforcing planarity of the faces of even a very 
-simple self-supporting quad-mesh vault (a) results in a surface far 
-removed from the original design (b). Starting instead from a remeshing of 
-the surface with edges following relative principal curvature directions 
-yields a self-supporting, PQ mesh far more faithful to the original (c).}
-	\label{fig:badpq}
-
-\medskip
-	\begin{overpic}[width=0.48\columnwidth]{fig/cas-vf.jpg}
-		%\put(0,35){(a)}
-	\end{overpic}\hfill
-	\begin{overpic}[width=0.52\columnwidth]{arch-fig/1roo38.jpg}
-		%\put(0,35){(a)}
-	\end{overpic}
-	\caption{Planar quad remeshing of the surface of 
-Figure~\protect\ref{fig:cas}. Left: Principal directions.
-Right: Interior view of a moment\dash free steel\slash glass
-construction based on a self\dash supporting PQ mesh.}
-	\label{fig:cas:pq}
-  \end{figure}
 
 
 
@@ -1559,6 +1547,18 @@ propose the {\em geometrization} of problems as a strategy for their
 solution.
 
 %\section*{Acknowledgements}
+
+\begin{figure*}[t]
+	\includegraphics[height=0.16\textwidth]{fig/cas-vf.jpg}\hfill
+	\includegraphics[height=0.16\textwidth]{arch-fig/1roo62.jpg}\hfill
+	\includegraphics[height=0.16\textwidth]{arch-fig/1roo58.jpg}
+	\caption{Planar quad remeshing of the surface of 
+Figure~\protect\ref{fig:cas}. Left: Principal directions.
+Center: The result of optimization is a self\dash supporting PQ mesh,
+which guides a moment\dash free steel\slash glass construction.
+Right: Interior view.}
+	\label{fig:cas:pq}
+  \end{figure*}
 
 \begin{figure*}[t]
 \vspace{4cm}
