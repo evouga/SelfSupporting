@@ -8,7 +8,6 @@
 #include "meshrenderer.h"
 #include "controller.h"
 #include <list>
-#include "function.h"
 #include <fstream>
 
 using namespace std;
