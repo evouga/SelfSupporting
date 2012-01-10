@@ -143,6 +143,12 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 {
     if(event->key() == 'q' || event->key() == 'Q')
         close();
+    if(event->key() == 'i' || event->key() == 'I')
+    {
+        c_.iterateNetwork();
+        updateGLWindows();
+    }
+
 }
 
 void MainWindow::updateGLWindows()

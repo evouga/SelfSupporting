@@ -226,15 +226,18 @@ void Controller::iterateNetwork()
 //            + ", and after adjusting position " + QString::number(residualp) + "." + " Alpha: " + QString::number(p_.alpha) + " Beta: " + QString::number(p_.beta);
     p_.alpha /= 2.;
     p_.alpha = std::max(p_.alpha, 1e-15);
-    if(p_.nmresidual < 2*residualp)
+    if(p_.nmresidual < 1.1*residualp)
     {
-        p_.beta *= 2;
+        p_.beta *= 1.1;
         p_.beta = std::min(p_.beta, 1e15);
         cout << "increasing beta to " << p_.beta << endl;
-        //if(p_.beta >= 4.0 && rm_->getMesh().n_vertices() > 100)
-//            exit(0);
     }
     p_.nmresidual = residualp;
+//    for(MyMesh::VertexIter vi = rm_->getMesh().vertices_begin(); vi != rm_->getMesh().vertices_end(); ++vi)
+//    {
+//        if(rm_->getMesh().data(vi.handle()).handled())
+//            cout << "handle " << vi.handle().idx()+1 << endl;
+//    }
 }
 
 void Controller::computeBestWeights()

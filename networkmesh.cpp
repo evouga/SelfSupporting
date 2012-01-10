@@ -141,12 +141,12 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness)
             MyMesh::EdgeHandle eh = mesh_.edge_handle(heh);
             int eidx = edge2reduced[eh.idx()];
             MyMesh::Point adj = mesh_.point(tov);
-            Md.coeffRef(row, eidx) += (center[0]-adj[0])/load;
-            Md.coeffRef(row+1, eidx) += ((center[1]-adj[1]))/load;
-            Md.coeffRef(row+2, eidx) += (center[2]-adj[2])/load;
+            Md.coeffRef(row, eidx) += (center[0]-adj[0]);
+            Md.coeffRef(row+1, eidx) += ((center[1]-adj[1]));
+            Md.coeffRef(row+2, eidx) += (center[2]-adj[2]);
         }
         rhs[row] = 0;
-        rhs[row+1] = -1.0;
+        rhs[row+1] = -load;
         rhs[row+2] = 0;
         row += 3;
     }
@@ -170,7 +170,7 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness)
             maxweight /= 8;
         }
         ub[edge2reduced[i]] = maxweight;
-        lb[edge2reduced[i]] = 0.00;
+        lb[edge2reduced[i]] = 0.0;
         result[edge2reduced[i]] = mesh_.data(eh).weight();
     }
 
@@ -188,8 +188,6 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness)
             if(result[i] < lb[i] || isnan(result[i]))
                 result[i] = lb[i];
             MyMesh::EdgeHandle eh = mesh_.edge_handle(reduced2edge[i]);
-            if(edgePinned(eh))
-                result[i] = 0;
             mesh_.data(eh).set_weight(result[i]);
         }
         invalidateMesh();
@@ -211,7 +209,9 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, dou
         fac += viol*viol;
     }
     beta /= fac;
+    //beta *= 10.0;
 
+    //cout << "final beta " << beta << endl;
 
     if(n==0)
         return 0;
@@ -297,7 +297,7 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, dou
         }
     }
 
-    Md /= beta;
+    //Md /= beta;
     VectorXd rhs = Md*q0;
 
     computeCentroids(subdreference_);
@@ -310,12 +310,12 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, dou
             MyMesh::Point pt = mesh_.point(mesh_.vertex_handle(i));
 
             Vector3d ptv(pt[0],pt[1],pt[2]);
-            Vector3d projpt = approximateClosestPoint(subdreference_, ptv);
-            //Vector3d projpt = approximateClosestZParallel(subdreference_, ptv);
+            //Vector3d projpt = approximateClosestPoint(subdreference_, ptv);
+            Vector3d projpt = approximateClosestZParallel(subdreference_, ptv);
             for(int j=0; j<3; j++)
             {
-                rhs[3*vidx2midx[i]+j] += alpha/beta*(projpt[j]);
-                Md.coeffRef(3*vidx2midx[i]+j,3*vidx2midx[i]+j) += alpha/beta;
+                rhs[3*vidx2midx[i]+j] += alpha*(projpt[j]);
+                Md.coeffRef(3*vidx2midx[i]+j,3*vidx2midx[i]+j) += alpha;
             }
         }
     }
@@ -462,8 +462,8 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, dou
     prhs += Pd.transpose()*q0;
 
 
-    rhs += CEd*cerhs;
-    Md += CEd*CEd.transpose();
+    rhs += beta*CEd*cerhs;
+    Md += beta*CEd*CEd.transpose();
 
     if(planarity)
     {
@@ -471,9 +471,9 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, dou
         Md += 0.1*fac*Pd*Pd.transpose();
     }
 
-    double smoothing = 0.0;
-    Md += smoothing/beta * L.transpose()*L;
-    rhs += smoothing/beta * L.transpose()*Lrhs;
+    double smoothing = 0.1;
+    Md += smoothing * L.transpose()*L;
+    rhs += smoothing * L.transpose()*Lrhs;
 
     VectorXd result = q0;
 
@@ -991,7 +991,7 @@ double NetworkMesh::enforcePlanarity()
             mesh_.point(vh)[j] = result[3*i+j];
     }
     double residual = planarityViolation();
-    cout << "res " << resbefore << " -> " << residual << endl;
+    //cout << "res " << resbefore << " -> " << residual << endl;
 
     invalidateMesh();
     return residual;
