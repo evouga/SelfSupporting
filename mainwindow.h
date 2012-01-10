@@ -134,6 +134,10 @@ private slots:
 
     void on_extraMassEdit_editingFinished();
 
+    void on_actionLoop_triggered();
+
+    void on_actionSmooth_Boundary_3_triggered();
+
 protected:
     void moveEvent(QMoveEvent *);
     void resizeEvent(QResizeEvent *);

@@ -4,6 +4,12 @@
 
 MeshRenderer::MeshRenderer(Mesh &m) : m_(m)
 {
+    quadric_ = gluNewQuadric();
+}
+
+MeshRenderer::~MeshRenderer()
+{
+    gluDeleteQuadric(quadric_);
 }
 
 
@@ -68,4 +74,22 @@ void MeshRenderer::decodeFromColor(unsigned int &n, Mesh::PrimType &type, GLubyt
             assert(!"Bad primitive type");
     }
     n = decoded & ( (1<<22)-1 );
+}
+
+
+void MeshRenderer::drawSphere(int vertex)
+{
+    MyMesh::VertexHandle v = m_.getMesh().vertex_handle(vertex);
+    MyMesh::Point pt = m_.getMesh().point(v);
+    double radius = std::numeric_limits<double>::infinity();
+    for(MyMesh::ConstVertexEdgeIter vei = m_.getMesh().cve_iter(v); vei; ++vei)
+    {
+        double len = 0.3*m_.getMesh().calc_edge_length(vei.handle());
+        if(len < radius)
+            radius = len;
+    }
+    glPushMatrix();
+    glTranslatef(pt[0],pt[1],pt[2]);
+    gluSphere(quadric_, radius, 10, 10);
+    glPopMatrix();
 }

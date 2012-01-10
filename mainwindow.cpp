@@ -308,11 +308,6 @@ void MainWindow::on_actionCopy_Thrust_Network_triggered()
     c_.copyThrustNetwork();
 }
 
-void MainWindow::on_pushButton_clicked()
-{
-    c_.laplacianTest();
-}
-
 void MainWindow::on_actionSubdivideRM_triggered()
 {
     c_.subdivideReferenceMesh(false);
@@ -467,4 +462,19 @@ void MainWindow::on_dilateButton_clicked()
 void MainWindow::on_extraMassEdit_editingFinished()
 {
     c_.setExtraMass(ui->extraMassEdit->text().toDouble());
+}
+
+void MainWindow::on_actionLoop_triggered()
+{
+    c_.subdivideReferenceMeshLoop(false);
+}
+
+void MainWindow::on_actionSmooth_Boundary_3_triggered()
+{
+    c_.subdivideReferenceMeshLoop(true);
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    c_.envelopeTest();
 }

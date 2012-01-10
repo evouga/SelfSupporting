@@ -71,11 +71,11 @@ INCLUDEPATH += $$PWD/../../OpenMesh-2.0.1/src \
     /usr/include/suitesparse
 DEPENDPATH += $$PWD/../../OpenMesh-2.0.1/src
 
-DEFINES += EIGEN_YES_I_KNOW_SPARSE_MODULE_IS_NOT_STABLE_YET
+DEFINES += EIGEN_YES_I_KNOW_SPARSE_MODULE_IS_NOT_STABLE_YET EIGEN_NO_DEBUG
 
 RESOURCES +=
 
-QMAKE_CXXFLAGS += -g
+QMAKE_CXXFLAGS += -g -msse2
 
 unix:!macx:!symbian: LIBS += -lbcls
 

@@ -12,7 +12,6 @@ public:
     void render2D();
     void renderSurface();
     void renderConjugateVectors3D();
-    void renderVertConjugateVectors3D();
     void renderConjugateVectors2D();
 };
 

@@ -22,7 +22,7 @@ Mesh::~Mesh()
 {
 }
 
-const MyMesh &Mesh::getMesh()
+MyMesh &Mesh::getMesh()
 {
     return mesh_;
 }
@@ -275,13 +275,14 @@ void Mesh::setPlaneAreaLoads(double density, double thickness)
 void Mesh::setSurfaceAreaLoads(double density, double thickness, double extramass)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
-
     for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
     {
         double area = vertexArea(vi);
         double extra = 0.0;
         if(mesh_.data(vi).handled())
+        {
             extra = extramass;
+        }
         mesh_.data(vi).set_load(9.8*(extra + density*area*thickness ));
     }
     invalidateMesh();
@@ -357,8 +358,7 @@ Vector3d Mesh::approximateClosestPoint(const MyMesh &mesh, const Vector3d &p)
     for(MyMesh::ConstFaceIter f = mesh.faces_begin(); f != mesh.faces_end(); ++f)
     {
         MyMesh::FaceHandle fh = f;
-        MyMesh::Point centroid;
-        mesh.calc_face_centroid(fh, centroid);
+        MyMesh::Point centroid = mesh.data(fh).centroid();
         double dist = 0;
         for(int j=0; j<3; j++)
             dist += (p[j]-centroid[j])*(p[j]-centroid[j]);
@@ -386,8 +386,7 @@ Vector3d Mesh::approximateClosestZParallel(const MyMesh &mesh, const Eigen::Vect
     for(MyMesh::ConstFaceIter f = mesh.faces_begin(); f != mesh.faces_end(); ++f)
     {
         MyMesh::FaceHandle fh = f;
-        MyMesh::Point centroid;
-        mesh.calc_face_centroid(fh, centroid);
+        MyMesh::Point centroid = mesh.data(fh).centroid();
         double dist = (p[0]-centroid[0])*(p[0]-centroid[0])+(p[2]-centroid[2])*(p[2]-centroid[2]);
         if(dist < closestdist)
         {
@@ -1051,4 +1050,95 @@ void Mesh::dilate(double factor)
         pt *= factor;
     }
     invalidateMesh();
+}
+
+void Mesh::triangleSubdivide(bool smoothBoundary)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+
+    MyMesh newmesh;
+
+    int n = mesh_.n_vertices();
+    int e = mesh_.n_edges();
+
+    for(int i=0; i<n; i++)
+    {
+        MyMesh::VertexHandle oldv = mesh_.vertex_handle(i);
+        MyMesh::Point newpt;
+        newpt[0] = newpt[1] = newpt[2] = 0;
+        int numadj=0;
+        if(!mesh_.is_boundary(oldv))
+        {
+            for(MyMesh::VertexVertexIter vvi = mesh_.vv_iter(oldv); vvi; ++vvi)
+            {
+                newpt += mesh_.point(vvi.handle())/16.0;
+                numadj++;
+            }
+            newpt += mesh_.point(oldv) * (16-numadj)/16.0;
+        }
+        else if(smoothBoundary)
+        {
+            for(MyMesh::VertexVertexIter vvi = mesh_.vv_iter(oldv); vvi; ++vvi)
+            {
+                if(mesh_.is_boundary(vvi.handle()))
+                {
+                    newpt += mesh_.point(vvi.handle())/4;
+                }
+            }
+            newpt += mesh_.point(oldv)/2;
+        }
+        else
+            newpt = mesh_.point(oldv);
+
+        MyMesh::VertexHandle newv = newmesh.add_vertex(newpt);
+        newmesh.data(newv).set_pinned(mesh_.data(oldv).pinned());
+    }
+    for(int i=0; i<e; i++)
+    {
+        MyMesh::EdgeHandle edge = mesh_.edge_handle(i);
+        MyMesh::VertexHandle newv;
+        if(mesh_.is_boundary(edge))
+            newv = newmesh.add_vertex(computeEdgeMidpoint(edge));
+        else
+        {
+            MyMesh::HalfedgeHandle heh1 = mesh_.halfedge_handle(edge,0);
+            MyMesh::HalfedgeHandle heh2 = mesh_.halfedge_handle(edge,1);
+            MyMesh::Point newpt = mesh_.point(mesh_.to_vertex_handle(heh1))*3.0/8.0;
+            newpt += mesh_.point(mesh_.from_vertex_handle(heh1))*3.0/8.0;
+            newpt += mesh_.point(mesh_.to_vertex_handle(mesh_.next_halfedge_handle(heh1)))*1.0/8.0;
+            newpt += mesh_.point(mesh_.to_vertex_handle(mesh_.next_halfedge_handle(heh2)))*1.0/8.0;
+            newv = newmesh.add_vertex(newpt);
+        }
+        newmesh.data(newv).set_pinned(edgePinned(edge));
+    }
+    for(MyMesh::FaceIter fi = mesh_.faces_begin(); fi != mesh_.faces_end(); ++fi)
+    {
+        vector<MyMesh::VertexHandle> toaddcenter;
+        for(MyMesh::FaceHalfedgeIter fhi = mesh_.fh_iter(fi.handle()); fhi; ++fhi)
+        {
+            int vidx = mesh_.from_vertex_handle(fhi.handle()).idx();
+            MyMesh::HalfedgeHandle prev = mesh_.prev_halfedge_handle(fhi.handle());
+            vector<MyMesh::VertexHandle> toadd;
+            toadd.push_back(newmesh.vertex_handle(vidx));
+            int eidx1 = mesh_.edge_handle(prev).idx();
+            int eidx2 = mesh_.edge_handle(fhi.handle()).idx();
+            toadd.push_back(newmesh.vertex_handle(n+eidx2));
+            toadd.push_back(newmesh.vertex_handle(n+eidx1));
+            newmesh.add_face(toadd);
+            toaddcenter.push_back(newmesh.vertex_handle(n+eidx2));
+
+        }
+        newmesh.add_face(toaddcenter);
+    }
+    mesh_ = newmesh;
+}
+
+void Mesh::computeCentroids(MyMesh &m)
+{
+    for(MyMesh::FaceIter fi = m.faces_begin(); fi != m.faces_end(); ++fi)
+    {
+        MyMesh::Point centroid;
+        m.calc_face_centroid(fi.handle(),centroid);
+        m.data(fi.handle()).set_centroid(centroid);
+    }
 }

@@ -27,12 +27,12 @@ public:
 
 
     // Given non-negative weights, finds the closest mesh to the given mesh that is self-supporting with those weights
-    double computeBestPositionsTangentLS(double alpha, double beta, bool planarity);
+    double computeBestPositionsTangentLS(double alpha, double beta, double thickness, bool planarity);
 
     double enforcePlanarity();
 
     void projectOntoReference(ReferenceMesh &rm);
-    void projectOnto(const MyMesh &m);
+    void projectOnto(MyMesh &m);
 
     bool isBadVertex(MyMesh::VertexHandle vert);
 
@@ -41,7 +41,6 @@ public:
     void computeRelativePrincipalDirections();
 
     void setupVFProperties();
-    void solveLaplacian();
     void exportVectorFields(const char *name);
     bool exportReciprocalMesh(const char *name);
     bool exportWeights(const char *name);
@@ -54,11 +53,11 @@ private:
 
     double computeLaplacianWeight(MyMesh::EdgeHandle edge);
     double computeLaplacianAlpha(MyMesh::HalfedgeHandle heh);
-    void computeLaplacianCurvatures();
     void triangleSubdivide();
     void addToStrippedMatrix(Eigen::DynamicSparseMatrix<double> &M, Eigen::VectorXd &rhs, int v, int k, int j, double val, std::map<int, int> &vidx2midx);
     double planarityViolation();
-    void distanceFromReference(MyMesh &rm);
+    void distanceFromReference(MyMesh &rm, double thickness);
+    void computeSubdReferenceCentroids();
 
     MyMesh subdreference_;
 

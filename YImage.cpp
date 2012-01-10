@@ -9,6 +9,8 @@
 // we use this to determine the pixel format on the fly
 #include <cstddef>
 
+template<class T> void ignore( const T& ) { }
+
 YImage::YImage()
 	: m_width( 0 ), m_height( 0 ), m_data( NULL )
 {
@@ -223,7 +225,7 @@ static void user_read_data(png_structp png_ptr, png_bytep data, png_size_t lengt
 static void user_read_data(png_structp png_ptr, png_bytep data, png_size_t length)
 {
 	voidp read_io_ptr = png_get_io_ptr(png_ptr) ;
-	fread( (unsigned char*) data, length, 1, (FILE*) read_io_ptr ) ;
+        ignore(fread( (unsigned char*) data, length, 1, (FILE*) read_io_ptr )) ;
 }
 
 

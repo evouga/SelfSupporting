@@ -198,12 +198,6 @@ void Controller::resetNetworkMesh()
     w_.updateGLWindows();
 }
 
-void Controller::laplacianTest()
-{
-    nm_->solveLaplacian();
-    w_.updateGLWindows();
-}
-
 void Controller::computeConjugateDirs()
 {
     sm_->buildFromThrustNetwork(*nm_);
@@ -224,7 +218,7 @@ void Controller::iterateNetwork()
     if(!p_.enforceMaxWeight)
         maxstress = std::numeric_limits<double>::infinity();
     nm_->computeBestWeights(maxstress, p_.thickness);
-    double residualp = nm_->computeBestPositionsTangentLS(p_.alpha, p_.beta, p_.planarity);
+    double residualp = nm_->computeBestPositionsTangentLS(p_.alpha, p_.beta, p_.thickness, p_.planarity);
 
 //    p_.statusmsg = "Projected onto best weights and positions. Residual after calculating best weights " + QString::number(residualw)
 //            + ", and after adjusting position " + QString::number(residualp) + "." + " Alpha: " + QString::number(p_.alpha) + " Beta: " + QString::number(p_.beta);
@@ -235,6 +229,8 @@ void Controller::iterateNetwork()
         p_.beta *= 2;
         p_.beta = std::min(p_.beta, 1e15);
         cout << "increasing beta to " << p_.beta << endl;
+        //if(p_.beta >= 4.0 && rm_->getMesh().n_vertices() > 100)
+//            exit(0);
     }
     p_.nmresidual = residualp;
 }
@@ -251,7 +247,7 @@ void Controller::computeBestWeights()
 
 void Controller::computeBestPositions()
 {
-    double residualp = nm_->computeBestPositionsTangentLS(p_.alpha, p_.beta, p_.planarity);
+    double residualp = nm_->computeBestPositionsTangentLS(p_.alpha, p_.beta, p_.thickness, p_.planarity);
     p_.alpha /= 2.;
     p_.alpha = std::max(p_.alpha, 1e-15);
     p_.beta *= 2.;
@@ -292,6 +288,15 @@ void Controller::subdivideReferenceMesh(bool andboundary)
     p_.statusmsg = "Subdivided reference mesh.";
     w_.updateGLWindows();
 }
+
+void Controller::subdivideReferenceMeshLoop(bool andboundary)
+{
+    rm_->triangleSubdivide(andboundary);
+    resetParams();
+    p_.statusmsg = "Subdivided reference mesh.";
+    w_.updateGLWindows();
+}
+
 
 Vector3d Controller::computeMeshCentroid()
 {
@@ -601,4 +606,25 @@ void Controller::dilate()
     rm_->dilate(0.5);
     resetNetworkMesh();
     w_.updateGLWindows();
+}
+
+void Controller::envelopeTest()
+{
+    auto_ptr<MeshLock> rml = rm_->acquireMesh();
+    auto_ptr<MeshLock> ml = nm_->acquireMesh();
+    set<MyMesh::FaceHandle> todelete;
+    for(MyMesh::VertexIter vi = nm_->getMesh().vertices_begin(); vi != nm_->getMesh().vertices_end(); ++vi)
+    {
+        if(nm_->getMesh().data(vi.handle()).outofenvelope())
+        {
+            MyMesh::VertexHandle vert = rm_->getMesh().vertex_handle(vi.handle().idx());
+            for(MyMesh::VertexFaceIter vfi = rm_->getMesh().vf_iter(vert); vfi; ++vfi)
+            {
+                todelete.insert(vfi.handle());
+            }
+        }
+    }
+    for(set<MyMesh::FaceHandle>::iterator it = todelete.begin(); it != todelete.end(); ++it)
+        rm_->getMesh().delete_face(*it, true);
+    rm_->getMesh().garbage_collection();
 }

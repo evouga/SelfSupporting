@@ -63,6 +63,7 @@ public:
     void copyThrustNetwork();
     void subdivideMesh(bool andboundary);
     void subdivideReferenceMesh(bool andboundary);
+    void subdivideReferenceMeshLoop(bool andboundary);
     void triangulateThrustNetwork();
     Eigen::Vector3d computeMeshCentroid();
     double computeMeshBoundingSphere(const Eigen::Vector3d &center);
@@ -115,6 +116,7 @@ public:
 
     void updateGLWindows();
     const Params &getParams();
+    void envelopeTest();
 
     NetworkThread *getNT();
     std::vector<int> selectRectangle(const Eigen::Vector2d &c1, const Eigen::Vector2d &c2, Camera &c);

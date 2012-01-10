@@ -111,20 +111,7 @@ void ReferenceMeshRenderer::renderSurface3D(int renderFlags)
             glVertex3d(pt2[0], pt2[1], pt2[2]);
         }
         glEnd();
-        /*MyMesh::ConstFaceIter f, fEnd = mesh_.faces_end();
-        int i=0;
-        for (f = mesh_.faces_begin(); f != fEnd; ++f,i++) {
-            glColor4f(0.0, 0.0, 0.0, 0.8);
-            glBegin(GL_POLYGON);
-            for (MyMesh::ConstFaceVertexIter v = mesh_.cfv_iter(f); v; ++v) {
-                MyMesh::Point pt = mesh_.point(v);
-                glVertex3d(pt[0],pt[1],pt[2]);
-
-            }
-            glEnd();
-        }*/
     }
-    GLUquadricObj *sphere = gluNewQuadric();
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     int i=0;
     for(MyMesh::ConstVertexIter v = mesh_.vertices_begin(); v != mesh_.vertices_end(); ++v, i++)
@@ -140,11 +127,6 @@ void ReferenceMeshRenderer::renderSurface3D(int renderFlags)
             else
                 continue;
         }
-/*        else if(v.handle().idx() == 774)
-        {
-            glColor3d(0,0,0);
-        }
-*/
         else if(mesh_.data(v).handled() && mesh_.data(v).pinned())
         {
             glColor3f(1.0, 0.4, 0.0);
@@ -167,18 +149,6 @@ void ReferenceMeshRenderer::renderSurface3D(int renderFlags)
         }
         else
             continue;
-        MyMesh::Point pt = mesh_.point(v);
-        double radius = std::numeric_limits<double>::infinity();
-        for(MyMesh::ConstVertexEdgeIter vei = mesh_.cve_iter(v); vei; ++vei)
-        {
-            double len = 0.3*mesh_.calc_edge_length(vei.handle());
-            if(len < radius)
-                radius = len;
-        }
-        glPushMatrix();
-        glTranslatef(pt[0],pt[1],pt[2]);
-        gluSphere(sphere, radius, 10, 10);
-        glPopMatrix();
+        drawSphere(v.handle().idx());
     }
-    gluDeleteQuadric(sphere);
 }

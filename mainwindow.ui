@@ -302,19 +302,6 @@
      <string>Constrain Max Stress</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton">
-    <property name="geometry">
-     <rect>
-      <x>280</x>
-      <y>10</y>
-      <width>111</width>
-      <height>27</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Laplacian Test</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
@@ -500,6 +487,19 @@
      <string>50</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="pushButton">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>10</y>
+      <width>97</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Delete black</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -581,8 +581,22 @@
      <property name="title">
       <string>Subdivide</string>
      </property>
-     <addaction name="actionSubdivideRM"/>
-     <addaction name="actionSmooth_Boundary"/>
+     <widget class="QMenu" name="menuCatmull_Clark">
+      <property name="title">
+       <string>Catmull-Clark</string>
+      </property>
+      <addaction name="actionSubdivideRM"/>
+      <addaction name="actionSmooth_Boundary"/>
+     </widget>
+     <widget class="QMenu" name="menuLoop">
+      <property name="title">
+       <string>Loop</string>
+      </property>
+      <addaction name="actionLoop"/>
+      <addaction name="actionSmooth_Boundary_3"/>
+     </widget>
+     <addaction name="menuCatmull_Clark"/>
+     <addaction name="menuLoop"/>
     </widget>
     <addaction name="actionNew_Mesh"/>
     <addaction name="actionLoad_Mesh"/>
@@ -777,6 +791,16 @@
   <action name="actionExport_Weights">
    <property name="text">
     <string>Export Weights</string>
+   </property>
+  </action>
+  <action name="actionLoop">
+   <property name="text">
+    <string>Fixed Boundary</string>
+   </property>
+  </action>
+  <action name="actionSmooth_Boundary_3">
+   <property name="text">
+    <string>Smooth Boundary</string>
    </property>
   </action>
  </widget>
