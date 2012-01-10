@@ -77,6 +77,4 @@ RESOURCES +=
 
 QMAKE_CXXFLAGS += -g -msse2
 
-unix:!macx:!symbian: LIBS += -lbcls
-
-unix|win32: LIBS += -ltsnnls -lblas -lquadmath -lgfortran -llapack -lm -lumfpack
+unix:!macx:!symbian: LIBS += -lbcls -lblas

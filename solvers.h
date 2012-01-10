@@ -19,8 +19,6 @@ public:
     void linearSolveCG(const Eigen::SparseMatrix<double, Eigen::RowMajor> &A, const Eigen::VectorXd &rhs, Eigen::VectorXd &result);
     // Positive semidefinite matrix
     void linearSolveLDLT(const Eigen::SparseMatrix<double> &A, const Eigen::VectorXd &rhs, Eigen::VectorXd &result);
-    // Arbitrary nonsingular
-    void linearSolveLU(const Eigen::SparseMatrix<double> &A, const Eigen::VectorXd &rhs, Eigen::VectorXd &result);
 
 private:
 

@@ -3,33 +3,9 @@
 
 #include <iostream>
 #include <unsupported/Eigen/SparseExtra>
-#include <unsupported/Eigen/UmfPackSupport>
-#include <libtsnnls/tsnnls.h>
 
 using namespace Eigen;
 using namespace std;
-
-taucs_ccs_matrix* convertToTauCS(const SparseMatrix<double> &M)
-{
-    taucs_ccs_matrix *newM = taucs_ccs_create(M.rows(), M.cols(), M.nonZeros(), TAUCS_DOUBLE);
-
-    assert(M.outerSize() == M.cols());
-    int curidx = 0;
-    for(int k=0; k<M.outerSize(); k++)
-    {
-        newM->colptr[k] = curidx;
-        for(SparseMatrix<double>::InnerIterator it(M, k); it; ++it)
-        {
-            newM->rowind[curidx] = it.row();
-            newM->values.d[curidx] = it.value();
-            curidx++;
-        }
-    }
-    newM->colptr[M.outerSize()] = curidx;
-    assert(curidx == M.nonZeros());
-
-    return newM;
-}
 
 void matrixProduct(const SparseMatrix<double, RowMajor> &B, VectorXd &b, const VectorXd &a)
 {
@@ -134,16 +110,6 @@ void Solvers::linearSolveLDLT(const SparseMatrix<double> &A, const VectorXd &rhs
     SparseLDLT<SparseMatrix<double> > ldlt(A);
     result = ldlt.solve(rhs);
 }
-
-void Solvers::linearSolveLU(const SparseMatrix<double> &A, const VectorXd &rhs, VectorXd &result)
-{
-    assert(A.cols() == rhs.size());
-    assert(A.rows() == A.cols());
-    assert(A.rows() == result.size());
-    SparseLU<SparseMatrix<double>, UmfPack > lu(A);
-    result = lu.solve(rhs);
-}
-
 
 void Solvers::linearSolveCG(const SparseMatrix<double, RowMajor> &A, const VectorXd &rhs, VectorXd &result)
 {
