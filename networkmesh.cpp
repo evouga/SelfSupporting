@@ -95,18 +95,29 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness)
             interiorn++;
     }
 
-    int boundarye=0;
+    map<int, int> edge2reduced;
+    map<int, int> reduced2edge;
+
+    int cure = 0;
+
     for(MyMesh::EdgeIter it = mesh_.edges_begin(); it != mesh_.edges_end(); ++it)
     {
-        if(edgePinned(it.handle()))
-            boundarye++;
+        if(!edgePinned(it.handle()))
+        {
+            int idx = it.handle().idx();
+            edge2reduced[idx] = cure;
+            reduced2edge[cure] = idx;
+            cure++;
+        }
     }
 
-    if(interiorn == 0 || boundarye == 0)
+    if(interiorn == 0)
         return 0;
 
-    DynamicSparseMatrix<double, RowMajor> Md(3*interiorn+boundarye, e);
-    VectorXd rhs(3*interiorn+boundarye);
+    int interiore = cure;
+
+    DynamicSparseMatrix<double, RowMajor> Md(3*interiorn, interiore);
+    VectorXd rhs(3*interiorn);
     rhs.setZero();
 
     // min || \sum_{j~i} w_ij (q_i-q_j) + F_i ||^2 + || w_ij ||^2 (boundary) s.t. w_ij >= 0
@@ -126,7 +137,7 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness)
             MyMesh::HalfedgeHandle heh = voh;
             MyMesh::VertexHandle tov = mesh_.to_vertex_handle(heh);
             MyMesh::EdgeHandle eh = mesh_.edge_handle(heh);
-            int eidx = eh.idx();
+            int eidx = edge2reduced[eh.idx()];
             MyMesh::Point adj = mesh_.point(tov);
             Md.coeffRef(row, eidx) += center[0]-adj[0];
             Md.coeffRef(row+1, eidx) += (center[1]-adj[1]);
@@ -137,25 +148,17 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness)
         rhs[row+2] = 0;
         row += 3;
     }
-    for(int i=0; i<e; i++)
-    {
-        MyMesh::EdgeHandle eh = mesh_.edge_handle(i);
-        if(edgePinned(eh))
-        {
-            Md.coeffRef(row, i) = 1.0;
-            rhs[row] = 1.0;
-            row++;
-        }
-    }
-    assert(row == 3*interiorn + boundarye);
+    assert(row == 3*interiorn);
 
-    VectorXd result(e);
-    VectorXd lb(e);
-    VectorXd ub(e);
+    VectorXd result(interiore);
+    VectorXd lb(interiore);
+    VectorXd ub(interiore);
     lb.setZero();
     for(int i=0; i<e; i++)
     {
         MyMesh::EdgeHandle eh = mesh_.edge_handle(i);
+        if(edgePinned(eh))
+            continue;
         double maxweight = numeric_limits<double>::infinity();
         if(maxstress!= numeric_limits<double>::infinity())
         {
@@ -164,49 +167,29 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness)
             maxweight = maxstress*thickness*areaofinfluence/e2;
             maxweight /= 8;
         }
-        ub[i] = maxweight;
-        lb[i] = 0.00;
-        result[i] = mesh_.data(eh).weight();
+        ub[edge2reduced[i]] = maxweight;
+        lb[edge2reduced[i]] = 0.00;
+        result[edge2reduced[i]] = mesh_.data(eh).weight();
     }
 
     SparseMatrix<double, RowMajor> M(Md);
     int oldid = getMeshID();
     ml.reset();
 
-    //cout << 3*interiorn << " + " << boundarye << " nz: " << M.nonZeros() << " ( " << double(M.nonZeros())/(M.rows()*M.cols()) * 100.0 << "%)" << endl;
-
-/*    DynamicSparseMatrix<double> MTM(M.transpose()*M);
-    SparseMatrix<double> MTMd(MTM);
-    VectorXd Mrhs = M.transpose()*rhs;
-    cont_.getSolvers().linearSolveCG(MTMd, Mrhs, result);
-    bool resultgood = true;
-    for(int i=0; i<e; i++)
-        if(result[i] < -1e-4)
-        {
-            cout << "BCLS " << result[i] << endl;
-            resultgood = false;
-            break;
-        }
-    if(!resultgood)
-    {*/
-        cont_.getSolvers().solveBCLS(M, rhs, lb, ub, result);
-    /*}
-    else
-        cout << "no BCLS" << endl;*/
+    cont_.getSolvers().solveBCLS(M, rhs, lb, ub, result);
 
     ml = acquireMesh();
     if(getMeshID() == oldid)
     {
-        for(int i=0; i<e; i++)
+        for(int i=0; i<interiore; i++)
         {
             if(result[i] < lb[i] || isnan(result[i]))
                 result[i] = lb[i];
-            MyMesh::EdgeHandle eh = mesh_.edge_handle(i);
+            MyMesh::EdgeHandle eh = mesh_.edge_handle(reduced2edge[i]);
             if(edgePinned(eh))
                 result[i] = 0;
             mesh_.data(eh).set_weight(result[i]);
         }
-        //fixBadVertices();
         invalidateMesh();
     }
     return calculateEquilibriumViolation();
