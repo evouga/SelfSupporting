@@ -226,9 +226,9 @@ void Controller::iterateNetwork()
 //            + ", and after adjusting position " + QString::number(residualp) + "." + " Alpha: " + QString::number(p_.alpha) + " Beta: " + QString::number(p_.beta);
     p_.alpha /= 2.;
     p_.alpha = std::max(p_.alpha, 1e-15);
-    if(p_.nmresidual < 1.1*residualp)
+    if(p_.nmresidual < 2*residualp)
     {
-        p_.beta *= 1.1;
+        //p_.beta *= 2;
         p_.beta = std::min(p_.beta, 1e15);
         cout << "increasing beta to " << p_.beta << endl;
     }

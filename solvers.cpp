@@ -97,8 +97,8 @@ void Solvers::solveBCLS(const SparseMatrix<double, RowMajor> &A, VectorXd &b, Ve
     bcls_set_problem_data(ls, m, n, Aprod, (void *)&A, 0, result.data(), b.data(), NULL, lb.data(), ub.data());
     ls->newton_step = BCLS_NEWTON_STEP_CGLS;
     double curnorm = (A*result-b).norm();
-    //ls->optTol = std::max(1e-4*curnorm, ls->optTol);
-    ls->optTol = curnorm > 1e-3 ? 1e-4 : ls->optTol;
+    ls->optTol = 1e-4;
+    //ls->optTol = curnorm > 1e-3 ? 1e-4 : ls->optTol;
     ls->print_level =0 ;
     bcls_solve_prob(ls);
     bcls_free_prob(ls);

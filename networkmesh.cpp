@@ -170,7 +170,7 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness)
             maxweight /= 8;
         }
         ub[edge2reduced[i]] = maxweight;
-        lb[edge2reduced[i]] = 0.0;
+        lb[edge2reduced[i]] = 0.001;
         result[edge2reduced[i]] = mesh_.data(eh).weight();
     }
 
@@ -209,7 +209,6 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, dou
         fac += viol*viol;
     }
     beta /= fac;
-    //beta *= 10.0;
 
     //cout << "final beta " << beta << endl;
 
@@ -471,7 +470,7 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, dou
         Md += 0.1*fac*Pd*Pd.transpose();
     }
 
-    double smoothing = 0.1;
+    double smoothing = 0.0;
     Md += smoothing * L.transpose()*L;
     rhs += smoothing * L.transpose()*Lrhs;
 
