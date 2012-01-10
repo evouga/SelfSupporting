@@ -153,6 +153,8 @@ void MainWindow::updateGLWindows()
         ui->residualEdit->setText("(unknown)");
     else
         ui->residualEdit->setText(QString::number(p.nmresidual));
+    ui->vertsEdit->setText(QString::number(p.verts));
+    ui->edgesEdit->setText(QString::number(p.edges));
     ui->GLPanel2D->updateGL();
     ui->GLPanel3D->updateGL();
     update();

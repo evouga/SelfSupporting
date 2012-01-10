@@ -195,6 +195,8 @@ void Controller::resetNetworkMesh()
     nm_->copyFromReferenceMesh(*rm_);
     resetParams();
     p_.statusmsg = "Reset network mesh to reference mesh.";
+    p_.edges = nm_->getMesh().n_edges();
+    p_.verts = nm_->getMesh().n_vertices();
     w_.updateGLWindows();
 }
 
@@ -278,6 +280,8 @@ void Controller::subdivideMesh(bool andboundary)
     p_.beta = .1;
     p_.nmresidual = std::numeric_limits<double>::infinity();
     p_.statusmsg = "Subdivided thrust network.";
+    p_.verts = nm_->getMesh().n_vertices();
+    p_.edges = nm_->getMesh().n_edges();
     w_.updateGLWindows();
 }
 
@@ -547,6 +551,8 @@ void Controller::triangulateThrustNetwork()
     p_.beta = .2;
     p_.nmresidual = std::numeric_limits<double>::infinity();
     p_.statusmsg = "Triangulated thrust network.";
+    p_.verts = nm_->getMesh().n_vertices();
+    p_.edges = nm_->getMesh().n_edges();
     w_.updateGLWindows();
 }
 

@@ -27,6 +27,8 @@ struct Params
     double density;
     double thickness;
     double extramass;
+    int verts;
+    int edges;
 };
 
 class Controller

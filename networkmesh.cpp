@@ -72,10 +72,11 @@ double NetworkMesh::calculateEquilibriumViolation()
     {
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
         double viol = calculateEquilibriumViolation(vh);
-        mesh_.data(vh).set_violation(viol);
-        result += viol*viol;
+        double relerror = viol/mesh_.data(vh).load();
+        mesh_.data(vh).set_violation(relerror);
+        result = std::max(result, relerror);
     }
-    return sqrt(result);
+    return result;
 }
 
 double NetworkMesh::computeBestWeights(double maxstress, double thickness)
@@ -130,6 +131,7 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness)
             continue;
 
         MyMesh::Point center = mesh_.point(vh);
+        double load = mesh_.data(vh).load();
 
         for(MyMesh::VertexOHalfedgeIter voh = mesh_.voh_iter(vh); voh; ++voh)
         {
@@ -139,12 +141,12 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness)
             MyMesh::EdgeHandle eh = mesh_.edge_handle(heh);
             int eidx = edge2reduced[eh.idx()];
             MyMesh::Point adj = mesh_.point(tov);
-            Md.coeffRef(row, eidx) += center[0]-adj[0];
-            Md.coeffRef(row+1, eidx) += (center[1]-adj[1]);
-            Md.coeffRef(row+2, eidx) += center[2]-adj[2];
+            Md.coeffRef(row, eidx) += (center[0]-adj[0])/load;
+            Md.coeffRef(row+1, eidx) += ((center[1]-adj[1]))/load;
+            Md.coeffRef(row+2, eidx) += (center[2]-adj[2])/load;
         }
         rhs[row] = 0;
-        rhs[row+1] = -mesh_.data(vh).load();
+        rhs[row+1] = -1.0;
         rhs[row+2] = 0;
         row += 3;
     }
@@ -198,11 +200,18 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness)
 double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, double thickness, bool planarity)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
-    double fac = 1.0/calculateEquilibriumViolation();
-    fac *= fac;
-    beta *= fac;
 
     int n = mesh_.n_vertices();
+
+    double fac = 0;
+    for(int i=0; i<n; i++)
+    {
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+        double viol = calculateEquilibriumViolation(vh);
+        fac += viol*viol;
+    }
+    beta /= fac;
+
 
     if(n==0)
         return 0;

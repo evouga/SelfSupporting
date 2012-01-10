@@ -266,20 +266,20 @@
    <widget class="QLabel" name="residualLabel">
     <property name="geometry">
      <rect>
-      <x>710</x>
+      <x>930</x>
       <y>710</y>
-      <width>231</width>
+      <width>151</width>
       <height>20</height>
      </rect>
     </property>
     <property name="text">
-     <string>Current thrust network residual:</string>
+     <string>Max rel equi. error:</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="residualEdit">
     <property name="geometry">
      <rect>
-      <x>940</x>
+      <x>1070</x>
       <y>710</y>
       <width>151</width>
       <height>21</height>
@@ -498,6 +498,58 @@
     </property>
     <property name="text">
      <string>Delete black</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="residualLabel_2">
+    <property name="geometry">
+     <rect>
+      <x>710</x>
+      <y>710</y>
+      <width>51</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Verts:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="residualLabel_3">
+    <property name="geometry">
+     <rect>
+      <x>820</x>
+      <y>710</y>
+      <width>51</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Edge:</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="vertsEdit">
+    <property name="geometry">
+     <rect>
+      <x>760</x>
+      <y>710</y>
+      <width>51</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="readOnly">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="edgesEdit">
+    <property name="geometry">
+     <rect>
+      <x>870</x>
+      <y>710</y>
+      <width>51</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="readOnly">
+     <bool>true</bool>
     </property>
    </widget>
   </widget>
