@@ -56,7 +56,6 @@ HEADERS  += \
     referencemeshrenderer.h \
     networkthread.h \
     YImage.hpp \
-    function.h \
     stressmesh.h \
     stressmeshrenderer.h
 
