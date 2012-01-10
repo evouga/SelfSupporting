@@ -96,7 +96,8 @@ void Solvers::solveBCLS(const SparseMatrix<double, RowMajor> &A, VectorXd &b, Ve
     bcls_set_anorm(ls, anorm);
     bcls_set_problem_data(ls, m, n, Aprod, (void *)&A, 0, result.data(), b.data(), NULL, lb.data(), ub.data());
     ls->newton_step = BCLS_NEWTON_STEP_CGLS;
-    ls->print_level = 0;
+    ls->optTol = 1e-4;
+    ls->print_level =0 ;
     bcls_solve_prob(ls);
     bcls_free_prob(ls);
     delete[] anorm;
