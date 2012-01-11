@@ -79,7 +79,7 @@ double NetworkMesh::calculateEquilibriumViolation()
     return result;
 }
 
-double NetworkMesh::computeBestWeights(double maxstress, double thickness)
+double NetworkMesh::computeBestWeights(double maxstress, double thickness, double tol)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
 
@@ -89,12 +89,19 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness)
     if(n == 0 || e == 0)
         return 0;
 
+    double avload = 0.0;
+
     int interiorn=0;
     for(MyMesh::VertexIter it = mesh_.vertices_begin(); it != mesh_.vertices_end(); ++it)
     {
         if(!mesh_.data(it.handle()).pinned())
+        {
+            avload += mesh_.data(it.handle()).load();
             interiorn++;
+        }
     }
+
+    avload /= interiorn;
 
     map<int, int> edge2reduced;
     map<int, int> reduced2edge;
@@ -146,7 +153,7 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness)
             Md.coeffRef(row+2, eidx) += (center[2]-adj[2]);
         }
         rhs[row] = 0;
-        rhs[row+1] = -load;
+        rhs[row+1] = -load/avload;
         rhs[row+2] = 0;
         row += 3;
     }
@@ -168,9 +175,10 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness)
             double e2 = mesh_.calc_edge_sqr_length(eh);
             maxweight = maxstress*thickness*areaofinfluence/e2;
             maxweight /= 8;
+            maxweight /= avload;
         }
         ub[edge2reduced[i]] = maxweight;
-        lb[edge2reduced[i]] = 0.001;
+        lb[edge2reduced[i]] = 0.00;
         result[edge2reduced[i]] = mesh_.data(eh).weight();
     }
 
@@ -178,7 +186,7 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness)
     int oldid = getMeshID();
     ml.reset();
 
-    cont_.getSolvers().solveBCLS(M, rhs, lb, ub, result);
+    cont_.getSolvers().solveBCLS(M, rhs, lb, ub, result,1e-3);
 
     ml = acquireMesh();
     if(getMeshID() == oldid)
@@ -188,7 +196,7 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness)
             if(result[i] < lb[i] || isnan(result[i]))
                 result[i] = lb[i];
             MyMesh::EdgeHandle eh = mesh_.edge_handle(reduced2edge[i]);
-            mesh_.data(eh).set_weight(result[i]);
+            mesh_.data(eh).set_weight(result[i]*avload);
         }
         invalidateMesh();
     }
@@ -470,7 +478,7 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, dou
         Md += 0.1*fac*Pd*Pd.transpose();
     }
 
-    double smoothing = 0.0;
+    double smoothing = 1;
     Md += smoothing * L.transpose()*L;
     rhs += smoothing * L.transpose()*Lrhs;
 

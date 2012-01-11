@@ -23,7 +23,7 @@ public:
 
     // Given a (possibly non-self-supporting) 3D mesh, finds non-negative weights that come as close as possible to
     // satisfying the force-equilibrium constraints
-    double computeBestWeights(double maxstress, double thickness);
+    double computeBestWeights(double maxstress, double thickness, double tol);
 
 
     // Given non-negative weights, finds the closest mesh to the given mesh that is self-supporting with those weights

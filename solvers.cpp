@@ -80,7 +80,7 @@ Solvers::~Solvers()
 
 VectorPool Solvers::pool_;
 
-void Solvers::solveBCLS(const SparseMatrix<double, RowMajor> &A, VectorXd &b, VectorXd &lb, VectorXd &ub, VectorXd &result)
+void Solvers::solveBCLS(const SparseMatrix<double, RowMajor> &A, VectorXd &b, VectorXd &lb, VectorXd &ub, VectorXd &result, double tol)
 {
     int m = A.rows();
     int n = A.cols();
@@ -96,14 +96,10 @@ void Solvers::solveBCLS(const SparseMatrix<double, RowMajor> &A, VectorXd &b, Ve
     bcls_set_anorm(ls, anorm);
     bcls_set_problem_data(ls, m, n, Aprod, (void *)&A, 0, result.data(), b.data(), NULL, lb.data(), ub.data());
     ls->newton_step = BCLS_NEWTON_STEP_CGLS;
-    double curnorm = (A*result-b).norm();
-    ls->optTol = 1e-4;
-    //ls->optTol = curnorm > 1e-3 ? 1e-4 : ls->optTol;
+    ls->optTol = tol;
     ls->print_level =0 ;
     bcls_solve_prob(ls);
     bcls_free_prob(ls);
-
-    //cout << curnorm << " -> " << (A*result-b).norm() << endl;
 
     delete[] anorm;
 }

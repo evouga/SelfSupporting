@@ -219,7 +219,8 @@ void Controller::iterateNetwork()
     double maxstress = p_.maxStress;
     if(!p_.enforceMaxWeight)
         maxstress = std::numeric_limits<double>::infinity();
-    nm_->computeBestWeights(maxstress, p_.thickness);
+    double tol = 1e-4;
+    nm_->computeBestWeights(maxstress, p_.thickness, tol);
     double residualp = nm_->computeBestPositionsTangentLS(p_.alpha, p_.beta, p_.thickness, p_.planarity);
 
 //    p_.statusmsg = "Projected onto best weights and positions. Residual after calculating best weights " + QString::number(residualw)
@@ -228,16 +229,11 @@ void Controller::iterateNetwork()
     p_.alpha = std::max(p_.alpha, 1e-15);
     if(p_.nmresidual < 2*residualp)
     {
-        //p_.beta *= 2;
+        p_.beta *= 2;
         p_.beta = std::min(p_.beta, 1e15);
         cout << "increasing beta to " << p_.beta << endl;
     }
     p_.nmresidual = residualp;
-//    for(MyMesh::VertexIter vi = rm_->getMesh().vertices_begin(); vi != rm_->getMesh().vertices_end(); ++vi)
-//    {
-//        if(rm_->getMesh().data(vi.handle()).handled())
-//            cout << "handle " << vi.handle().idx()+1 << endl;
-//    }
 }
 
 void Controller::computeBestWeights()
@@ -246,7 +242,7 @@ void Controller::computeBestWeights()
     double maxstress = p_.maxStress;
     if(!p_.enforceMaxWeight)
         maxstress = std::numeric_limits<double>::infinity();
-    p_.nmresidual = nm_->computeBestWeights(maxstress, p_.thickness);
+    p_.nmresidual = nm_->computeBestWeights(maxstress, p_.thickness, 1e-10);
     updateGLWindows();
 }
 

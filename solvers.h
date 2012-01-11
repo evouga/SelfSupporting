@@ -13,7 +13,7 @@ public:
     ~Solvers();
 
     // bcls may or may not modify b, lb, ub. Haven't checked
-    void solveBCLS(const Eigen::SparseMatrix<double, Eigen::RowMajor> &A, Eigen::VectorXd &b, Eigen::VectorXd &lb, Eigen::VectorXd &ub, Eigen::VectorXd &result);
+    void solveBCLS(const Eigen::SparseMatrix<double, Eigen::RowMajor> &A, Eigen::VectorXd &b, Eigen::VectorXd &lb, Eigen::VectorXd &ub, Eigen::VectorXd &result, double tol);
 
     // Positive definite matrix A
     void linearSolveCG(const Eigen::SparseMatrix<double, Eigen::RowMajor> &A, const Eigen::VectorXd &rhs, Eigen::VectorXd &result);
