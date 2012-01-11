@@ -1204,8 +1204,73 @@ increased robustness for slight smoothing of the resulting surface.
 
 
 
+\begin{table*}[t]
+\begin{tabular}{@{}llccccc@{}}
+\hline
+	\textit{Example} 
+		& \textit{Figure} 
+		& \textit{Vertices}  
+		& \textit{Edges} 
+			& \textit{Time} (s) 
+			& \textit{Iterations} 
+			& \textit{Max Rel Error} \\
+	\hline
+		Top of Lilium Tower 
+		& Fig. \ref{fig:Lilium}b
+		& 1201 
+		& 3504 
+			& 21.6 
+			& 9 
+			& $4.2 \times 10^{-5}$
+	\\ Top of Lilium Tower (with pillar) 
+		& Fig. \ref{fig:Lilium}d
+		& 1200 
+		& 3500 
+			& 26.5 
+			& 10 
+			& $8.5 \times 10^{-5}$
+	\\ Freeform Structure with Two Pillars 
+		& Fig. \ref{fig:cas} 
+		& 1535 
+		& 2976 
+			& 17.0 
+			& 21 
+			& $2.7\times 10^{-5}$
+	\\ Swiss Cheese 
+		& Fig. \ref{fig:cheese2} 
+		& 2358 
+		& 4302 
+			& 19.5 
+			& 9 
+			& $3.0 \times 10^{-4}$
+	\\ Brick Domes 
+		& Fig. \ref{fig:removal} 
+		& 752 
+		& 2165 
+			& 8.0 
+			& 9 
+			& $5.8 \times 10^{-5}$
+	\\ Structural Glass 
+		& Fig. \ref{fig:structural} 
+		& 527 
+		& 998 
+			& 5.7 
+			& 25 
+			& $2.4\times 10^{-5}$
+	\\ \hline
+  \end{tabular}
+	\caption{Numerical details about the examples throughout this 
+paper. \emph{Time}: The wall-clock time needed by an Intel Xeon 2.3GHz 
+desktop PC with 4 GB of RAM to find a self-supporting thrust network and 
+associated stress surface from the example's reference mesh; we also give 
+the number of outer iterations of the four steps in \secref{sec:opt}. The 
+maximum relative error is the dimensionless relative error in force 
+equilibrium defined by $\| A_i F_i - \sum\nolimits_{j\sim i} w_{ij} 
+(\vw_j-\vw_i) \|/\|A_i F_i\|$, where the sum runs over interior vertices. 
+} \label{table:data}
 
 
+\end{table*}
 
 
 \section{Results}
@@ -1254,7 +1319,7 @@ and corresponding reciprocal diagram.
 
 \end{itemize}
 
- \begin{figure}[t]
+ \begin{figure}[b]
   \centerline{\begin{overpic}[width=0.5\columnwidth]{fig/cheese.jpg}
 		\put(0,5){(a)}
 	\end{overpic}\relax
@@ -1309,26 +1374,6 @@ show such an implausible and unstable surface; our optimization finds a
 nearby, equally implausible but stable surface without difficulty (see 
 Figures~\ref{fig:cheese} and \ref{fig:cheese2}).
 
-\begin{table*}[b]
-\caption{Numerical Data for Examples}
-\centering
-\begin{tabular}{llccccc}
-\hline
-\textbf{Example} & \textbf{Figure} & \textbf{Vertices}  & \textbf{Edges} & \textbf{Time} (s) & \textbf{Iterations} & \textbf{Max Rel Error} \\
-\hline
-Top of Lilium Tower & Fig. \ref{fig:Lilium}, \textit{left} & 1201 & 3504 & 21.6 & 9 & $4.2 \times 10^{-5}$\\
-Top of Lilium Tower (with pillar) & Fig. \ref{fig:Lilium}, \textit{right} & 1200 & 3500 & 26.5 & 10 & $8.5 \times 10^{-5}$\\
-Freeform Structure with Two Pillars & Fig. \ref{fig:cas} & 1535 & 2976 & 17.0 & 21 & $2.7\times 10^{-5}$\\
-Swiss Cheese & Fig. \ref{fig:cheese2} & 2358 & 4302 & 19.5 & 9 & $3.0 \times 10^{-4}$\\
-Brick Domes & Fig. \ref{fig:removal} & 752 & 2165 & 8.0 & 9 & $5.8 \times 10^{-5}$\\
-Structural Glass & Fig. \ref{fig:structural} & 527 & 998 & 5.7 & 25 & $2.4\times 10^{-5}$\\
-\hline\\
-\end{tabular}
-\caption{Numerical details about the examples throughout this paper. \emph{Time}: The wall-clock time needed by an Intel Xeon 2.3GHz desktop PC with 4 GB of RAM to find a self-supporting thrust network and associated stress surface from the example's reference  mesh; this optimization required \emph{Iterations} outer iterations of the four steps in \secref{sec:opt}. \emph{Max Rel Error}: The maximum, over interior thrust network vertices $i$, of the dimensionless relative error in force equilibrium
-$\Big\| A_i F_i - \sum\nolimits_{j\sim i} w_{ij} (\vw_j-\vw_i) \Big\|/\|A_i F_i\|.$
-}
-\label{table:data}
-\end{table*}
 
 
 
@@ -1363,6 +1408,25 @@ the surface with edges following relative principal curvature directions
 yields a self-supporting, PQ mesh far more faithful to the original (c).}
 	\label{fig:badpq}
 \end{figure}
+
+\begin{figure*}[t]
+\begin{overpic}[width=0.23\textwidth]{fig/lilium-vf.jpg}
+		\put(0,0){(a)}
+	\end{overpic}\relax
+	\begin{overpic}[width=0.23\textwidth]{fig/lilium-pq.jpg}
+		\put(0,0){(b)}
+	\end{overpic}\relax
+	\begin{overpic}[width=0.23\textwidth]{fig/lilium-pq-n.jpg}
+		\put(0,0){(c)}
+	\end{overpic}\hfill
+	\begin{minipage}[b]{.30\textwidth}
+	\caption{Planar quad remeshing of the ``Lilium tower'' surface of 
+Figure~\protect\ref{fig:Lilium}. (a) Principal directions which are found
+as eigenvectors of $(\Hess\phi)^{-1}\Hess s$. (b) Quad mesh 
+guided by principal directions is almost planar and almost self\dash 
+supporting. (c) Small changes achieve both properties.}
+ \label{fig:lilium:pq}\end{minipage}
+  \end{figure*}
 
 Taking an arbitrary non-planar 
 quad mesh and attempting naive, simultaneous enforcement of planarity and 
@@ -1414,24 +1478,6 @@ $(\protect\Hess\phi)^{-1}\protect\Hess s$).}
 	\end{minipage}
  \end{figure}}
 
-\begin{figure*}[t]
-\begin{overpic}[width=0.23\textwidth]{fig/lilium-vf.jpg}
-		\put(0,0){(a)}
-	\end{overpic}\relax
-	\begin{overpic}[width=0.23\textwidth]{fig/lilium-pq.jpg}
-		\put(0,0){(b)}
-	\end{overpic}\relax
-	\begin{overpic}[width=0.23\textwidth]{fig/lilium-pq-n.jpg}
-		\put(0,0){(c)}
-	\end{overpic}\hfill
-	\begin{minipage}[b]{.30\textwidth}
-	\caption{Planar quad remeshing of the ``Lilium tower'' surface of 
-Figure~\protect\ref{fig:Lilium}. (a) Principal directions which are found
-as eigenvectors of $(\Hess\phi)^{-1}\Hess s$. (b) Quad mesh 
-guided by principal directions is almost planar and almost self\dash 
-supporting. (c) Small changes achieve both properties.}
- \label{fig:lilium:pq}\end{minipage}
-  \end{figure*}
 
 
 
@@ -1562,9 +1608,8 @@ solution.
 	%\def\thebibliography#1{\otb{#1}\itemsep-5pt\footnotesize}
 	\bibliography{selfsupporting}
 
-	\begin{figure}[h]
+ \begin{figure}[h]
 	\centering
-	\bigskip
 	\includegraphics[width=.8\columnwidth]{fig/loadmesh-n.jpg}
 
 \caption{Testing stability. This self\dash supporting surface of length
@@ -1606,6 +1651,7 @@ Center: The result of optimization is a self\dash supporting PQ mesh,
 which guides a moment\dash free steel\slash glass construction.
 Right: Interior view.}
 	\label{fig:cas:pq}
+
   \end{figure*}
 
 
