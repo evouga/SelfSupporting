@@ -63,6 +63,20 @@ double NetworkMesh::calculateEquilibriumViolation(MyMesh::VertexHandle vh)
     return sqrt( sum[0]*sum[0] + sum[1]*sum[1] + sum[2]*sum[2] );
 }
 
+double NetworkMesh::calculateTotalEquilibriumViolation()
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    double result = 0;
+    int n = mesh_.n_vertices();
+    for(int i=0; i<n; i++)
+    {
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+        double viol = calculateEquilibriumViolation(vh);
+        result += viol*viol;
+    }
+    return result;
+}
+
 double NetworkMesh::calculateEquilibriumViolation()
 {
     auto_ptr<MeshLock> ml = acquireMesh();
@@ -179,31 +193,33 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness, doubl
         }
         ub[edge2reduced[i]] = maxweight;
         lb[edge2reduced[i]] = 0.00;
-        result[edge2reduced[i]] = mesh_.data(eh).weight();
+        result[edge2reduced[i]] = mesh_.data(eh).weight()/avload;
     }
 
     SparseMatrix<double, RowMajor> M(Md);
     int oldid = getMeshID();
+
     ml.reset();
 
-    cont_.getSolvers().solveBCLS(M, rhs, lb, ub, result,1e-3);
+    cont_.getSolvers().solveBCLS(M, rhs, lb, ub, result,1e-8);
 
     ml = acquireMesh();
     if(getMeshID() == oldid)
     {
         for(int i=0; i<interiore; i++)
         {
-            if(result[i] < lb[i] || isnan(result[i]))
-                result[i] = lb[i];
+//            if(result[i] < lb[i] || isnan(result[i]))
+//                result[i] = lb[i];
             MyMesh::EdgeHandle eh = mesh_.edge_handle(reduced2edge[i]);
             mesh_.data(eh).set_weight(result[i]*avload);
         }
         invalidateMesh();
     }
-    return calculateEquilibriumViolation();
+    double after = calculateEquilibriumViolation();
+    return after;
 }
 
-double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, double thickness, bool planarity)
+double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, double thickness, bool planarity, bool projectVertically)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
 
@@ -317,8 +333,11 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, dou
             MyMesh::Point pt = mesh_.point(mesh_.vertex_handle(i));
 
             Vector3d ptv(pt[0],pt[1],pt[2]);
-            //Vector3d projpt = approximateClosestPoint(subdreference_, ptv);
-            Vector3d projpt = approximateClosestZParallel(subdreference_, ptv);
+            Vector3d projpt;
+            if(!projectVertically)
+                projpt = approximateClosestPoint(subdreference_, ptv);
+            else
+                projpt = approximateClosestZParallel(subdreference_, ptv);
             for(int j=0; j<3; j++)
             {
                 rhs[3*vidx2midx[i]+j] += alpha*(projpt[j]);
@@ -478,7 +497,7 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, dou
         Md += 0.1*fac*Pd*Pd.transpose();
     }
 
-    double smoothing = 1;
+    double smoothing = 0;
     Md += smoothing * L.transpose()*L;
     rhs += smoothing * L.transpose()*Lrhs;
 

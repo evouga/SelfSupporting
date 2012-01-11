@@ -29,6 +29,7 @@ struct Params
     double extramass;
     int verts;
     int edges;
+    bool projectVertically;
 };
 
 class Controller
@@ -104,6 +105,7 @@ public:
     void setDensity(double density);
     void setThickness(double thickness);
     void setExtraMass(double extramass);
+    void setProjectVertically(bool state);
     void laplacianTest();
     void computeConjugateDirs();
 

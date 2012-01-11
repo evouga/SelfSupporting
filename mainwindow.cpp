@@ -304,6 +304,7 @@ void MainWindow::reportParams()
     c_.setDensity(ui->densityEdit->text().toDouble());
     c_.setThickness(ui->thicknessEdit->text().toDouble());
     c_.setExtraMass(ui->extraMassEdit->text().toDouble());
+    c_.setProjectVertically(ui->projectVerticallyCheckBox->isChecked());
 }
 
 void MainWindow::on_actionSubdivide_triggered()
@@ -485,4 +486,9 @@ void MainWindow::on_actionSmooth_Boundary_3_triggered()
 void MainWindow::on_pushButton_clicked()
 {
     c_.envelopeTest();
+}
+
+void MainWindow::on_projectVerticallyCheckBox_clicked()
+{
+    c_.setProjectVertically(ui->projectVerticallyCheckBox->isChecked());
 }

@@ -27,7 +27,7 @@ public:
 
 
     // Given non-negative weights, finds the closest mesh to the given mesh that is self-supporting with those weights
-    double computeBestPositionsTangentLS(double alpha, double beta, double thickness, bool planarity);
+    double computeBestPositionsTangentLS(double alpha, double beta, double thickness, bool planarity, bool projectVertically);
 
     double enforcePlanarity();
 
@@ -37,6 +37,7 @@ public:
     bool isBadVertex(MyMesh::VertexHandle vert);
 
     double calculateEquilibriumViolation();
+    double calculateTotalEquilibriumViolation();
     double calculateEquilibriumViolation(MyMesh::VertexHandle vh);
     void computeRelativePrincipalDirections();
 

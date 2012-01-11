@@ -138,6 +138,8 @@ private slots:
 
     void on_actionSmooth_Boundary_3_triggered();
 
+    void on_projectVerticallyCheckBox_clicked();
+
 protected:
     void moveEvent(QMoveEvent *);
     void resizeEvent(QResizeEvent *);

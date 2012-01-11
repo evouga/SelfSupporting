@@ -333,7 +333,7 @@
      <rect>
       <x>890</x>
       <y>600</y>
-      <width>281</width>
+      <width>381</width>
       <height>80</height>
      </rect>
     </property>
@@ -367,6 +367,19 @@
      </property>
      <property name="text">
       <string>Enforce Planarity</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="projectVerticallyCheckBox">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>20</y>
+       <width>151</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Project vertically</string>
      </property>
     </widget>
    </widget>

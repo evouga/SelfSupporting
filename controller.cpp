@@ -220,8 +220,10 @@ void Controller::iterateNetwork()
     if(!p_.enforceMaxWeight)
         maxstress = std::numeric_limits<double>::infinity();
     double tol = 1e-4;
-    nm_->computeBestWeights(maxstress, p_.thickness, tol);
-    double residualp = nm_->computeBestPositionsTangentLS(p_.alpha, p_.beta, p_.thickness, p_.planarity);
+    double residualw = nm_->computeBestWeights(maxstress, p_.thickness, tol);
+    double residualp = nm_->computeBestPositionsTangentLS(p_.alpha, p_.beta, p_.thickness, p_.planarity, p_.projectVertically);
+
+    cout << residualw << ", " << residualp << endl;
 
 //    p_.statusmsg = "Projected onto best weights and positions. Residual after calculating best weights " + QString::number(residualw)
 //            + ", and after adjusting position " + QString::number(residualp) + "." + " Alpha: " + QString::number(p_.alpha) + " Beta: " + QString::number(p_.beta);
@@ -248,7 +250,7 @@ void Controller::computeBestWeights()
 
 void Controller::computeBestPositions()
 {
-    double residualp = nm_->computeBestPositionsTangentLS(p_.alpha, p_.beta, p_.thickness, p_.planarity);
+    double residualp = nm_->computeBestPositionsTangentLS(p_.alpha, p_.beta, p_.thickness, p_.planarity, p_.projectVertically);
     p_.alpha /= 2.;
     p_.alpha = std::max(p_.alpha, 1e-15);
     p_.beta *= 2.;
@@ -510,6 +512,11 @@ void Controller::setAutoIterate(bool state)
 void Controller::setEnforcePlanarity(bool state)
 {
     p_.planarity = state;
+}
+
+void Controller::setProjectVertically(bool state)
+{
+    p_.projectVertically = state;
 }
 
 void Controller::enforceMaxWeight(bool state)
