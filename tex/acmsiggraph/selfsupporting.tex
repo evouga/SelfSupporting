@@ -1309,6 +1309,27 @@ show such an implausible and unstable surface; our optimization finds a
 nearby, equally implausible but stable surface without difficulty (see 
 Figures~\ref{fig:cheese} and \ref{fig:cheese2}).
 
+\begin{table*}[b]
+\caption{Numerical Data for Examples}
+\centering
+\begin{tabular}{llccccc}
+\hline
+\textbf{Example} & \textbf{Figure} & \textbf{Vertices}  & \textbf{Edges} & \textbf{Time} (s) & \textbf{Iterations} & \textbf{Max Rel Error} \\
+\hline
+Top of Lilium Tower & Fig. \ref{fig:Lilium}, \textit{left} & 1201 & 3504 & 21.6 & 9 & $4.2 \times 10^{-5}$\\
+Top of Lilium Tower (with pillar) & Fig. \ref{fig:Lilium}, \textit{right} & 1200 & 3500 & 26.5 & 10 & $8.5 \times 10^{-5}$\\
+Freeform Structure with Two Pillars & Fig. \ref{fig:cas} & 1535 & 2976 & 17.0 & 21 & $2.7\times 10^{-5}$\\
+Swiss Cheese & Fig. \ref{fig:cheese2} & 2358 & 4302 & 19.5 & 9 & $3.0 \times 10^{-4}$\\
+Brick Domes & Fig. \ref{fig:removal} & 752 & 2165 & 8.0 & 9 & $5.8 \times 10^{-5}$\\
+Structural Glass & Fig. \ref{fig:structural} & 527 & 998 & 5.7 & 25 & $2.4\times 10^{-5}$\\
+\hline\\
+\end{tabular}
+\caption{Numerical details about the examples throughout this paper. \emph{Time}: The wall-clock time needed by an Intel Xeon 2.3GHz desktop PC with 4 GB of RAM to find a self-supporting thrust network and associated stress surface from the example's reference  mesh; this optimization required \emph{Iterations} outer iterations of the four steps in \secref{sec:opt}. \emph{Max Rel Error}: The maximum, over interior thrust network vertices $i$, of the dimensionless relative error in force equilibrium
+$\Big\| A_i F_i - \sum\nolimits_{j\sim i} w_{ij} (\vw_j-\vw_i) \Big\|/\|A_i F_i\|.$
+}
+\label{table:data}
+\end{table*}
+
 
 
 \section{Special Self-Supporting Surfaces} \label{sec:special}
@@ -1562,7 +1583,7 @@ of masonry. (a) self\dash supporting surface and thrust network.
 (b) Part of the surface has been removed, the existence of a modified
 thrust network shows it is self\dash supporting.  (c) If we remove too
 much, our algorithm no longer finds an admissible thrust network. It is
-plausible that the surface is no longer self\dash supporting.}
+plausible that the surface is no longer self\dash supporting.} \label{fig:removal}
 
 \vspace{4cm}
 \caption{Structural Glass. Glass as a structural element can support
@@ -1572,7 +1593,7 @@ this surface by a planar quad mesh (not necessarily self\dash supporting).
 (c) A steel\slash glass construction following this quad mesh,
 which utilizes the structural
 properties of glass. Since it is very close to a self\dash supporting
-shape, joints will experience low bending and torsion moments.}
+shape, joints will experience low bending and torsion moments.} \label{fig:structural}
 
 \bigskip
 
