@@ -201,7 +201,7 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness, doubl
 
     ml.reset();
 
-    cont_.getSolvers().solveBCLS(M, rhs, lb, ub, result,1e-8);
+    cont_.getSolvers().solveBCLS(M, rhs, lb, ub, result,1e-4);
 
     ml = acquireMesh();
     if(getMeshID() == oldid)
