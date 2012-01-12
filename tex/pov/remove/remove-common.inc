@@ -31,10 +31,7 @@ box {<-2,-2,-.01>*10 <8,12,0>*2.5 texture {weiss}}
 
 #include "facemacros.inc"
 
-
-#macro Mesh(A) union { mesh { #include A texture {weisst}}
-	mesh { #include A translate y*.001 texture {brownish}}
-	rotate -x*90 } #end
+#macro Mesh(A) DMesh(A, weisst, brownish) #end
 
 #macro Pfeil(I) union {
 	sphere { V[I] 0.2 texture {gelb}}

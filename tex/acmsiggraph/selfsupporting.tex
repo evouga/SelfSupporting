@@ -186,7 +186,7 @@ failure of such structures. In this paper we use the thrust network method
 of analysis and present an iterative nonlinear optimization algorithm for 
 efficiently approximating freeform shapes by self\dash supporting ones. 
 This provides an interactive modeling tool for such shapes. The rich 
-geometry of thrust networks which was first studied by Maxwell in the 
+geometry of thrust networks which was initiated by Maxwell in the 
 1860s leads us to new viewpoints of discrete differential geometry: We 
 find close connections between different objects such as a finite\dash 
 element discretization of the Airy stress potential, perfect graph 
@@ -253,8 +253,8 @@ based on the following assumptions, which follow the classic
 {\it Assumption 1:} Masonry has no tensile strength, but the individual 
 building blocks do not slip against each other (because of friction or 
 mortar). On the other hand, their compressive strength is sufficiently 
-high so that failure of the structure is by a sudden change in geometry, 
-such as shown by Figure \ref{fig:block}, and not by material failure.
+high so that failure of the structure is by a sudden change in geometry
+and not by material failure.
 
 {\it Assumption 2 (The Safe Theorem)}: If a system of forces can be found 
 which is in equilibrium with the load on the structure and which is 
@@ -272,9 +272,8 @@ discretized as a fictitious {\em thrust network} \cite{Block07} contained
 in the masonry structure. This is a system of forces which together with 
 the structure's deadload is in equilibrium. It can be interpreted as a 
 finite element discretization of the continuous case, and it turns out to 
-have very interesting geometry dating back to the work of J.\ C.\ Maxwell 
-\shortcite{Maxwell64}, with the Airy stress function becoming a polyhedral 
-surface directly related to a reciprocal force diagram. 
+have very interesting geometry, with the Airy stress function becoming a
+polyhedral surface directly related to a reciprocal force diagram. 
 
 While previous work in architectural geometry was mostly concerned
 with aspects of rationalization and purely geometric side\dash conditions
@@ -338,33 +337,15 @@ structures.
 
 \end{list}
 
-	\begin{figure}[t]
-\nix{
-	\includegraphics[height=.35\columnwidth]{fotos/gothicvaults1}\hfill
-	\includegraphics[height=.35\columnwidth]{fotos/Frauenkirche_um_1897}
-	\hfill
-	\hfill
-	\begin{minipage}[b]{.37\columnwidth} \caption{Nonconvex self\dash
-supporting masonry. Left: vaults of a gothic cathedral; Right: dome of
-Frauenkirche, Dres\-den}
-	\label{fig:tholos}
-	\end{minipage}
-	\bigskip}
-\includegraphics[height=.245\columnwidth]{fotos/block1.jpg}\hfill
-\includegraphics[height=.245\columnwidth]{fotos/block2.jpg}
-	\caption{Masonry fails via geometric
-catastrophe rather than material failure (models by 
-Block Research Group, ETH Z\"urich).}
-	\label{fig:block}
-	\end{figure}
-
 
 \paragraph{Related Work.}
 
 Unsupported masonry has been an active topic of research in the 
 engineering community. The foundations for the modern approach were laid 
 by Jacques Heyman \shortcite{Heyman66} and are available as the textbook 
-\cite{Heyman95}. A unifying view on polyhedral surfaces, compressive 
+\cite{Heyman95}. The theory of reciprocal force diagrams in the planar
+case was studied already by Maxwell \cite{Maxwell64};
+a unifying view on polyhedral surfaces, compressive 
 forces and corresponding ``convex'' force diagrams is presented by 
 \cite{Ash1988}. F.~Fraternali \shortcite{Fraternali2002a}, 
 \shortcite{Fraternali2010} established a connection between the continuous 
@@ -373,9 +354,9 @@ thrust networks, by interpreting the latter as a certain non-conforming
 finite element discretization of the former.
 
 Several authors have studied the problem of finding discrete compressive 
-force networks contained within the boundary of masonry structures; early 
-work in this area includes \ \cite{schek74}, \cite{Livesley92}, and\ 
-\cite{O'Dwyer98}. Fraternali~\shortcite{Fraternali2010} proposed solving 
+force networks contained within the boundary of masonry structures; previous
+work in this area includes \cite{Livesley92}, \cite{O'Dwyer98}, and
+\cite{andreu-2007}. Fraternali~\shortcite{Fraternali2010} proposed solving 
 for the structure's discrete stress surface, and examining its convex hull 
 to study the structure's stability and susceptibility to cracking. 
 Philippe Block's seminal thesis introduced the method of {\it Thrust 
@@ -838,7 +819,7 @@ corresponding diagonals of corresponding quads in $\SS^*,\Phi^*$.}
 
 
 
- \begin{figure*}[tb]
+ \begin{figure*}[t]
 	\centering
 	%\includegraphics[width=0.24\textwidth]{fig/lilium.png} 
 	%\includegraphics[width=0.24\textwidth]{fig/lilium-n.png}
@@ -1052,6 +1033,77 @@ reference surface (middle-right), the thrust network automatically adjusts
 
 	\end{figure*}
 
+\begin{table*}[t]
+	\bigskip
+\begin{tabular}{@{}llccccc@{}}
+\hline
+	\textit{Example} 
+		& \textit{Figure} 
+		& \textit{Vertices}  
+		& \textit{Edges} 
+			& \textit{Time} (s) 
+			& \textit{Iterations} 
+			& \textit{Max Rel Error} \\
+	\hline
+		Top of Lilium Tower 
+		& Fig. \ref{fig:Lilium}b
+		& 1201 
+		& 3504 
+			& 21.6 
+			& 9 
+			& $4.2 \times 10^{-5}$
+	\\ Top of Lilium Tower (with pillar) 
+		& Fig. \ref{fig:Lilium}d
+		& 1200 
+		& 3500 
+			& 26.5 
+			& 10 
+			& $8.5 \times 10^{-5}$
+	\\ Freeform Structure with Two Pillars 
+		& Fig. \ref{fig:cas} 
+		& 1535 
+		& 2976 
+			& 17.0 
+			& 21 
+			& $2.7\times 10^{-5}$
+	\\ Swiss Cheese 
+		& Fig. \ref{fig:cheese2} 
+		& 2358 
+		& 4302 
+			& 19.5 
+			& 9 
+			& $3.0 \times 10^{-4}$
+	\\ Brick Domes 
+		& Fig. \ref{fig:removal} 
+		& 752 
+		& 2165 
+			& 8.0 
+			& 9 
+			& $5.8 \times 10^{-5}$
+	\\ Structural Glass 
+		& Fig. \ref{fig:structural} 
+		& 527 
+		& 998 
+			& 5.7 
+			& 25 
+			& $2.4\times 10^{-5}$
+	\\ \hline
+  \end{tabular}
+	\medskip
+	\caption{Numerical details about the examples throughout this 
+paper. \emph{Time}: The wall-clock time needed by an Intel Xeon 2.3GHz 
+desktop PC with 4 GB of RAM to find a self-supporting thrust network and 
+associated stress surface from the example's reference mesh; we also give 
+the number of outer iterations of the four steps in \secref{sec:opt}. The 
+maximum relative error is the dimensionless relative error in force 
+equilibrium defined by $\max_i \| A_i F_i - \sum\nolimits_{j\sim i} w_{ij} 
+(\vw_j-\vw_i) \|/\|A_i F_i\|$, where the maximum is taken
+runs over interior vertices $\vw_i$. 
+} \label{table:data}
+
+
+\end{table*}
+
 
 \section{Thrust Networks from Reference Meshes} \label{sec:opt} 
 
@@ -1164,7 +1216,7 @@ amounts to solving a sparse, symmetric linear system. While the MINRES
 algorithm~\cite{paige75} is likely the most robust algorithm for solving 
 this system, in practice we have observed that the method of conjugate 
 gradients works well despite the potential ill-conditioning of the 
-objective matrix.
+objective matrix. 
 
 \paragraph{Limitations.}
 
@@ -1211,77 +1263,31 @@ changes.}\label{fig:cas}
 	\end{minipage}}
 	 \end{figure*}
 
+  \begin{figure*}[t]
+  \newdimen\tmplen\tmplen=0.10\textwidth
+  \centerline{\includegraphics[width=2.57\tmplen]{fig/remove-1n.jpg}\hfill
+	  \includegraphics[width=2.57\tmplen]{fig/remove-2n.jpg}\hfill
+	  \raise.43\tmplen
+	\hbox{\includegraphics[width=2.23\tmplen]{fig/remove-3n.jpg}}\hfill
+	  \raise.43\tmplen
+	\hbox{\includegraphics[width=2.24\tmplen]{fig/remove-4n.jpg}}}
+   \vskip-6ex
+   \leftline{(a)\hskip 2.5\tmplen (b)\hskip 2.5\tmplen (c)\hskip 2.2\tmplen
+		(d)}
+   \vskip2ex
 
-\begin{table*}[t]
-	\bigskip
-\begin{tabular}{@{}llccccc@{}}
-\hline
-	\textit{Example} 
-		& \textit{Figure} 
-		& \textit{Vertices}  
-		& \textit{Edges} 
-			& \textit{Time} (s) 
-			& \textit{Iterations} 
-			& \textit{Max Rel Error} \\
-	\hline
-		Top of Lilium Tower 
-		& Fig. \ref{fig:Lilium}b
-		& 1201 
-		& 3504 
-			& 21.6 
-			& 9 
-			& $4.2 \times 10^{-5}$
-	\\ Top of Lilium Tower (with pillar) 
-		& Fig. \ref{fig:Lilium}d
-		& 1200 
-		& 3500 
-			& 26.5 
-			& 10 
-			& $8.5 \times 10^{-5}$
-	\\ Freeform Structure with Two Pillars 
-		& Fig. \ref{fig:cas} 
-		& 1535 
-		& 2976 
-			& 17.0 
-			& 21 
-			& $2.7\times 10^{-5}$
-	\\ Swiss Cheese 
-		& Fig. \ref{fig:cheese2} 
-		& 2358 
-		& 4302 
-			& 19.5 
-			& 9 
-			& $3.0 \times 10^{-4}$
-	\\ Brick Domes 
-		& Fig. \ref{fig:removal} 
-		& 752 
-		& 2165 
-			& 8.0 
-			& 9 
-			& $5.8 \times 10^{-5}$
-	\\ Structural Glass 
-		& Fig. \ref{fig:structural} 
-		& 527 
-		& 998 
-			& 5.7 
-			& 25 
-			& $2.4\times 10^{-5}$
-	\\ \hline
-  \end{tabular}
-	\medskip
-	\caption{Numerical details about the examples throughout this 
-paper. \emph{Time}: The wall-clock time needed by an Intel Xeon 2.3GHz 
-desktop PC with 4 GB of RAM to find a self-supporting thrust network and 
-associated stress surface from the example's reference mesh; we also give 
-the number of outer iterations of the four steps in \secref{sec:opt}. The 
-maximum relative error is the dimensionless relative error in force 
-equilibrium defined by $\max_i \| A_i F_i - \sum\nolimits_{j\sim i} w_{ij} 
-(\vw_j-\vw_i) \|/\|A_i F_i\|$, where the maximum is taken
-runs over interior vertices $\vw_i$. 
-} \label{table:data}
+\caption{Destruction sequence. We simulate removing small parts of masonry 
+(their location is shown by a yellow ball) and 
+the falling off of further pieces which are no longer supported after 
+removal. For this example, removing a certain small number 
+of single bricks does not affect stability (a,b). Removal of material at a 
+certain point (yellow) will cause a greater part of the structure to collapse,
+as seen in (c). (d) shows the result after one more removal (all images show 
+the respective thrust networks, not the reference surface).} 
+\label{fig:removal}
+\end{figure*}
 
 
-\end{table*}
 
 
 \section{Results}
@@ -1343,7 +1349,9 @@ to both the top view and heights to render it self\dash supporting
   \end{figure}
 
 
-\paragraph{Example: Vault with Pillars.} As an example of the design and 
+\paragraph{Example: Vault with Pillars.} 
+
+As an example of the design and 
 optimization workflow, consider a rectangular vault with six pillars, free 
 boundary conditions along one edge, fixed boundary conditions along the 
 others, and a tower extruded from the top of the surface (see Figure 
@@ -1369,10 +1377,53 @@ affects the thrust network and its deviation from the reference surface.
 \paragraph{Example: Freeform Structure with Two Pillars.}
 
 Suppose an architect's experience and intuition has permitted the design 
-of a freeform surface (see Figure \ref{fig:cas}) that is nearly 
-self-supporting. Our algorithm reveals those edits needed to make the 
+of a nearly self\dash supporting freeform surface (Figure \ref{fig:cas}).
+Our algorithm reveals those edits needed to make the 
 structure sound -- principally around the entrance arch, and the area 
 between the two pillars.
+
+\paragraph{Example: Destruction Sequence.}
+
+In Figure\ref{fig:removal} we simulate removing parts of masonry and 
+the falling off of further pieces which are no longer supported after 
+removal.
+This is done by deleting the 1-neighborhood of a vertex 
+and solving for a new thrust network in compressive equilibrium 
+close to the original reference surface. We delete those parts of the 
+network which deviate too much and are no longer contained in the masonry 
+hull, and iterate. 
+
+
+\begin{figure*}[t]
+\begin{overpic}[width=0.23\textwidth]{fig/lilium-vf.jpg}
+		\put(0,0){(a)}
+	\end{overpic}\relax
+	\begin{overpic}[width=0.23\textwidth]{fig/lilium-pq.jpg}
+		\put(0,0){(b)}
+	\end{overpic}\relax
+	\begin{overpic}[width=0.23\textwidth]{fig/lilium-pq-n.jpg}
+		\put(0,0){(c)}
+	\end{overpic}\hfill
+	\begin{minipage}[b]{.30\textwidth}
+	\caption{Planar quad remeshing of the ``Lilium tower'' surface of 
+Figure~\protect\ref{fig:Lilium}. (a) Principal directions which are found
+as eigenvectors of $(\Hess\phi)^{-1}\Hess s$. (b) Quad mesh 
+guided by principal directions is almost planar and almost self\dash 
+supporting. (c) Small changes achieve both properties.}
+ \label{fig:lilium:pq}\end{minipage}
+
+\bigskip
+
+	\includegraphics[height=0.15\textwidth]{fig/cas-vf.jpg}\hfill
+	\includegraphics[height=0.15\textwidth]{arch-fig/1roo62.jpg}\hfill
+	\includegraphics[height=0.18\textwidth]{arch-fig/1roo58.jpg}
+	\caption{Planar quad remeshing of the surface of 
+Figure~\protect\ref{fig:cas}. Left: Principal directions. Center: The 
+result of optimization is a self\dash supporting PQ mesh, which guides a 
+moment\dash free steel\slash glass construction. Right: Interior view.}
+	\label{fig:cas:pq}
+
+  \end{figure*}
 
 
 \paragraph{Example: Swiss Cheese.}
@@ -1384,8 +1435,6 @@ many such holes can stand is far from obvious. Figure~\ref{fig:cheese2}
 shows such an implausible and unstable surface; our optimization finds a 
 nearby, equally implausible but stable surface without difficulty (see 
 Figures~\ref{fig:cheese} and \ref{fig:cheese2}).
-
-
 
 
 \section{Special Self-Supporting Surfaces} \label{sec:special}
@@ -1420,24 +1469,6 @@ yields a self-supporting, PQ mesh far more faithful to the original (c).}
 	\label{fig:badpq}
 \end{figure}
 
-\begin{figure*}[t]
-\begin{overpic}[width=0.23\textwidth]{fig/lilium-vf.jpg}
-		\put(0,0){(a)}
-	\end{overpic}\relax
-	\begin{overpic}[width=0.23\textwidth]{fig/lilium-pq.jpg}
-		\put(0,0){(b)}
-	\end{overpic}\relax
-	\begin{overpic}[width=0.23\textwidth]{fig/lilium-pq-n.jpg}
-		\put(0,0){(c)}
-	\end{overpic}\hfill
-	\begin{minipage}[b]{.30\textwidth}
-	\caption{Planar quad remeshing of the ``Lilium tower'' surface of 
-Figure~\protect\ref{fig:Lilium}. (a) Principal directions which are found
-as eigenvectors of $(\Hess\phi)^{-1}\Hess s$. (b) Quad mesh 
-guided by principal directions is almost planar and almost self\dash 
-supporting. (c) Small changes achieve both properties.}
- \label{fig:lilium:pq}\end{minipage}
-  \end{figure*}
 
 Taking an arbitrary non-planar 
 quad mesh and attempting naive, simultaneous enforcement of planarity and 
@@ -1568,6 +1599,8 @@ is defined by $\SS_\alpha=\Phi+\alpha\RR$, where $\RR$ is chosen as $\Phi$'s
 Christoffel\dash dual.} \label{fig:enneper}
 	\end{figure}
 
+
+
 \paragraph{Koebe meshes.}
 
 An interesting special case occurs if $\Phi$ is a {\it Koebe mesh} of 
@@ -1609,82 +1642,51 @@ areas. Probably the interesting connections between statics properties and
 geometry are not yet exhausted, and we would like to propose the {\em 
 geometrization} of problems as a strategy for their solution.
 
-%\section*{Acknowledgements}
+\paragraph*{Acknowledgements.}
+
+This work was very much inspired by Philippe Block's plenary lecture
+at the 2011 Symposium Geometry Processing in Lausanne. Several 
+illustrations (the maximum load example of Figure
+\ref{fig:load} and the destruction sequence of Figure \ref{fig:removal})
+have real\dash world analogues on his web page \cite{catalan}.
+
+
+
+
+
+
+
 
 	\bibliographystyle{acmsiggraph}
 	%\let\otb=\thebibliography
 	%\def\thebibliography#1{\otb{#1}\itemsep-5pt\footnotesize}
 	\bibliography{selfsupporting}
 
-
-  \begin{figure*}[t]
-  \newdimen\tmplen\tmplen=0.10\textwidth
-  \centerline{\includegraphics[width=2.57\tmplen]{fig/remove-1n.jpg}\hfill
-	  \includegraphics[width=2.57\tmplen]{fig/remove-2n.jpg}\hfill
-	  \raise.43\tmplen\hbox{\includegraphics[width=2.23\tmplen]
-			{fig/remove-3n.jpg}}\hfill
-	  \raise.43\tmplen\hbox{\includegraphics[width=2.24\tmplen]
-			{fig/remove-4n.jpg}}}
-   \vskip-6ex
-   \leftline{(a)\hskip 2.5\tmplen (b)\hskip 2.5\tmplen (c)\hskip 2.2\tmplen
-		(d)}
-   \vskip2ex
-
-\caption{Destruction sequence. We simulate removing a part of masonry and 
-the falling off of further pieces which are no longer supported after 
-removal. This is done by deleting the 1-neighborhood of a vertex (shown in 
-yellow) and solving for a new thrust network in compressive equilibrium 
-close to the original reference surface. We delete those parts of the 
-network which deviate too much and are no longer contained in the masonry 
-hull, and iterate. (a) For this example, removing a certain small number 
-single bricks does not affect stability. (b) Removal of material at a 
-certain point will cause a greater part of the structure to collapse, as 
-seen in (c). (d) shows the result after one more removal (all images show 
-the respective thrust networks, not the reference surface).} 
-\label{fig:removal}
-
-\bigskip
-\bigskip
-
-	\includegraphics[height=0.16\textwidth]{fig/cas-vf.jpg}\hfill
-	\includegraphics[height=0.16\textwidth]{arch-fig/1roo62.jpg}\hfill
-	\includegraphics[height=0.16\textwidth]{arch-fig/1roo58.jpg}
-	\caption{Planar quad remeshing of the surface of 
-Figure~\protect\ref{fig:cas}. Left: Principal directions. Center: The 
-result of optimization is a self\dash supporting PQ mesh, which guides a 
-moment\dash free steel\slash glass construction. Right: Interior view.}
-	\label{fig:cas:pq}
-
-\bigskip
-\bigskip
-
-\centerline{\begin{minipage}[b]{0.8\columnwidth}
+\begin{figure}[t]
 	\centering
-	\includegraphics[width=.8\columnwidth]{fig/loadmesh-n.jpg}
+	\includegraphics[width=.7\columnwidth]{fig/loadmesh-n.jpg}
 	\caption{Testing stability. This self\dash supporting surface of 
 length 24\,m is imagined as masonry of thickness 0.1\,m. It possesses a 
 thrust network inside the masonry hull if -- for the sake of example -- a 
 load of 900\,kg (shown in black) is applied to a certain vertex. This 
 means that the surface is still stable after that load is applied (N.B.\ 
 This method of testing is rather conservative).}\label{fig:load}
-	\end{minipage}
-	\hfill
-	\begin{minipage}[b]{1.1\columnwidth}
+
+\bigskip
+
 	\includegraphics[width=\columnwidth]{arch-fig/structural79.jpg} 
 \caption{Glass as a structural element can support stresses up to, say, 
-30\,Mpa. We propose a steel\slash glass construction which utilizes the 
+30\,MPa. We propose a steel\slash glass construction which utilizes the 
 structural properties of glass by first solving for a self\dash supporting 
 thrust network such that forces do not exceed the maximum values, and 
 subsequent remeshing of this surface by a planar quad mesh (not 
 necessarily self\dash supporting itself). Since this surface is very 
 close to a self\dash supporting shape, joints will experience low bending 
 and torsion moments.} \label{fig:structural}
-	\end{minipage}}
-
-\end{figure*}
 
 
-
+\vspace*{5.5cm}
+\end{figure}
 
 \end{document}
 
