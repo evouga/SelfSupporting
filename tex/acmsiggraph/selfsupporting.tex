@@ -1044,16 +1044,14 @@ self\dash supporting triangular mesh for any sampling of the surface.}
 	\begin{overpic}[width=0.25\textwidth]{fig/build-edited-n.jpg}
 	\end{overpic}}
 
-\caption{The user-designed reference mesh (left) is not self-supporting, but our algorithm finds a nearby perturbation of the reference surface (middle-left) that is in equilibrium. As the user makes edits to the reference surface (middle-right), the thrust network automatically adjusts (right). \label{fig:vault}}
+\caption{The user-designed reference mesh (left) is not self-supporting, 
+but our algorithm finds a nearby perturbation of the reference surface 
+(middle-left) that is in equilibrium. As the user makes edits to the 
+reference surface (middle-right), the thrust network automatically adjusts 
+(right). \label{fig:vault}}
 
-	\medskip
-	\centerline{\includegraphics[height=0.14\textwidth]{fig/cas.jpg}\relax
-	\includegraphics[height=0.14\textwidth]{fig/cas-n.jpg}\hfill
-	\begin{minipage}[b]{.7\columnwidth}
-\caption{A freeform surface (left) needs adjustments around the entrance arch and between the two pillars in order to be self-supporting;
-our algorithm finds the nearby surface in equilibrium (right) that incorporates these changes.}\label{fig:cas} 
-	\end{minipage}}
-	 \end{figure*}
+	\end{figure*}
+
 
 \section{Thrust Networks from Reference Meshes} \label{sec:opt} 
 
@@ -1202,9 +1200,20 @@ the vertex into equilibrium. We avoid such degenerate configurations by
 bounding weights slightly away from zero in \eqref{eq:wbounds}, trading 
 increased robustness for slight smoothing of the resulting surface.
 
+\begin{figure*}[t]
+	\centerline{\includegraphics[height=0.14\textwidth]{fig/cas.jpg}\relax
+	\includegraphics[height=0.14\textwidth]{fig/cas-n.jpg}\hfill
+	\begin{minipage}[b]{.7\columnwidth} \caption{A freeform surface 
+(left) needs adjustments around the entrance arch and between the two 
+pillars in order to be self-supporting; our algorithm finds the nearby 
+surface in equilibrium (right) that incorporates these 
+changes.}\label{fig:cas}
+	\end{minipage}}
+	 \end{figure*}
 
 
 \begin{table*}[t]
+	\bigskip
 \begin{tabular}{@{}llccccc@{}}
 \hline
 	\textit{Example} 
@@ -1259,14 +1268,16 @@ increased robustness for slight smoothing of the resulting surface.
 			& $2.4\times 10^{-5}$
 	\\ \hline
   \end{tabular}
+	\medskip
 	\caption{Numerical details about the examples throughout this 
 paper. \emph{Time}: The wall-clock time needed by an Intel Xeon 2.3GHz 
 desktop PC with 4 GB of RAM to find a self-supporting thrust network and 
 associated stress surface from the example's reference mesh; we also give 
 the number of outer iterations of the four steps in \secref{sec:opt}. The 
 maximum relative error is the dimensionless relative error in force 
-equilibrium defined by $\| A_i F_i - \sum\nolimits_{j\sim i} w_{ij} 
-(\vw_j-\vw_i) \|/\|A_i F_i\|$, where the sum runs over interior vertices. 
+equilibrium defined by $\max_i \| A_i F_i - \sum\nolimits_{j\sim i} w_{ij} 
+(\vw_j-\vw_i) \|/\|A_i F_i\|$, where the maximum is taken
+runs over interior vertices $\vw_i$. 
 } \label{table:data}
 
 
@@ -1559,47 +1570,44 @@ Christoffel\dash dual.} \label{fig:enneper}
 
 \paragraph{Koebe meshes.}
 
-An interesting special case occurs if $\Phi$ is a {\it Koebe 
-mesh} of isotropic geometry,
-i.e., a PQ mesh whose edges touch the Maxwell paraboloid. Since 
-$\Phi$ approximates the Maxwell paraboloid, we get 
-$2K(\vw_i)H^{\rel}(\vw_i)$ $ \approx 1$ and $\Phi$ consequently is self\dash 
-supporting for unit load. Applying the Christoffel dual construction 
-described above yields a minimal mesh $\RR$ and a family of 
-meshes $\Phi+\alpha\RR$ which are self\dash supporting for unit load
-(see Figure~\ref{fig:enneper}).
+An interesting special case occurs if $\Phi$ is a {\it Koebe mesh} of 
+isotropic geometry, i.e., a PQ mesh whose edges touch the Maxwell 
+paraboloid. Since $\Phi$ approximates the Maxwell paraboloid, we get 
+$2K(\vw_i)H^{\rel}(\vw_i)$ $ \approx 1$ and $\Phi$ consequently is 
+self\dash supporting for unit load. Applying the Christoffel dual 
+construction described above yields a minimal mesh $\RR$ and a family of 
+meshes $\Phi+\alpha\RR$ which are self\dash supporting for unit load (see 
+Figure~\ref{fig:enneper}).
 
 
 \section{Conclusion and Future Work}
 
 \paragraph{Conclusion.}
 
-This paper builds on relations between statics and geometry, some of
-which have been known for a long time, and connects them with newer
-methods of discrete differential geometry, such as discrete Laplace
-operators and curvatures of polyhedral surfaces. We were able to find
-efficient ways of modeling self\dash supporting freeform shapes,
-and provide architects and engineers with an interactive tool which
-gives quick information on the statics of freeform geometries.
-The self\dash supporting property of a shape is directly relevant for
-freeform masonry. The actual thrust networks we use for computation
-are relevant e.g.\ for steel constructions, where equilibrium of deadload
-forces implies absence of moments. This theory and accompanying
-algorithms thus constitute a new contribution to architectural
-geometry, connecting statics and
-geometric design.
+This paper builds on relations between statics and geometry, some of which 
+have been known for a long time, and connects them with newer methods of 
+discrete differential geometry, such as discrete Laplace operators and 
+curvatures of polyhedral surfaces. We were able to find efficient ways of 
+modeling self\dash supporting freeform shapes, and provide architects and 
+engineers with an interactive tool which gives quick information on the 
+statics of freeform geometries. The self\dash supporting property of a 
+shape is directly relevant for freeform masonry. The actual thrust 
+networks we use for computation are relevant e.g.\ for steel 
+constructions, where equilibrium of deadload forces implies absence of 
+moments. This theory and accompanying algorithms thus constitute a new 
+contribution to architectural geometry, connecting statics and geometric 
+design.
 
 \paragraph{Future Work.}
 
-There are several directions of future research. One is to 
-incorporate non\dash manifold meshes, which occur naturally when e.g.\
-supporting walls are introduced. It is also obvious that non\dash vertical
-loads, e.g.\ wind load, play a role. There are also some directions to
-pursue in improving the algorithms, for instance adaptive remeshing
-in problem areas. Probably the interesting connections between statics
-properties and geometry are not yet exhausted, and we would like to
-propose the {\em geometrization} of problems as a strategy for their
-solution.
+There are several directions of future research. One is to incorporate 
+non\dash manifold meshes, which occur naturally when e.g.\ supporting 
+walls are introduced. It is also obvious that non\dash vertical loads, 
+e.g.\ wind load, play a role. There are also some directions to pursue in 
+improving the algorithms, for instance adaptive remeshing in problem 
+areas. Probably the interesting connections between statics properties and 
+geometry are not yet exhausted, and we would like to propose the {\em 
+geometrization} of problems as a strategy for their solution.
 
 %\section*{Acknowledgements}
 
@@ -1608,51 +1616,72 @@ solution.
 	%\def\thebibliography#1{\otb{#1}\itemsep-5pt\footnotesize}
 	\bibliography{selfsupporting}
 
- \begin{figure}[h]
-	\centering
-	\includegraphics[width=.8\columnwidth]{fig/loadmesh-n.jpg}
 
-\caption{Testing stability. This self\dash supporting surface of length
-24\,m is imagined as masonry of thickness 0.1\,m. It possesses a thrust network
-inside the masonry hull if, say, a load of 900\,kg (shown in
-black) is applied to a certain vertex. This means that the surface is
-still stable after that load is applied (N.B.\ Our test is rather
-conservative).}
-\end{figure}
+  \begin{figure*}[t]
+  \newdimen\tmplen\tmplen=0.10\textwidth
+  \centerline{\includegraphics[width=2.57\tmplen]{fig/remove-1n.jpg}\hfill
+	  \includegraphics[width=2.57\tmplen]{fig/remove-2n.jpg}\hfill
+	  \raise.43\tmplen\hbox{\includegraphics[width=2.23\tmplen]
+			{fig/remove-3n.jpg}}\hfill
+	  \raise.43\tmplen\hbox{\includegraphics[width=2.24\tmplen]
+			{fig/remove-4n.jpg}}}
+   \vskip-6ex
+   \leftline{(a)\hskip 2.5\tmplen (b)\hskip 2.5\tmplen (c)\hskip 2.2\tmplen
+		(d)}
+   \vskip2ex
 
+\caption{Destruction sequence. We simulate removing a part of masonry and 
+the falling off of further pieces which are no longer supported after 
+removal. This is done by deleting the 1-neighborhood of a vertex (shown in 
+yellow) and solving for a new thrust network in compressive equilibrium 
+close to the original reference surface. We delete those parts of the 
+network which deviate too much and are no longer contained in the masonry 
+hull, and iterate. (a) For this example, removing a certain small number 
+single bricks does not affect stability. (b) Removal of material at a 
+certain point will cause a greater part of the structure to collapse, as 
+seen in (c). (d) shows the result after one more removal (all images show 
+the respective thrust networks, not the reference surface).} 
+\label{fig:removal}
 
-\begin{figure*}[p]
-\vspace{4cm}
-\caption{Test sequence: Stability w.r.t.\ removal of single pieces
-of masonry. (a) self\dash supporting surface and thrust network.
-(b) Part of the surface has been removed, the existence of a modified
-thrust network shows it is self\dash supporting.  (c) If we remove too
-much, our algorithm no longer finds an admissible thrust network. It is
-plausible that the surface is no longer self\dash supporting.} \label{fig:removal}
-
-\vspace{4cm}
-\caption{Structural Glass. Glass as a structural element can support
-stresses up to \todo{FILL IN VALUES}. (a) Self\dash supporting thrust
-network such that forces do not exceed $F_{\max}$. (b) Remeshing of
-this surface by a planar quad mesh (not necessarily self\dash supporting).
-(c) A steel\slash glass construction following this quad mesh,
-which utilizes the structural
-properties of glass. Since it is very close to a self\dash supporting
-shape, joints will experience low bending and torsion moments.} \label{fig:structural}
-
+\bigskip
 \bigskip
 
 	\includegraphics[height=0.16\textwidth]{fig/cas-vf.jpg}\hfill
 	\includegraphics[height=0.16\textwidth]{arch-fig/1roo62.jpg}\hfill
 	\includegraphics[height=0.16\textwidth]{arch-fig/1roo58.jpg}
 	\caption{Planar quad remeshing of the surface of 
-Figure~\protect\ref{fig:cas}. Left: Principal directions.
-Center: The result of optimization is a self\dash supporting PQ mesh,
-which guides a moment\dash free steel\slash glass construction.
-Right: Interior view.}
+Figure~\protect\ref{fig:cas}. Left: Principal directions. Center: The 
+result of optimization is a self\dash supporting PQ mesh, which guides a 
+moment\dash free steel\slash glass construction. Right: Interior view.}
 	\label{fig:cas:pq}
 
-  \end{figure*}
+\bigskip
+\bigskip
+
+\centerline{\begin{minipage}[b]{0.8\columnwidth}
+	\centering
+	\includegraphics[width=.8\columnwidth]{fig/loadmesh-n.jpg}
+	\caption{Testing stability. This self\dash supporting surface of 
+length 24\,m is imagined as masonry of thickness 0.1\,m. It possesses a 
+thrust network inside the masonry hull if -- for the sake of example -- a 
+load of 900\,kg (shown in black) is applied to a certain vertex. This 
+means that the surface is still stable after that load is applied (N.B.\ 
+This method of testing is rather conservative).}\label{fig:load}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[b]{1.1\columnwidth}
+	\includegraphics[width=\columnwidth]{arch-fig/structural79.jpg} 
+\caption{Glass as a structural element can support stresses up to, say, 
+30\,Mpa. We propose a steel\slash glass construction which utilizes the 
+structural properties of glass by first solving for a self\dash supporting 
+thrust network such that forces do not exceed the maximum values, and 
+subsequent remeshing of this surface by a planar quad mesh (not 
+necessarily self\dash supporting itself). Since this surface is ivery 
+close to a self\dash supporting shape, joints will experience low bending 
+and torsion moments.} \label{fig:structural}
+	\end{minipage}}
+
+\end{figure*}
 
 
 
