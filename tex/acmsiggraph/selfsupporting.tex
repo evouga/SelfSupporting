@@ -1352,6 +1352,7 @@ and corresponding reciprocal diagram.
 	\begin{overpic}[width=0.5\columnwidth]{fig/cheese-n.jpg}
 		\put(0,5){(b)}
 	\end{overpic}}
+	\vskip-1.5ex
   \caption{A mesh with holes (a) requires large deformations
 to both the top view and heights to render it self\dash supporting
 (b)}\label{fig:cheese2}
@@ -1671,16 +1672,26 @@ have real\dash world analogues on his web page \cite{catalan}.
 	\bibliography{selfsupporting}
 
 \begin{figure}[h]
-	\includegraphics[width=.40\columnwidth]{fig/load2.jpg}
-	\hfill
-	\begin{minipage}[b]{.56\columnwidth}
-	\caption{This self\dash supporting surface of 
-diamger 14\,m is imagined as masonry of thickness 0.1\,m. It still possesses a 
-thrust network inside the masonry hull if a 
-load of 11.000\,kg (shown in dark) is applied to a certain vertex. This 
-means that the surface is still stable after that load is applied.}
+	\begin{overpic}[width=.49\columnwidth]{fig/dome-unloaded.jpg}
+		\small
+		\cput(50,4){14\,m}
+		\put(0,0){\hbox to .3\columnwidth{\leftarrowfill}}
+		\lput(100,0){\hbox to .3\columnwidth{\rightarrowfill}}
+		\put(0,60){shell thickness 0.1\,m}
+		\put(0,67){specific weight 2,500\,kg/m$^3$}
+	\end{overpic}\hfill
+	\begin{overpic}[width=.49\columnwidth]{fig/dome-loaded.jpg}
+		\small
+		\put(60,60){11,000\,kg}
+	\end{overpic}
+	\caption{Stability Test. (a) Coloring and cross\dash section
+of edges visualize the forces in a thrust network which is in equlibrium
+with this dome's dead load.
+(b) When an additional load is applied, there exists a corresponding
+compressive thrust network which is still contained in the masonry hull
+of th e original dome. This implies stability
+of the dome under that load.}
 \label{fig:load}
-\end{minipage}
 \end{figure}
 
 \begin{figure}[t]

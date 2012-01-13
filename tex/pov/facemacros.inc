@@ -3,6 +3,7 @@
 		cylinder {V[c] V[a] r2} #end
 
 #macro Ftriang(a,b,c) triangle {V[a] V[b] V[c]} #end
+#macro FStriang(a,b,c) smooth_triangle {V[a] N[a] V[b] N[b] V[c] N[c]} #end
 
 
 #macro EQuad(a,b,c,d) 
@@ -27,10 +28,8 @@
 		triangle {V[a] V[d] V[e]} triangle {V[a] V[e] V[f]} #end
 
 #macro SMesh(A, t1) 
-	#macro triang(a,b,c) Ftriang(a,b,c) #end
 	union { mesh { #include A texture {t1}}
         rotate -x*90 } #end
 #macro DMesh(A, t1, t2) union { mesh { #include A texture {t1}}
         mesh { #include A translate y*.0001 texture {t2}}
         rotate -x*90 } #end
-

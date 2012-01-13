@@ -8,6 +8,7 @@ union {
 rotate -x*90
 }
 
+#macro triang(a,b,c) Ftriang(a,b,c) #end
 SMesh( "lilium-n/lnfaces.inc", gelb)
 
 
