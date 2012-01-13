@@ -179,21 +179,18 @@ isotropic geometry, mean curvature}
 %%% Your paper's abstract goes in its own section.
 
 \begin{abstract} Self\dash supporting masonry is one of the most ancient 
-and at the same time most elegant ways of building curved shapes. Their 
-analysis and modeling is a topic of geometry processing rather than 
-classical continuum mechanics, because of the very geometric nature of 
-failure of such structures. In this paper we use the thrust network method 
+and at the same time most elegant ways of building curved shapes. Because of the
+very geometric nature of failure of such structures, their 
+analysis and modeling is more a geometry processing problem than 
+one of classical continuum mechanics. In this paper we use the thrust network method 
 of analysis and present an iterative nonlinear optimization algorithm for 
-efficiently approximating freeform shapes by self\dash supporting ones. 
-This provides an interactive modeling tool for such shapes. The rich 
-geometry of thrust networks which was initiated by Maxwell in the 
-1860s leads us to new viewpoints of discrete differential geometry: We 
-find close connections between different objects such as a finite\dash 
-element discretization of the Airy stress potential, perfect graph 
-Laplacians, and computing admissible loads via curvatures of polyhedral 
-surfaces. This geometric viewpoint in particular shows us how to perform 
-remeshing of a self\dash supporting shape by a self\dash supporting
-quad mesh with planar faces.
+efficiently approximating freeform shapes by self\dash supporting ones. Inspired by the rich 
+geometry of thrust networks, initially explored by Maxwell in the 
+1860s, we establish close connections between different topics of discrete differential geomtry
+such as a finite\dash element discretization of the Airy stress potential, perfect graph 
+Laplacians, and the problem of computing admissible loads via curvatures of polyhedral 
+surfaces. This geometric viewpoint allows us, in particular, to remesh self\dash supporting 
+shapes by self\dash supporting quad mesh with planar faces.
 
 \end{abstract}
 
@@ -229,13 +226,11 @@ quad mesh with planar faces.
 
 \section{Introduction}
 
-%\todo{TODO gentle introduction to self-supporting surfaces, assumptions about the model, importance to architecture etc}
-
 
 Vaulted masonry structures are among the simplest and at the same time 
 most elegant solutions for creating curved shapes in building 
-construction. This is the reason why they have been an object of interest 
-since antiquity, large non\dash convex examples being provided by gothic 
+construction. For this reason they have been an object of interest 
+since antiquity; large, non\dash convex examples of such structures include gothic 
 cathedrals. They continue to be an active topic of research in today's 
 engineering community.
 
@@ -244,9 +239,8 @@ Our paper is concerned with a combined geometry+statics analysis of {\em
 self\dash supporting} masonry and with tools for the interactive modeling 
 of freeform self\dash supporting structures. Here ``self\dash supporting'' 
 means that the structure, considered as an arrangement of blocks (bricks, 
-stones), holds together by itself, and additional support, additional 
-chains and similar are present only during construction. Our analysis is 
-based on the following assumptions, which follow the classic 
+stones), holds together by itself, with additional support present only during 
+construction. Our analysis is based on the following assumptions, which follow the classic 
 \cite{Heyman66}:
 
 
@@ -259,18 +253,18 @@ and not by material failure.
 {\it Assumption 2 (The Safe Theorem)}: If a system of forces can be found 
 which is in equilibrium with the load on the structure and which is 
 contained within the masonry envelope then the structure will carry the 
-loads, although the actually occurring forces may not be those postulated.
+loads, although the actual forces present may not be those postulated.
 
 Our approach is twofold: We first give an overview of the continuous case 
-of a smooth surface under stress which turns out to be governed by the 
-so\dash called Airy stress function, at least locally. This mathematical 
+of a smooth surface under stress, which turns out to be governed locally by the 
+so\dash called Airy stress function. This mathematical 
 model is called a membrane in the engineering literature and has been 
 applied to the analysis of masonry before. The surface is self\dash 
 supporting if and only if stresses are entirely compressive (i.e., the 
 Airy function is convex). For computational purposes, stresses are 
 discretized as a fictitious {\em thrust network} \cite{Block07} contained 
-in the masonry structure. This is a system of forces which together with 
-the structure's deadload is in equilibrium. It can be interpreted as a 
+in the masonry structure; this network is a system of forces in equilibrium with
+the structure's deadload. It can be interpreted as a 
 finite element discretization of the continuous case, and it turns out to 
 have very interesting geometry, with the Airy stress function becoming a
 polyhedral surface directly related to a reciprocal force diagram. 
@@ -344,7 +338,7 @@ Unsupported masonry has been an active topic of research in the
 engineering community. The foundations for the modern approach were laid 
 by Jacques Heyman \shortcite{Heyman66} and are available as the textbook 
 \cite{Heyman95}. The theory of reciprocal force diagrams in the planar
-case was studied already by Maxwell \cite{Maxwell64};
+case was studied by Maxwell \cite{Maxwell64};
 a unifying view on polyhedral surfaces, compressive 
 forces and corresponding ``convex'' force diagrams is presented by 
 \cite{Ash1988}. F.~Fraternali \shortcite{Fraternali2002a}, 
@@ -355,16 +349,18 @@ finite element discretization of the former.
 
 Several authors have studied the problem of finding discrete compressive 
 force networks contained within the boundary of masonry structures; previous
-work in this area includes \cite{Livesley92}, \cite{O'Dwyer98}, and
+work in this area includes \cite{O'Dwyer98} and
 \cite{andreu-2007}. Fraternali~\shortcite{Fraternali2010} proposed solving 
 for the structure's discrete stress surface, and examining its convex hull 
 to study the structure's stability and susceptibility to cracking. 
-Philippe Block's seminal thesis introduced the method of {\it Thrust 
-Network Analysis}, which linearizes the form-finding problem by first 
-seeking a reciprocal diagram of the top view, which guarantees equilibrium 
+Philippe Block's seminal thesis introduced {\it Thrust 
+Network Analysis}, which pioneered the use of thrust networks and their
+reciprocal diagrams for efficient and practical design of self\dash supporting
+masonry structures. By first seeking a reciprocal diagram of the top view, guaranteeing equilibrium 
 of horizontal forces, then solving for the heights that balance the 
-vertical loads (see e.g.\ \cite{Block07,block09}). Recent work by Block 
-and coauthors extends this method in the case where the reciprocal diagram 
+vertical loads, Thrust Network Analysis linearizes the form-finding problem.
+For a thorough overview of this methodology, see e.g.\ \cite{Block07,block09}. 
+Recent work by Block and coauthors extends this method in the case where the reciprocal diagram 
 is not unique; for different choices of reciprocal diagram, the optimal 
 heights can be found using the method of least squares~\cite{vanmele2011}, 
 and the search for the best such reciprocal diagram can be automated using 
@@ -375,9 +371,9 @@ include modeling these structures as damped particle-spring
 systems~\cite{Kilian2005,barnes09}, and mirroring the rich tradition in 
 architecture of designing self-supporting surfaces using hanging chain 
 models~\cite{Heyman98}. Alternatively, masonry structures can be 
-represented by networks of rigid blocks~\cite{Whiting09}, whose conditions 
+represented by networks of rigid blocks~\cite{Livesley92}, whose conditions 
 on the structural feasibility were incorporated into procedural modeling 
-of buildings.
+of buildings~\cite{Whiting09}.
 
 Algorithmic and mathematical methods relevant to this paper are work on 
 the geometry of quad meshes with planar faces \cite{Glymph2004,Liu2006}, 
@@ -393,10 +389,10 @@ by statics properties of that surface.
 
 \subsection{The Continuous Theory}
 
-We are here modeling masonry as a surface given by a height field $s(x,y)$ 
+In this paper we model masonry as a surface given by a height field $s(x,y)$ 
 defined in some planar domain $\Omega$. We assume that there are vertical 
 loads $F(x,y)$ --- usually $F$ represents the structure's own weight. By 
-definition this surface is self\dash supporting, if and only if there 
+definition this surface is self\dash supporting if and only if there 
 exists a field of compressive stresses which are in equilibrium with the 
 acting forces. This is equivalent to existence of a field $M(x,y)$ of 
 $2\times 2$ symmetric positive semidefinite matrices satisfying
@@ -409,7 +405,7 @@ $2\times 2$ symmetric positive semidefinite matrices satisfying
 understood to act on the columns of a matrix (see e.g.\ 
 \cite{Fraternali2010}, \cite{Giaquinta1985}).
 
-The condition $\Div M=0$ says that $M$ is essentially the Hessian of a 
+The condition $\Div M=0$ says that $M$ is locally the Hessian of a 
 real\dash valued function $\phi$ (the {\em Airy stress potential}): With 
 the notation
 	\begin{align*}
@@ -450,7 +446,7 @@ strictly convex. The balance condition \eqref{eq:conds} may be written as
 \subsection{Discrete Theory: Thrust Networks}
 \label{sec:thrustnetworks}
 
-We are discretizing a self-supporting surface by a mesh $\SS=(V,E,F)$
+We discretize a self-supporting surface by a mesh $\SS=(V,E,F)$
 (see Figure~\ref{fig:reciprocal}). Loads are again vertical, 
 and we discretize them as force densities $F_i$ associated with vertices 
 $\vw_i$. The load acting on this vertex is then given by $F_iA_i$, where 
@@ -511,7 +507,7 @@ forces which is entirely contained within the structure.
         \lput(13,8){\contour{white}{$w_{ij} \ew_{ij}'$}}
         \lput(66,11){\contour{white}{$\ew_{ij}^*$}}
   \end{overpic}}\relax
- \caption{A thrust network $\SS$, with dangling edges indicating external 
+ \caption{A thrust network $\SS$ with dangling edges indicating external 
 forces (left). This network together with compressive forces which balance 
 vertical loads $A_iF_i$ projects onto a planar mesh $\SS'$ with 
 equilibrium compressive forces $w_{ij}\ew_{ij}'$ in its edges. Rotating 
@@ -522,7 +518,7 @@ forces by 90$^\circ$ leads to the reciprocal force diagram $\SS'^*$
 
 \paragraph{Reciprocal Diagram.}
 
-Equations \eqref{eq:deqtop} have a geometric interpretation: With edge
+Equations \eqref{eq:deqtop} have a geometric interpretation: with edge
 vectors
 	\begin{align*}
 	\ew'_{ij} = \vw_j'-\vw_i'=(x_j, y_j) - (x_i, y_i),
@@ -558,15 +554,14 @@ polyhedron.
 
 The vertices of $\Phi$ can be interpolated by a piecewise\dash linear 
 function $\phi(x,y)$. It is easy to see that the derivative of $\phi(x,y)$ 
-jumps by the amount $\|\ew_{ij}'^*\| = w_{ij}\|\ew_{ij}'\|$, when crossing 
+jumps by the amount $\|\ew_{ij}'^*\| = w_{ij}\|\ew_{ij}'\|$ when crossing 
 over the edge $\ew'_{ij}$ at right angle, with unit speed. This identifies 
 $\Phi$ as the Airy polyhedron introduced by \cite{Fraternali2002a} as a 
 finite element discretization of the continuous Airy function (see also 
 \cite{Fraternali2010}).
 
 If the mesh is not simply connected, the reciprocal diagram and the Airy 
-polyhedron exist only locally. Global existence is not an issue for our
-computations.
+polyhedron exist only locally. Our computations do not require global existence.
 
   \begin{figure}[t]
  \centerline{\vphantom{\includegraphics[width=.94\columnwidth]
@@ -625,12 +620,12 @@ $w_{ij}\ge 0$ ensures semidefiniteness and a maximum principle for
 $\Delta_\phi$\dash harmonic functions. Equation \eqref{eq:deqz} can be 
 written as $\Delta_\phi s = AF$.
 
-Note that $\Delta_\phi$ is well defined also in case the underlying meshes 
+Note that $\Delta_\phi$ is well defined even when the underlying meshes 
 are not simply connected.
 
 \subsection{Surfaces in Isotropic Geometry} \label{sec:smooth}
 
-It is worth while to reconsider the basics of self\dash supporting surfaces 
+It is worthwhile to reconsider the basics of self\dash supporting surfaces 
 in the language of dual\dash isotropic geometry, which takes place in 
 $\R^3$ with the $z$ axis as a distinguished vertical direction. The basic 
 elements of this geometry are planes, having equation $z=f(x,y) = \alpha 
@@ -696,7 +691,7 @@ $(\Hess\phi)^{-1}(\Hess s)$.  By definition, curvatures of the surface $s$
 		=  {\Delta_\phi s \over 2\det\Hess\phi}.
 	\end{align*}
  The Maxwell paraboloid $\phi_0(x,y)={1\over 2}(x^2+y^2)$ is the canonical 
-unit sphere of isotropic geometry, its Hessian equals $E_2$. Curvatures 
+unit sphere of isotropic geometry, with Hessian $E_2$. Curvatures 
 relative to $\phi_0$ are not called ``relative'' and are denoted by the 
 symbols $H,K$ instead of $H^\rel,K^\rel$. The observation
 	\begin{align*}
@@ -753,7 +748,7 @@ $H^\rel_{s_1-s_2}=H^\rel_{s_1}-H^\rel_{s_2}=0$, so $s_1-s_2$ is a
 A general theory of curvatures of polyhedral surfaces with respect to a 
 polyhedral unit sphere was proposed by 
 \cite{Pottmann2007b,bobenko-2010-ct}, and its dual complement in isotropic 
-geometry was elaborated by \cite{Pottmann2007}. As illustrated by 
+geometry was elaborated on in \cite{Pottmann2007}. As illustrated by 
 Figure~\ref{fig:christoffel}, the mean curvature of a self\dash supporting 
 surface $\SS$ {\em relative} to its discrete Airy stress potential is 
 associated with the vertices of $\SS$. It is computed from areas and mixed 
@@ -919,7 +914,7 @@ $2A_i(\SS,\Phi)$:
 
 
 In order to discretize \eqref{equigeo}, we also need a discrete Gaussian
-curvature, which is usually defined as a quotient of areas which
+curvature, usually defined as a quotient of areas which
 correspond under the Gauss mapping. We define
 	\begin{align*}
 	K_\Phi(\vw_i) = {A_i(\Phi,\Phi) \over A_i},
@@ -929,8 +924,7 @@ $\SS'$ used in \eqref{eq:deqz}.
 
 {\em Remark:} If the faces of the thrust network $\SS$ are not planar,
 the simple trick of introducing additional edges with zero forces in them
-makes them planar, and the theory is applicable. We refrain from elaborating
-this further.
+makes them planar, and the theory is applicable. In the interest of space, we refrain from elaborating further.
 
 
 \paragraph{Discrete Balance Equation.}
@@ -940,7 +934,7 @@ follows:
 
 \proclaim Theorem.
  A simply-connected mesh $\SS$ with vertices $\vw_i=(x_i,y_i,s_i)$
-can be put into static equilibrium with vertical forces ``$A_iF_i$'' if
+can be put into static equilibrium with vertical nodal forces $A_iF_i$ if
 and only if there exists a combinatorially equivalent mesh $\Phi$ with
 planar faces and vertices $(x_i,y_i,\phi_i)$, such that curvatures of
 $\SS$ relative to $\Phi$ obey
@@ -1097,8 +1091,7 @@ associated stress surface from the example's reference mesh; we also give
 the number of outer iterations of the four steps in \secref{sec:opt}. The 
 maximum relative error is the dimensionless relative error in force 
 equilibrium defined by $\max_i \| A_i F_i - \sum\nolimits_{j\sim i} w_{ij} 
-(\vw_j-\vw_i) \|/\|A_i F_i\|$, where the maximum is taken
-runs over interior vertices $\vw_i$. 
+(\vw_j-\vw_i) \|/\|A_i F_i\|$, where the maximum is taken over interior vertices $\vw_i$. 
 } \label{table:data}
 
 
@@ -1125,7 +1118,7 @@ we propose a staggered optimization algorithm:
 \item \label{step2} Estimate the self\dash load on the vertices of $\SS$, 
 using their current positions.
 
-\item \label{step3} Fixing $\SS$, fit an associated stress surface $\Phi$.
+\item \label{step3} Fixing $\SS$, locally fit an associated stress surface $\Phi$.
 
 \item \label{step4} Alter positions $\vw_i$ to improve the fit.
 
@@ -1133,15 +1126,25 @@ using their current positions.
 
 \end{enumerate}
 
+This staggered approach has several advantages: a nearby self\dash supporting surface
+is found given only a suggested reference shape, without needing to single one of
+the many possible top view reciprocal diagrams or needing to specify boundary
+tractions -- these are found automatically during optimization. Although providing
+an initial top view graph with good combinatorics remains important, our approach
+allows the thrust network to slide both vertically and tangetially to the ground,
+essential to finding faithful thrust networks for surfaces with free boundary conditions.
+The cheese cheese surface \ref{fig:cheese}, for example, relies heavily on such sliding.
+
 \paragraph{Step~\ref{step2}: Estimating Self-Load.}
 
 The dead load due to the surface's own weight depends not only on the top 
 view of $\SS$, but also on the surface area of its faces. To avoid adding 
 nonlinearity to the algorithm, we estimate the load coefficients $F_i$ at 
 the beginning of each iteration, and assume they remain constant until the 
-next iteration. We estimate the load ``$A_iF_i$'' associated with each 
-vertex by calculating its Voronoi area on each of its incident faces, and 
-then multiplying by a user-specified surface density $\rho$.
+next iteration. We estimate the load $A_iF_i$ associated with each 
+vertex by calculating its Voronoi surface area on each of its incident faces 
+(note that this surface area is distinct from $A_i$, the vertex's Voronoi 
+area on the top view), and then multiplying by a user-specified surface density $\rho$.
 
 \paragraph{Step~\ref{step3}: Fit a Stress Surface.}
 
@@ -1171,7 +1174,7 @@ we solve
 (to limit the amount of stress in the surface). This convex, sparse, 
 box-constrained least-squares problem \cite{BCLS} always has a solution. 
 If the objective is $0$ at this solution, the faces of $\Phi$ locally 
-integrate to a stress surface satisfying \eqref{eq:deqiso}, and so $\Phi$ 
+integrate to a stress surface satisfying \eqref{eq:deqiso}, and this $\Phi$ 
 certifies that $\SS$ is self-supporting -- we are done. Otherwise, $\SS$ 
 is not self-supporting and its vertices must be moved.
 
@@ -1250,7 +1253,10 @@ Step~\ref{step3} assigns all incident edges to that vertex a weight of
 zero: clearly no amount of moving the vertex or its neighbors can bring 
 the vertex into equilibrium. We avoid such degenerate configurations by 
 bounding weights slightly away from zero in \eqref{eq:wbounds}, trading 
-increased robustness for slight smoothing of the resulting surface.
+increased robustness for slight smoothing of the resulting surface. Attempting
+to optimize meshes that have self-intersecting top views (i.e., aren't height fields),
+have too many impossible features, or are insufficiently supported by fixed
+boundary points can also result in errors and instability.
 
 \begin{figure*}[t]
 	\centerline{\includegraphics[height=0.14\textwidth]{fig/cas.jpg}\relax
@@ -1299,11 +1305,7 @@ The optimization algorithm described in the previous section forms the
 basis of an interactive design tool for self-supporting surfaces. Users 
 manipulate a mesh representing a reference surface, and the computer 
 searches for a nearby thrust network in equilibrium (see e.g.\ 
-Figure~\ref{fig:vault}). Fitting this thrust network does not require that 
-the user specify boundary tractions, and although the top view of the 
-reference mesh is used as an initial guess for the top view of the thrust 
-network, the search is not restricted to this top view. The features of 
-the design tool include:
+Figure~\ref{fig:vault}). Features of the design tool include:
 
 \begin{itemize}\itemsep-\parsep
 
@@ -1472,9 +1474,13 @@ yields a self-supporting, PQ mesh far more faithful to the original (c).}
 
 Taking an arbitrary non-planar 
 quad mesh and attempting naive, simultaneous enforcement of planarity and 
-static equilibrium does not yield good results, as shown in 
-Figure~\ref{fig:badpq}. To identify the necessary conditions,
-we first discuss a planar quad mesh $\SS$ with vertices
+static equilibrium -- either by staggering a planarity optimization step every outer
+iteration, or adding a planarity penalty term to the position update -- does not 
+yield good results, as shown in Figure~\ref{fig:badpq}. Indeed, as we will see later
+in this section, such a planar perturbation of a thrust network is not expected to 
+generally exist.
+
+Consider a planar quad mesh $\SS$ with vertices
 $\vw_{ij}=(x_{ij},y_{ij},s_{ij})$ which approximates a given continuous
 surface $s(x,y)$. It is known that $\SS$ must approximately follow a network
 of conjugate curves in the surface (see e.g.\ \cite{Liu2006}). We can derive
@@ -1530,11 +1536,15 @@ and Morvan \shortcite{Cohen-Steiner2003} to approximate the Hessians
 $\Hess s$, $\Hess\phi$, compute principal directions as eigenvectors of 
 $(\Hess\phi)^{-1}\Hess s$, and subsequently find meshes $\SS,\Phi$ 
 approximating $s,\phi$ which follow those directions. Global optimization 
-now makes $\SS,\Phi$ a valid thrust network with discrete stress 
-potential. Convexity of $\Phi$ ensures that $\SS$ is self\dash supporting.
+can now polish $\SS,\Phi$ to a valid thrust network with discrete stress 
+potential, where before it failed: we do so by taking the planarity energy
+$\sum_f (2\pi - \theta_f)^2$, where the sum runs over faces and $\theta_f$ is the
+sum of the interior angles of face $f$, linearizing it at every iterations, and
+adding it to the objective function of the position update \ref{step3}.
+Convexity of $\Phi$ ensures that $\SS$ is self\dash supporting. 
 
 
-Note that the relative principal curvature directions give the 
+Note that for each $\Phi$, the relative principal curvature directions give the 
 \emph{unique} curve network along which a planar quad discretization of a 
 self\dash supporting surface is possible. Other networks lead to results
 like the one shown by Figure~\ref{fig:badpq}.
@@ -1622,7 +1632,7 @@ have been known for a long time, and connects them with newer methods of
 discrete differential geometry, such as discrete Laplace operators and 
 curvatures of polyhedral surfaces. We were able to find efficient ways of 
 modeling self\dash supporting freeform shapes, and provide architects and 
-engineers with an interactive tool which gives quick information on the 
+engineers with an interactive tool for evaluating the 
 statics of freeform geometries. The self\dash supporting property of a 
 shape is directly relevant for freeform masonry. The actual thrust 
 networks we use for computation are relevant e.g.\ for steel 
