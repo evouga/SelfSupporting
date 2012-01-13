@@ -184,9 +184,9 @@ very geometric nature of their failure, analyzing and modeling such strutures
 is more a geometry processing problem than 
 one of classical continuum mechanics. In this paper we use the thrust network method 
 of analysis and present an iterative nonlinear optimization algorithm for 
-efficiently approximating freeform shapes by self\dash supporting ones. Inspired by the rich 
-geometry of thrust networks, initially explored by Maxwell in the 
-1860s, we establish close connections between different topics of discrete differential geometry,
+efficiently approximating freeform shapes by self\dash supporting ones. 
+The rich geometry of thrust networks leads us to
+close connections between different topics of discrete differential geometry,
 such as a finite\dash element discretization of the Airy stress potential, perfect graph 
 Laplacians, and the problem of computing admissible loads via curvatures of polyhedral 
 surfaces. This geometric viewpoint allows us, in particular, to remesh self\dash supporting 
@@ -278,8 +278,8 @@ contributions are the following:
 
 	\begin{figure}[t] 
 	\includegraphics[width=\columnwidth]{arch-fig/cheesevault78.jpg} 
-	\caption{A surface with irregularly placed holes almost 
-never stands by itself when built from bricks; for those that do,
+	\caption{Surfaces with irregularly placed holes almost 
+never stand by themselves when built from bricks; for those that do,
 stability is not obvious by inspection. The surface shown is produced by 
 finding the nearest self\dash supporting shape from a given freeform
 geometry. The image also illustrates
@@ -653,7 +653,7 @@ $\Phi$ by requiring that corresponding points have parallel tangent
 planes.  Subsequently mean curvature $H^\rel$ and Gaussian curvature 
 $K^\rel$ {\em relative to $\Phi$} are computed from the derivative 
 $d\sigma$. Classically $\Phi$ is the ordinary unit sphere $x^2+y^2+z^2=1$, 
-so that $\sigma$ maps each point its unit normal vector.
+so that $\sigma$ maps each point to its unit normal vector.
 
 
 
@@ -1011,24 +1011,29 @@ self\dash supporting triangular mesh for any sampling of the surface.}
 	%\includegraphics[width=0.24\textwidth]{fig/build-edited-n.png}
 \centerline{
 	\begin{overpic}[width=0.25\textwidth]{fig/build-white.jpg}
+	\put(0,0){(a)}
 	\end{overpic}\hfill
 	\begin{overpic}[width=0.25\textwidth]{fig/build-n.jpg}
+	\put(0,0){(b)}
 	\end{overpic}\hfill
 	\begin{overpic}[width=0.25\textwidth]{fig/build-edited-white.jpg}
+	\put(0,0){(c)}
 	\end{overpic}\hfill
 	\begin{overpic}[width=0.25\textwidth]{fig/build-edited-n.jpg}
+	\put(0,0){(d)}
 	\end{overpic}}
+	\vskip-1ex
 
-\caption{The user-designed reference mesh (left) is not self-supporting, 
+\caption{The user-designed reference mesh (a) is not self-supporting, 
 but our algorithm finds a nearby perturbation of the reference surface 
-(middle-left) that is in equilibrium. As the user makes edits to the 
-reference surface (middle-right), the thrust network automatically adjusts 
-(right). \label{fig:vault}}
+(b) that is in equilibrium. As the user makes edits to the 
+reference surface (c), the thrust network automatically adjusts 
+(d). \label{fig:vault}}
 
 	\end{figure*}
 
 \begin{table*}[t]
-	\bigskip
+	\medskip
 \begin{tabular}{@{}llccccc@{}}
 \hline
 	\textit{Example} 
@@ -1085,8 +1090,8 @@ reference surface (middle-right), the thrust network automatically adjusts
   \end{tabular}
 	\medskip
 	\caption{Numerical details about the examples throughout this 
-paper. \emph{Time}: The wall-clock time needed by an Intel Xeon 2.3GHz 
-desktop PC with 4 GB of RAM to find a self-supporting thrust network and 
+paper. We show the -clock time needed by an Intel Xeon 2.3GHz 
+desktop PC with 4 GB of RAM to find a self\dash supporting thrust network and 
 associated stress surface from the example's reference mesh; we also give 
 the number of outer iterations of the four steps in \secref{sec:opt}. The 
 maximum relative error is the dimensionless relative error in force 
@@ -1131,9 +1136,9 @@ is found given only a suggested reference shape, without needing to single one o
 the many possible top view reciprocal diagrams or needing to specify boundary
 tractions -- these are found automatically during optimization. Although providing
 an initial top view graph with good combinatorics remains important, our approach
-allows the thrust network to slide both vertically and tangetially to the ground,
+allows the thrust network to slide both vertically and tangentially to the ground,
 essential to finding faithful thrust networks for surfaces with free boundary conditions.
-The cheese cheese surface \ref{fig:cheese}, for example, relies heavily on such sliding.
+The surface of Fig.~\ref{fig:cheese}, for example, relies heavily on such sliding.
 
 \paragraph{Step~\ref{step2}: Estimating Self-Load.}
 
@@ -1155,14 +1160,14 @@ in the least-squares sense, the error in force equilibrium
 \eqref{eq:deqiso} and local integrability of $\Phi$. Doing so is 
 equivalent to minimizing the squared residuals of Equations 
 \eqref{eq:deqz} and \eqref{eq:deqtop}, respectively, with the positions 
-held fixed. Defining the {\em equilibrium energy}
+held fixed. We define the {\em equilibrium energy}
 	\begin{align}
 	E = \sum\nolimits_i \Big\| \Forcevector -
 		\sum\nolimits_{j\sim i} w_{ij} (\vw_j-\vw_i) \Big\|^2,
 	\label{eq:eenergy}
 	\end{align}
  where the outer sum is over the interior and free boundary vertices,
-we solve
+and we solve
 	\begin{align}
 	\min_{w_{ij}} E,
 	\quad
@@ -1221,6 +1226,42 @@ this system, in practice we have observed that the method of conjugate
 gradients works well despite the potential ill-conditioning of the 
 objective matrix. 
 
+\begin{figure*}[t]
+	\centerline{\includegraphics[height=0.14\textwidth]{fig/cas.jpg}\relax
+	\includegraphics[height=0.14\textwidth]{fig/cas-n.jpg}\hfill
+	\begin{minipage}[b]{.7\columnwidth} \caption{A freeform surface 
+(left) needs adjustments around the entrance arch and between the two 
+pillars in order to be self-supporting; our algorithm finds the nearby 
+surface in equilibrium (right) that incorporates these 
+changes.}\label{fig:cas}
+	\end{minipage}}
+	 \end{figure*}
+
+  \begin{figure*}[t]
+  \newdimen\tmplen\tmplen=0.10\textwidth
+  \centerline{\includegraphics[width=2.57\tmplen]{fig/remove-1n.jpg}\hfill
+	  \includegraphics[width=2.57\tmplen]{fig/remove-2n.jpg}\hfill
+	  \raise.43\tmplen
+	\hbox{\includegraphics[width=2.23\tmplen]{fig/remove-3n.jpg}}\hfill
+	  \raise.43\tmplen
+	\hbox{\includegraphics[width=2.24\tmplen]{fig/remove-4n.jpg}}}
+   \vskip-6ex
+   \leftline{(a)\hskip 2.5\tmplen (b)\hskip 2.5\tmplen (c)\hskip 2.2\tmplen
+		(d)}
+   \vskip1.5ex
+
+\caption{Destruction sequence. We simulate removing small parts of masonry 
+(their location is shown by a yellow ball) and 
+the falling off of further pieces which are no longer supported after 
+removal. For this example, removing a certain small number 
+of single bricks does not affect stability (a,b). Removal of material at a 
+certain point (yellow ball in (b))
+will cause a greater part of the structure to collapse,
+as seen in (c). (d) shows the result after one more removal (all images show 
+the respective thrust networks, not the reference surface).} 
+\label{fig:removal}
+\end{figure*}
+
 \paragraph{Limitations.}
 
 This algorithm is not guaranteed to always converge; this fact is not 
@@ -1258,40 +1299,6 @@ to optimize meshes that have self-intersecting top views (i.e., aren't height fi
 have too many impossible features, or are insufficiently supported by fixed
 boundary points can also result in errors and instability.
 
-\begin{figure*}[t]
-	\centerline{\includegraphics[height=0.14\textwidth]{fig/cas.jpg}\relax
-	\includegraphics[height=0.14\textwidth]{fig/cas-n.jpg}\hfill
-	\begin{minipage}[b]{.7\columnwidth} \caption{A freeform surface 
-(left) needs adjustments around the entrance arch and between the two 
-pillars in order to be self-supporting; our algorithm finds the nearby 
-surface in equilibrium (right) that incorporates these 
-changes.}\label{fig:cas}
-	\end{minipage}}
-	 \end{figure*}
-
-  \begin{figure*}[t]
-  \newdimen\tmplen\tmplen=0.10\textwidth
-  \centerline{\includegraphics[width=2.57\tmplen]{fig/remove-1n.jpg}\hfill
-	  \includegraphics[width=2.57\tmplen]{fig/remove-2n.jpg}\hfill
-	  \raise.43\tmplen
-	\hbox{\includegraphics[width=2.23\tmplen]{fig/remove-3n.jpg}}\hfill
-	  \raise.43\tmplen
-	\hbox{\includegraphics[width=2.24\tmplen]{fig/remove-4n.jpg}}}
-   \vskip-6ex
-   \leftline{(a)\hskip 2.5\tmplen (b)\hskip 2.5\tmplen (c)\hskip 2.2\tmplen
-		(d)}
-   \vskip2ex
-
-\caption{Destruction sequence. We simulate removing small parts of masonry 
-(their location is shown by a yellow ball) and 
-the falling off of further pieces which are no longer supported after 
-removal. For this example, removing a certain small number 
-of single bricks does not affect stability (a,b). Removal of material at a 
-certain point (yellow) will cause a greater part of the structure to collapse,
-as seen in (c). (d) shows the result after one more removal (all images show 
-the respective thrust networks, not the reference surface).} 
-\label{fig:removal}
-\end{figure*}
 
 
 
@@ -1350,52 +1357,6 @@ to both the top view and heights to render it self\dash supporting
 (b)}\label{fig:cheese2}
   \end{figure}
 
-
-\paragraph{Example: Vault with Pillars.} 
-
-As an example of the design and 
-optimization workflow, consider a rectangular vault with six pillars, free 
-boundary conditions along one edge, fixed boundary conditions along the 
-others, and a tower extruded from the top of the surface (see Figure 
-\ref{fig:vault}). This surface is neither convex nor simply connected, and 
-exhibits a mix of boundary conditions, none of which cause our algorithm 
-any difficulty; it finds a self-supporting thrust network near the 
-designed reference mesh. The user is now free to make edits to the 
-reference mesh, and the thrust network adapts to these edits, providing 
-the user feedback on whether these designs are physically realizable.
-
-
-\paragraph{Example: Top of the Lilium Tower.}
-
-Consider the top portion of the steel-glass exterior surface of the Lilium 
-Tower, which is currently being built in Warszaw (see Figure 
-\ref{fig:Lilium}). This surface contains a concave part with local minimum 
-in its interior and so cannot possibly be self-supporting. Given this 
-surface as a reference mesh, our algorithm constructs a nearby thrust 
-network in equilibrium without the impossible feature. The user can then 
-explore how editing the reference mesh -- adding a pillar, for example -- 
-affects the thrust network and its deviation from the reference surface.
-
-\paragraph{Example: Freeform Structure with Two Pillars.}
-
-Suppose an architect's experience and intuition has permitted the design 
-of a nearly self\dash supporting freeform surface (Figure \ref{fig:cas}).
-Our algorithm reveals those edits needed to make the 
-structure sound -- principally around the entrance arch, and the area 
-between the two pillars.
-
-\paragraph{Example: Destruction Sequence.}
-
-In Figure\ref{fig:removal} we simulate removing parts of masonry and 
-the falling off of further pieces which are no longer supported after 
-removal.
-This is done by deleting the 1-neighborhood of a vertex 
-and solving for a new thrust network in compressive equilibrium 
-close to the original reference surface. We delete those parts of the 
-network which deviate too much and are no longer contained in the masonry 
-hull, and iterate. 
-
-
 \begin{figure*}[t]
 \begin{overpic}[width=0.23\textwidth]{fig/lilium-vf.jpg}
 		\put(0,0){(a)}
@@ -1427,9 +1388,52 @@ moment\dash free steel\slash glass construction. Right: Interior view.}
 
   \end{figure*}
 
+\def\sparagraph#1{\par\noindent{\it #1}}
 
-\paragraph{Example: Swiss Cheese.}
+\sparagraph{{\sf\bfseries Examples.} Vault with Pillars:} 
+As an example of the design and 
+optimization workflow, consider a rectangular vault with six pillars, free 
+boundary conditions along one edge, fixed boundary conditions along the 
+others, and a tower extruded from the top of the surface (see Figure 
+\ref{fig:vault}). This surface is neither convex nor simply connected, and 
+exhibits a mix of boundary conditions, none of which cause our algorithm 
+any difficulty; it finds a self-supporting thrust network near the 
+designed reference mesh. The user is now free to make edits to the 
+reference mesh, and the thrust network adapts to these edits, providing 
+the user feedback on whether these designs are physically realizable.
 
+
+\sparagraph{Example: Top of the Lilium Tower.}
+Consider the top portion of the steel-glass exterior surface of the Lilium 
+Tower, which is currently being built in Warszaw (see Figure 
+\ref{fig:Lilium}). This surface contains a concave part with local minimum 
+in its interior and so cannot possibly be self-supporting. Given this 
+surface as a reference mesh, our algorithm constructs a nearby thrust 
+network in equilibrium without the impossible feature. The user can then 
+explore how editing the reference mesh -- adding a pillar, for example -- 
+affects the thrust network and its deviation from the reference surface.
+
+\sparagraph{Example: Freeform Structure with Two Pillars.}
+Suppose an architect's experience and intuition has permitted the design 
+of a nearly self\dash supporting freeform surface (Figure \ref{fig:cas}).
+Our algorithm reveals those edits needed to make the 
+structure sound -- principally around the entrance arch, and the area 
+between the two pillars.
+
+\sparagraph{Example: Destruction Sequence.}
+In Figure\ref{fig:removal} we simulate removing parts of masonry and 
+the falling off of further pieces which are no longer supported after 
+removal.
+This is done by deleting the 1-neighborhood of a vertex 
+and solving for a new thrust network in compressive equilibrium 
+close to the original reference surface. We delete those parts of the 
+network which deviate too much and are no longer contained in the masonry 
+hull, and iterate. 
+
+
+
+
+\sparagraph{Example: Swiss Cheese.}
 Cutting holes in a self-supporting surface interrupts force flow lines and 
 causes dramatic global changes to the surface stresses, often to the point 
 that the surface is no longer in equilibrium. Whether a given surface with 
@@ -1660,36 +1664,44 @@ illustrations (the maximum load example of Figure
 \ref{fig:load} and the destruction sequence of Figure \ref{fig:removal})
 have real\dash world analogues on his web page \cite{catalan}.
 
+
 	\bibliographystyle{acmsiggraph}
 	%\let\otb=\thebibliography
 	%\def\thebibliography#1{\otb{#1}\itemsep-5pt\footnotesize}
 	\bibliography{selfsupporting}
 
-\begin{figure}[t]
-	\centering
-	\includegraphics[width=.6\columnwidth]{fig/load2.jpg}
-	\caption{Testing stability. This self\dash supporting surface of 
-length 24\,m is imagined as masonry of thickness 0.1\,m. It possesses a 
-thrust network inside the masonry hull if -- for the sake of example -- a 
+\begin{figure}[h]
+	\includegraphics[width=.40\columnwidth]{fig/load2.jpg}
+	\hfill
+	\begin{minipage}[b]{.56\columnwidth}
+	\caption{This self\dash supporting surface of 
+diamger 14\,m is imagined as masonry of thickness 0.1\,m. It still possesses a 
+thrust network inside the masonry hull if a 
 load of 11.000\,kg (shown in dark) is applied to a certain vertex. This 
-means that the surface is still stable after that load is applied (N.B.\ 
-This method of testing is rather conservative).}\label{fig:load}
+means that the surface is still stable after that load is applied.}
+\label{fig:load}
+\end{minipage}
+\end{figure}
 
-\bigskip
-
-	\includegraphics[width=\columnwidth]{arch-fig/structural79.jpg} 
-\caption{Glass as a structural element can support stresses up to, say, 
-30\,MPa. We propose a steel\slash glass construction which utilizes the 
+\begin{figure}[t]
+	\includegraphics[width=\columnwidth]{arch-fig/schneider84.jpg}\\[-1em]
+	\includegraphics[width=\columnwidth]{arch-fig/schneider87.jpg} 
+	%\includegraphics[width=\columnwidth]{arch-fig/structural79.jpg} 
+	% \centerline{\includegraphics[width=.65\textwidth]
+	%	{arch-fig/schneiderbeide.jpg} 
+	%\hfill
+	%\begin{minipage}[b]{.33\textwidth}
+ \caption{Glass as a structural element can support stresses up to, say, 
+30\,MPa. We propose steel\slash glass constructions which utilize the 
 structural properties of glass by first solving for a self\dash supporting 
 thrust network such that forces do not exceed the maximum values, and 
 subsequent remeshing of this surface by a planar quad mesh (not 
 necessarily self\dash supporting itself). Since this surface is very 
 close to a self\dash supporting shape, joints will experience low bending 
-and torsion moments.} \label{fig:structural}
-
-
-\vspace*{5.5cm}
+and torsion moments.\vspace*{2em}} \label{fig:structural}
+	%\end{minipage}}\vspace*{-2em}
 \end{figure}
+
 
 \end{document}
 
