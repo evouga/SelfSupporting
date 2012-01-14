@@ -283,9 +283,9 @@ never stand by themselves when built from bricks; for those that do,
 stability is not obvious by inspection. The surface shown is produced by 
 finding the nearest self\dash supporting shape from a given freeform
 geometry. The image also illustrates
-the ficticious thrust network used in our algorithm,
+the fictitious thrust network used in our algorithm,
 with edges' cross-section and coloring visualizing the magnitude of
-forces.}
+forces (warmer colors represent higher stresses.)}
 	\label{fig:cheese}
 \end{figure}
 
@@ -1113,8 +1113,11 @@ finding $\SS$ amounts to minimizing some formulation of distance between
 $\RR$ and $\SS$, subject to constraints \eqref{eq:deqtop}, 
 \eqref{eq:deqz}, and $w_{ij} \geq 0$. For any choice of distance this 
 minimization will be a nonlinear, non-convex, inequality-constrained 
-variational problem that cannot be efficiently solved in practice. Instead 
-we propose a staggered optimization algorithm:
+variational problem. Our experience with black-box solvers is that 
+they perform very well for surfaces without complex geometry or for
+polishing reference meshes close to self-supporting, but fail to converge
+in reasonable time for more complicated shapes such as the swiss cheese example (Fig. \ref{fig:cheese}).
+We therefore propose the following specialized, staggered linearization for solving the optimization problem:
 
 \begin{enumerate}\itemsep-\parsep\setcounter{enumi}{-1}
 
@@ -1131,14 +1134,13 @@ using their current positions.
 
 \end{enumerate}
 
-This staggered approach has several advantages: a nearby self\dash supporting surface
+This staggered approach shares the several advantages of solving the full nonlinear problem: a nearby self\dash supporting surface
 is found given only a suggested reference shape, without needing to single one of
 the many possible top view reciprocal diagrams or needing to specify boundary
 tractions -- these are found automatically during optimization. Although providing
-an initial top view graph with good combinatorics remains important, our approach
+an initial top view graph with good combinatorics remains important, by not fixing the top view our approach
 allows the thrust network to slide both vertically and tangentially to the ground,
 essential to finding faithful thrust networks for surfaces with free boundary conditions.
-The surface of Fig.~\ref{fig:cheese}, for example, relies heavily on such sliding.
 
 \paragraph{Step~\ref{step2}: Estimating Self-Load.}
 
