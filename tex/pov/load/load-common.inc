@@ -23,7 +23,7 @@ light_source { <0,0,-20>*25 color rgb <1,1,1> *0.8 shadowless}
 
 //plane {z,0 texture {weiss}}
 background {color rgb <1,1,1>}
-box {<-50,-50,-2> <10,10,0.3> texture {weiss}}
+box {<-50,-50,-2> <10,10,-0.5> texture {weiss}}
 #declare r1=0.002;
 #declare r2=0.002;
 

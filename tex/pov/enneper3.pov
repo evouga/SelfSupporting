@@ -1,4 +1,4 @@
-#include "lilium-ncommon.inc" // declare r1,r2, camera, lights, surroundings
+#include "enneper/enneper-common.inc" // declare r1,r2, camera, lights, surroundings
 
 
 // store Koebe polyhedron vertices in the array VK 
@@ -12,28 +12,42 @@
 #declare i=0; #while (i<NV) #declare VS[i]=V[i]; #declare i=i+1; #end
 
 
-// compute intermediate surface
+// declare factors for linear combination plus vertical shift
+// for each mesh whichi s combined from VK and VS
 
+#declare NMeshes = 4;
+#declare comb = array[NMeshes] {
+	<5,-4,0>,
+	<3,-2,0>,
+	<1,0,0>,
+	<1,-1,+.5>
+}
 
-#declare tt = -2.0;
-#while (tt<2.01)
+// store textures
+
+#macro FText(i) #if (i<3) gelb #else weiss #end #end
+#macro EText(i) #if (i<3) weiss #else dblau #end #end
+
+// render intermediate surfaces
+
+#declare j=0;
+#while (j<NMeshes)
 	#declare i=0; #while (i<NV) 
-		#declare V[i]=((1-tt)*VK[i]+tt*VS[i])/3
-			+<-.15,0,.8>*(tt)*.5 +y*.5;
+		#declare V[i]= < VK[i].x,
+			comb[j].x*VK[i].y +comb[j].y*VS[i].y+comb[j].z,
+			VK[i].z>/3
+		+ <-.15,0,.8>*(j-1.6) +y*0.5;
 	#declare i=i+1; #end
 
 	union {
 		#macro Quad(a,b,c,d) EQuad(a,b,c,d) #end
-		union { #include "enneper/e-faces.inc" texture {weiss}}
+		union { #include "enneper/e-faces.inc" texture {EText(j)}}
 	
 		#macro Quad(a,b,c,d) FQuad(a,b,c,d) #end
-		mesh { #include "enneper/e-faces.inc" texture {gelb}}
+		mesh { #include "enneper/e-faces.inc" texture {FText(j)}}
 
 	rotate -x*90
 	}
-#declare tt=tt+2.0;
+	#declare j=j+1;
 #end
-
-
-
 

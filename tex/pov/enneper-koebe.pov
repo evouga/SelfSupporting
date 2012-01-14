@@ -1,4 +1,4 @@
-#include "lilium-ncommon.inc" // declare r1,r2, camera, lights, surroundings
+#include "enneper/enneper-common.inc" // declare r1,r2, camera, lights, surroundings
 
 
 #include "enneper/ek-vertices.inc" // declare NV,NF, V
