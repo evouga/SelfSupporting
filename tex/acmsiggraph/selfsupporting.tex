@@ -1665,13 +1665,47 @@ illustrations (the maximum load example of Figure
 \ref{fig:load} and the destruction sequence of Figure \ref{fig:removal})
 have real\dash world analogues on his web page \cite{catalan}.
 
+\begin{figure*}[t]
+	\begin{overpic}[width=.49\columnwidth]{fig/dome-unloaded.jpg}
+		\small
+		\cput(30,0){14\,m}
+		\put(0,-4){\hbox to .3\columnwidth{\leftarrowfill}}
+		\lput(100,-4){\hbox to .3\columnwidth{\rightarrowfill}}
+		\put(0,47){shell thickness 0.1\,m, $\rho=2,500$\,kg/m$^3$}
+	\end{overpic}\hfill
+	\begin{overpic}[width=.49\columnwidth]{fig/dome-loaded.jpg}
+		\small
+		\put(60,44){11,000\,kg}
+	\end{overpic}\hfill
+	\begin{minipage}[b]{.5\textwidth}
+	\caption{Stability Test. Left: Coloring and cross\dash section
+of edges visualize the magnitude of forces in a thrust network which is in
+equlibrium with this dome's dead load.
+Right: When an additional load is applied, there exists a corresponding
+compressive thrust network which is still contained in the masonry hull
+of the original dome. This implies stability of the dome under that load.}
+\label{fig:load}
+\end{minipage}
 
-	\bibliographystyle{acmsiggraph}
+	\includegraphics[width=.23\textwidth]{fig/dome2-00.jpg}\hfill
+	\includegraphics[width=.25\textwidth]{fig/dome2-05.jpg}\hfill
+	\includegraphics[width=.25\textwidth]{fig/dome2-10.jpg}\hfill
+	\includegraphics[width=.25\textwidth]{fig/dome2-20.jpg}
+	\caption{Stability test similar to Figure~\protect\ref{fig:load},
+but with a shell thickness of 1\,m, in order to better visualize the way
+the thrust network starts to leave the masonry hull as the load increases.
+Additional loads are 0\,kg, 5,000\,kg, 10,000\,kg, and 20,000\,kg, resp., from
+left to right.}
+\end{figure*}
+
+\bibliographystyle{acmsiggraph}
+
 	%\let\otb=\thebibliography
 	%\def\thebibliography#1{\otb{#1}\itemsep-5pt\footnotesize}
-	\bibliography{selfsupporting}
 
-\begin{figure}[h]
+\bibliography{selfsupporting}
+
+\nix{\begin{figure}[h]
 	\begin{overpic}[width=.49\columnwidth]{fig/dome-unloaded.jpg}
 		\small
 		\cput(50,4){14\,m}
@@ -1692,10 +1726,11 @@ compressive thrust network which is still contained in the masonry hull
 of th e original dome. This implies stability
 of the dome under that load.}
 \label{fig:load}
-\end{figure}
+\end{figure}}
 
-\begin{figure}[t]
-	\includegraphics[width=\columnwidth]{arch-fig/schneider84.jpg}\\[-1em]
+\begin{figure}[h]
+	\vspace*{2cm}
+	%\includegraphics[width=\columnwidth]{arch-fig/schneider84.jpg}\\[-1em]
 	\includegraphics[width=\columnwidth]{arch-fig/schneider87.jpg} 
 	%\includegraphics[width=\columnwidth]{arch-fig/structural79.jpg} 
 	% \centerline{\includegraphics[width=.65\textwidth]

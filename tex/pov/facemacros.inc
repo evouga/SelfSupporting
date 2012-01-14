@@ -28,8 +28,7 @@
 		triangle {V[a] V[d] V[e]} triangle {V[a] V[e] V[f]} #end
 
 #macro SMesh(A, t1) 
-	union { mesh { #include A texture {t1}}
-        rotate -x*90 } #end
+	mesh { #include A texture {t1} rotate -x*90 } #end
 #macro DMesh(A, t1, t2) union { mesh { #include A texture {t1}}
         mesh { #include A translate y*.0001 texture {t2}}
         rotate -x*90 } #end
