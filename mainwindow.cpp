@@ -305,6 +305,7 @@ void MainWindow::reportParams()
     c_.setThickness(ui->thicknessEdit->text().toDouble());
     c_.setExtraMass(ui->extraMassEdit->text().toDouble());
     c_.setProjectVertically(ui->projectVerticallyCheckBox->isChecked());
+    c_.setInfluence(ui->influenceEdit->text().toInt());
 }
 
 void MainWindow::on_actionSubdivide_triggered()
@@ -491,4 +492,14 @@ void MainWindow::on_pushButton_clicked()
 void MainWindow::on_projectVerticallyCheckBox_clicked()
 {
     c_.setProjectVertically(ui->projectVerticallyCheckBox->isChecked());
+}
+
+void MainWindow::on_edgeFlipButton_clicked()
+{
+    c_.edgeFlip();
+}
+
+void MainWindow::on_influenceEdit_editingFinished()
+{
+    c_.setInfluence(ui->influenceEdit->text().toInt());
 }

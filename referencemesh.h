@@ -30,8 +30,8 @@ public:
     double computeBestDWeights(const Eigen::VectorXd &dQ, Eigen::VectorXd &dW);
 
     void applyLaplacianDeformation(int vidx, const Eigen::Vector3d &delta);
-    void applyLaplacianDeformationHeight(int vidx, const Eigen::Vector3d &delta);
-    void applyLaplacianDeformationTop(int vidx, const Eigen::Vector3d &delta);
+    void applyLaplacianDeformationHeight(int vidx, const Eigen::Vector3d &delta, int radius);
+    void applyLaplacianDeformationTop(int vidx, const Eigen::Vector3d &delta, int radius);
 
     void setHandle(int vidx, bool state);
     void deleteFace(int fidx);

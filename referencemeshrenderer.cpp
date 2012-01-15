@@ -59,7 +59,9 @@ void ReferenceMeshRenderer::renderSurface3D(int renderFlags)
         int i=0;
         for (f = mesh_.faces_begin(); f != fEnd; ++f,i++) {
 
-            glBegin(GL_POLYGON);
+//            for(int side = 0; side <2; side++)
+//            {
+                glBegin(GL_POLYGON);
             for (MyMesh::ConstFaceVertexIter v = mesh_.cfv_iter(f); v; ++v) {
                 if(renderFlags & RF_PICKING)
                 {
@@ -77,10 +79,12 @@ void ReferenceMeshRenderer::renderSurface3D(int renderFlags)
                 mesh_.calc_vertex_normal_correct(v, n);
                 n.normalize();
                 glNormal3d(n[0], -fabs(n[1]), n[2]);
-                glVertex3d(pt[0],pt[1],pt[2]);
+                double offset = 0.0;
+                glVertex3d(pt[0]+offset*n[0],pt[1]+offset*n[1],pt[2]+offset*n[2]);
 
             }
             glEnd();
+//            }
         }
 
         glDisable(GL_POLYGON_OFFSET_FILL);

@@ -226,14 +226,30 @@ void ReferenceMesh::jitterOnPlane()
     }
 }
 
-void ReferenceMesh::applyLaplacianDeformationHeight(int, const Vector3d &delta)
+void ReferenceMesh::applyLaplacianDeformationHeight(int, const Vector3d &delta, int radius)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
 
     int n = mesh_.n_vertices();
-    DynamicSparseMatrix<double> L(n,n);
+
+    set<int> toAlter;
+
     for(int i=0; i<n; i++)
     {
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+        if(mesh_.data(vh).handled())
+        {
+            set<int> nring;
+            this->getNRing(i, radius, nring);
+            for(set<int>::iterator it = nring.begin(); it != nring.end(); ++it)
+                toAlter.insert(*it);
+        }
+    }
+
+    DynamicSparseMatrix<double> L(n,n);
+    for(set<int>::iterator it = toAlter.begin(); it != toAlter.end(); ++it)
+    {
+        int i = *it;
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
         int valence = mesh_.valence(vh);
         L.coeffRef(i,i) = 1.0;
@@ -241,7 +257,12 @@ void ReferenceMesh::applyLaplacianDeformationHeight(int, const Vector3d &delta)
         {
             MyMesh::VertexHandle adj = vv;
             int adjidx = adj.idx();
-            L.coeffRef(i, adjidx) = -1.0/valence;
+            if(toAlter.count(adjidx) > 0)
+                L.coeffRef(i, adjidx) = -1.0/valence;
+            else
+            {
+
+            }
         }
     }
 
@@ -277,31 +298,41 @@ void ReferenceMesh::applyLaplacianDeformationHeight(int, const Vector3d &delta)
 
     cont_.getSolvers().linearSolveCG(M, rhs, v0);
 
-    VectorXd dQ(3*n);
-    for(int i=0; i<n; i++)
-    {
-        dQ[3*i] = dQ[3*i+2] = 0;
-        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
-        MyMesh::Point pt = mesh_.point(vh);
-        dQ[3*i+1] = v0[i]-pt[1];
-    }
-    int e = mesh_.n_edges();
-    VectorXd dW(e);
-    double dresid = computeBestDWeights(dQ, dW);
-
     for(int i=0; i<n; i++)
     {
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
-        MyMesh::Point &pt = mesh_.point(vh);
         if(mesh_.data(vh).handled() || !mesh_.data(vh).pinned())
-            pt[1] += dQ[3*i+1];
+        {
+            MyMesh::Point &pt = mesh_.point(vh);
+            pt[1] = v0[i];
+        }
     }
-    for(int i=0; i<e; i++)
-    {
-        MyMesh::EdgeHandle eh = mesh_.edge_handle(i);
-        if(!edgePinned(eh))
-            mesh_.data(eh).set_weight(mesh_.data(eh).weight() + dW[i]);
-    }
+
+//    VectorXd dQ(3*n);
+//    for(int i=0; i<n; i++)
+//    {
+//        dQ[3*i] = dQ[3*i+2] = 0;
+//        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+//        MyMesh::Point pt = mesh_.point(vh);
+//        dQ[3*i+1] = v0[i]-pt[1];
+//    }
+//    int e = mesh_.n_edges();
+//    VectorXd dW(e);
+//    computeBestDWeights(dQ, dW);
+
+//    for(int i=0; i<n; i++)
+//    {
+//        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+//        MyMesh::Point &pt = mesh_.point(vh);
+//        if(mesh_.data(vh).handled() || !mesh_.data(vh).pinned())
+//            pt[1] += dQ[3*i+1];
+//    }
+//    for(int i=0; i<e; i++)
+//    {
+//        MyMesh::EdgeHandle eh = mesh_.edge_handle(i);
+//        if(!edgePinned(eh))
+//            mesh_.data(eh).set_weight(mesh_.data(eh).weight() + dW[i]);
+//    }
 }
 
 void ReferenceMesh::applyLaplacianDeformation(int, const Vector3d &delta)
@@ -378,15 +409,32 @@ void ReferenceMesh::applyLaplacianDeformation(int, const Vector3d &delta)
     }
 }
 
-void ReferenceMesh::applyLaplacianDeformationTop(int, const Vector3d &delta)
+void ReferenceMesh::applyLaplacianDeformationTop(int, const Vector3d &delta, int radius)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
 
     int n = mesh_.n_vertices();
 
-    DynamicSparseMatrix<double> L(2*n,2*n);
+    set<int> toApply;
+
     for(int i=0; i<n; i++)
     {
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+        if(mesh_.data(vh).handled())
+        {
+            set<int> nring;
+            getNRing(i, radius, nring);
+            for(set<int>::iterator it = nring.begin(); it != nring.end(); ++it)
+            {
+                toApply.insert(*it);
+            }
+        }
+    }
+
+    DynamicSparseMatrix<double> L(2*n,2*n);
+    for(set<int>::iterator it = toApply.begin(); it != toApply.end(); ++it)
+    {
+        int i = *it;
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
         int valence = mesh_.valence(vh);
         for(int j=0; j<2; j++)
@@ -395,8 +443,11 @@ void ReferenceMesh::applyLaplacianDeformationTop(int, const Vector3d &delta)
         {
             MyMesh::VertexHandle adj = vv;
             int adjidx = adj.idx();
-            for(int j=0; j<2; j++)
-                L.coeffRef(2*i+j, 2*adjidx+j) = -1.0/valence;
+            if(toApply.count(adjidx) > 0)
+            {
+                for(int j=0; j<2; j++)
+                    L.coeffRef(2*i+j, 2*adjidx+j) = -1.0/valence;
+            }
         }
     }
 

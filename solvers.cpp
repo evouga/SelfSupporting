@@ -95,7 +95,7 @@ void Solvers::solveBCLS(const SparseMatrix<double, RowMajor> &A, VectorXd &b, Ve
 
     bcls_set_anorm(ls, anorm);
     bcls_set_problem_data(ls, m, n, Aprod, (void *)&A, 0, result.data(), b.data(), NULL, lb.data(), ub.data());
-    ls->newton_step = BCLS_NEWTON_STEP_CGLS;
+    ls->newton_step = BCLS_NEWTON_STEP_LSQR;
     ls->optTol = tol;
     ls->print_level =0 ;
     bcls_solve_prob(ls);
@@ -116,6 +116,7 @@ void Solvers::linearSolveLDLT(const SparseMatrix<double> &A, const VectorXd &rhs
 void Solvers::linearSolveCG(const SparseMatrix<double, RowMajor> &A, const VectorXd &rhs, VectorXd &result)
 {
     int n = A.rows();
+    cout << "ls " << n << endl;
     assert(A.cols() == n);
     VectorXd residual = rhs - A*result;
     VectorXd p = residual;
@@ -124,7 +125,7 @@ void Solvers::linearSolveCG(const SparseMatrix<double, RowMajor> &A, const Vecto
     for(int i=0; i<n; i++)
     {
         double rnorm = residual.dot(residual);
-        if(rnorm/rorig < 1e-8 || rnorm < 1e-12)
+        if(isnan(rnorm) || rnorm/rorig < 1e-8 || rnorm < 1e-12)
         {
             //cout << "Converged after " << i << " iterations" << endl;
             return;

@@ -32,6 +32,8 @@ void NetworkMeshRenderer::render3D()
         {
             glLineWidth(weight);
         }
+        else
+            glLineWidth(1.0);
 
         glBegin(GL_LINES);
         if(m_.edgePinned(e.handle()))

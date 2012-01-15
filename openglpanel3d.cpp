@@ -10,7 +10,7 @@
 using namespace Eigen;
 
 OpenGLPanel3D::OpenGLPanel3D(QWidget *parent) :
-    QGLWidget(parent), cont_(NULL), c_(), translator_(c_, 1.0), rotator_(c_), zoomer_(c_, 10.0), selector_(c_)
+    QGLWidget(parent), cont_(NULL), c_(), translator_(c_, 1.0), rotator_(c_), zoomer_(c_, 10.0), selector_(c_), takeScreenshot_(false)
 {
 }
 

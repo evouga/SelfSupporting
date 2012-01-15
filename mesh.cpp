@@ -282,6 +282,7 @@ void Mesh::setSurfaceAreaLoads(double density, double thickness, double extramas
         {
             extra = extramass;
         }
+        thickness = 0.1;
         mesh_.data(vi).set_load(9.8*(extra + density*area*thickness ));
     }
     invalidateMesh();
@@ -955,6 +956,10 @@ bool Mesh::exportOBJ(const char *name)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
     OpenMesh::IO::Options opt;
+    mesh_.request_face_normals();
+    mesh_.request_vertex_normals();
+    mesh_.update_normals();
+    opt.set(OpenMesh::IO::Options::VertexNormal);
     return OpenMesh::IO::write_mesh(mesh_, name, opt);
 }
 

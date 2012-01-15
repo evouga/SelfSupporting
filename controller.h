@@ -30,6 +30,7 @@ struct Params
     int verts;
     int edges;
     bool projectVertically;
+    int influence;
 };
 
 class Controller
@@ -96,6 +97,7 @@ public:
     void renderMesh3D();
     void renderPickMesh3D();
     void renderMesh2D();
+    void edgeFlip();
 
     void takeScreenshot();
     void setAutoIterate(bool state);
@@ -108,6 +110,7 @@ public:
     void setProjectVertically(bool state);
     void laplacianTest();
     void computeConjugateDirs();
+    void setInfluence(int influence);
 
     void pinReferenceBoundary();
     void unpinReferenceBoundary();

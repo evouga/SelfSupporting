@@ -1,5 +1,8 @@
 #include "networkthread.h"
 #include "controller.h"
+#include <iostream>
+
+using namespace std;
 
 NetworkThread::NetworkThread(Controller &c) :
     QThread(NULL), c_(c), state_(TS_RUNNING)

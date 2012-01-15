@@ -66,7 +66,7 @@ void Controller::importOBJ(const char *filename)
         return;
     }
     p_.statusmsg = "Imported geometry from " + QString(filename) + ".";
-    resetNetworkMesh();
+    //resetNetworkMesh();
  //   w_.centerCameras();
 }
 
@@ -219,15 +219,17 @@ void Controller::iterateNetwork()
     double maxstress = p_.maxStress;
     if(!p_.enforceMaxWeight)
         maxstress = std::numeric_limits<double>::infinity();
-    double tol = 1e-4;
+    //double tol = 1e-4;
+    double tol = 1e-8;
     double residualw = nm_->computeBestWeights(maxstress, p_.thickness, tol);
     double residualp = nm_->computeBestPositionsTangentLS(p_.alpha, p_.beta, p_.thickness, p_.planarity, p_.projectVertically);
+    //double residualp = nm_->computeBestPositionsBCLS(p_.alpha, p_.beta, p_.thickness, p_.planarity, p_.projectVertically);
 
     cout << residualw << ", " << residualp << endl;
 
 //    p_.statusmsg = "Projected onto best weights and positions. Residual after calculating best weights " + QString::number(residualw)
 //            + ", and after adjusting position " + QString::number(residualp) + "." + " Alpha: " + QString::number(p_.alpha) + " Beta: " + QString::number(p_.beta);
-    p_.alpha /= 2.;
+    //p_.alpha /= 2;
     p_.alpha = std::max(p_.alpha, 1e-15);
     if(p_.nmresidual < 2*residualp)
     {
@@ -240,17 +242,19 @@ void Controller::iterateNetwork()
 
 void Controller::computeBestWeights()
 {
+    nm_->optimizeIPOPT();
     nm_->setSurfaceAreaLoads(p_.density, p_.thickness, p_.extramass);
-    double maxstress = p_.maxStress;
+    /*double maxstress = p_.maxStress;
     if(!p_.enforceMaxWeight)
         maxstress = std::numeric_limits<double>::infinity();
-    p_.nmresidual = nm_->computeBestWeights(maxstress, p_.thickness, 1e-10);
+    p_.nmresidual = nm_->computeBestWeights(maxstress, p_.thickness, 1e-10);*/
     updateGLWindows();
 }
 
 void Controller::computeBestPositions()
 {
-    double residualp = nm_->computeBestPositionsTangentLS(p_.alpha, p_.beta, p_.thickness, p_.planarity, p_.projectVertically);
+    //double residualp = nm_->computeBestPositionsTangentLS(p_.alpha, p_.beta, p_.thickness, p_.planarity, p_.projectVertically);
+    double residualp = nm_->computeBestPositionsBCLS(p_.alpha, p_.beta, p_.thickness, p_.planarity, p_.projectVertically);
     p_.alpha /= 2.;
     p_.alpha = std::max(p_.alpha, 1e-15);
     p_.beta *= 2.;
@@ -262,6 +266,12 @@ void Controller::computeBestPositions()
 void Controller::computeBestHeights()
 {
     nm_->updateHeights();
+    updateGLWindows();
+}
+
+void Controller::edgeFlip()
+{
+    nm_->edgeFlip();
     updateGLWindows();
 }
 
@@ -341,14 +351,14 @@ void Controller::dragVertex(int vidx, const Vector3d &translation)
 
 void Controller::dragVertexHeight(int vidx, const Vector3d &translation)
 {
-    rm_->applyLaplacianDeformationHeight(vidx, translation);
+    rm_->applyLaplacianDeformationHeight(vidx, translation, p_.influence);
     resetNetworkMesh();
     updateGLWindows();
 }
 
 void Controller::dragVertexTop(int vidx, const Vector3d &translation)
 {
-    rm_->applyLaplacianDeformationTop(vidx, translation);
+    rm_->applyLaplacianDeformationTop(vidx, translation, p_.influence);
     resetNetworkMesh();
     updateGLWindows();
 }
@@ -615,7 +625,7 @@ void Controller::averageHeights()
 
 void Controller::dilate()
 {
-    rm_->dilate(0.5);
+    rm_->dilate(2);
     resetNetworkMesh();
     w_.updateGLWindows();
 }
@@ -639,4 +649,9 @@ void Controller::envelopeTest()
     for(set<MyMesh::FaceHandle>::iterator it = todelete.begin(); it != todelete.end(); ++it)
         rm_->getMesh().delete_face(*it, true);
     rm_->getMesh().garbage_collection();
+}
+
+void Controller::setInfluence(int influence)
+{
+    p_.influence = influence;
 }

@@ -9,6 +9,7 @@
 #include <set>
 #include "unsupported/Eigen/IterativeSolvers"
 #include <fstream>
+#include "IpIpoptApplication.hpp"
 
 using namespace Eigen;
 using namespace std;
@@ -96,26 +97,13 @@ double NetworkMesh::calculateEquilibriumViolation()
 double NetworkMesh::computeBestWeights(double maxstress, double thickness, double tol)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
+    cout << "start bw" << endl;
 
     int n = mesh_.n_vertices();
     int e = mesh_.n_edges();
 
     if(n == 0 || e == 0)
         return 0;
-
-    double avload = 0.0;
-
-    int interiorn=0;
-    for(MyMesh::VertexIter it = mesh_.vertices_begin(); it != mesh_.vertices_end(); ++it)
-    {
-        if(!mesh_.data(it.handle()).pinned())
-        {
-            avload += mesh_.data(it.handle()).load();
-            interiorn++;
-        }
-    }
-
-    avload /= interiorn;
 
     map<int, int> edge2reduced;
     map<int, int> reduced2edge;
@@ -133,6 +121,13 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness, doubl
         }
     }
 
+    int interiorn = 0;
+    for(MyMesh::VertexIter it = mesh_.vertices_begin(); it != mesh_.vertices_end(); ++it)
+    {
+        if(!mesh_.data(it.handle()).pinned())
+            interiorn++;
+    }
+
     if(interiorn == 0)
         return 0;
 
@@ -143,6 +138,18 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness, doubl
     rhs.setZero();
 
     // min || \sum_{j~i} w_ij (q_i-q_j) + F_i ||^2 + || w_ij ||^2 (boundary) s.t. w_ij >= 0
+
+    double avload = 0.0;
+    for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
+    {
+        MyMesh::VertexHandle vh = vi.handle();
+        if(mesh_.data(vh).pinned())
+            continue;
+
+        double load = mesh_.data(vh).load();
+        avload += load;
+    }
+    avload /= interiorn;
 
     int row=0;
     for(int i=0; i<n; i++)
@@ -167,7 +174,7 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness, doubl
             Md.coeffRef(row+2, eidx) += (center[2]-adj[2]);
         }
         rhs[row] = 0;
-        rhs[row+1] = -load/avload;
+        rhs[row+1] = -load;
         rhs[row+2] = 0;
         row += 3;
     }
@@ -189,20 +196,21 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness, doubl
             double e2 = mesh_.calc_edge_sqr_length(eh);
             maxweight = maxstress*thickness*areaofinfluence/e2;
             maxweight /= 8;
-            maxweight /= avload;
         }
         ub[edge2reduced[i]] = maxweight;
-        lb[edge2reduced[i]] = 0.00;
-        result[edge2reduced[i]] = mesh_.data(eh).weight()/avload;
+        lb[edge2reduced[i]] = 0.0;//-std::numeric_limits<double>::infinity();
+        result[edge2reduced[i]] = mesh_.data(eh).weight();
     }
 
     SparseMatrix<double, RowMajor> M(Md);
     int oldid = getMeshID();
 
+    cout << "start computing bw" << endl;
     ml.reset();
 
-    cont_.getSolvers().solveBCLS(M, rhs, lb, ub, result,1e-4);
+    cont_.getSolvers().solveBCLS(M, rhs, lb, ub, result,tol);
 
+    cout << "after computing bw" << endl;
     ml = acquireMesh();
     if(getMeshID() == oldid)
     {
@@ -211,18 +219,19 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness, doubl
 //            if(result[i] < lb[i] || isnan(result[i]))
 //                result[i] = lb[i];
             MyMesh::EdgeHandle eh = mesh_.edge_handle(reduced2edge[i]);
-            mesh_.data(eh).set_weight(result[i]*avload);
+            mesh_.data(eh).set_weight(result[i]);
         }
         invalidateMesh();
     }
     double after = calculateEquilibriumViolation();
+    cout << "done computing bw" << endl;
     return after;
 }
 
 double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, double thickness, bool planarity, bool projectVertically)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
-
+    cout << "start bp" << endl;
     int n = mesh_.n_vertices();
 
     double fac = 0;
@@ -253,6 +262,9 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, dou
             nummdofs++;
         }
     }
+
+    if(nummdofs == 0)
+        return 0;
 
     VectorXd q0(3*nummdofs);
 
@@ -497,25 +509,157 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, dou
         Md += 0.1*fac*Pd*Pd.transpose();
     }
 
-    double smoothing = 0;
+    double smoothing = 1.0;
     Md += smoothing * L.transpose()*L;
     rhs += smoothing * L.transpose()*Lrhs;
 
     VectorXd result = q0;
 
     int oldid = getMeshID();
+    cout << "solving bp" << endl;
     ml.reset();
-    SparseMatrix<double, RowMajor> M(Md);
 
+    SparseMatrix<double, RowMajor> M(Md);
+    cout << "before solve" << endl;
     cont_.getSolvers().linearSolveCG(M, rhs, result);
+    cout << "after solve" << endl;
     double residual = std::numeric_limits<double>::infinity();
 
+    cout << "after solving bp" << endl;
     ml = acquireMesh();
     if(oldid == getMeshID())
     {
         for(int i=0; i<nummdofs; i++)
         {
             MyMesh::VertexHandle vh = mesh_.vertex_handle(midx2vidx[i]);
+            MyMesh::Point &pt = mesh_.point(vh);
+            for(int j=0; j<3; j++)
+            {
+                pt[j] = result[3*i+j];
+            }
+        }
+
+        //double planresidual = (Pd.transpose()*result+p0).norm();
+
+        residual = calculateEquilibriumViolation();
+        //distanceFromReference(subdreference_, thickness);
+        invalidateMesh();
+    }
+    cout << "done bp" << endl;
+    return residual;
+}
+
+double NetworkMesh::computeBestPositionsBCLS(double , double , double thickness, bool , bool )
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+
+    int n = mesh_.n_vertices();
+
+    if(n==0)
+        return 0;
+
+    VectorXd q0(3*n);
+
+    for(int i=0; i<n; i++)
+    {
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+
+        const MyMesh::Point &pt = mesh_.point(vh);
+        for(int j=0; j<3; j++)
+            q0[3*i+j] = pt[j];
+    }
+
+    int numunpinned = 0;
+    for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
+    {
+        if(!mesh_.data(vi.handle()).pinned())
+        {
+            numunpinned++;
+        }
+    }
+
+    DynamicSparseMatrix<double> CEd(3*n, 3*numunpinned);
+    VectorXd cerhs(3*numunpinned);
+    cerhs.setZero();
+    int row = 0;
+    for(int i=0; i<n; i++)
+    {
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+        if(!mesh_.data(vh).pinned())
+        {
+            double load = mesh_.data(vh).load();
+            for(MyMesh::VertexOHalfedgeIter voh = mesh_.voh_iter(vh); voh; ++voh)
+            {
+                MyMesh::HalfedgeHandle heh = voh;
+                MyMesh::EdgeHandle eh = mesh_.edge_handle(heh);
+                double weight = mesh_.data(eh).weight();
+                MyMesh::VertexHandle adj = mesh_.to_vertex_handle(heh);
+                int vidx = adj.idx();
+                for(int j=0; j<3; j++)
+                {
+                    double div = (j == 1 ? load : 1.0);
+                    CEd.coeffRef(3*i+j, 3*row+j) += weight/div;
+                    CEd.coeffRef(3*vidx+j, 3*row+j) -= weight/div;
+                }
+            }
+            cerhs[3*row+1] -= 1.0;
+            row++;
+        }
+    }
+    assert(row == numunpinned);
+
+    SparseMatrix<double, RowMajor> M(CEd.transpose());
+
+    //cont_.getSolvers().linearSolveCG(M, rhs, result);
+    VectorXd lb(3*n);
+    VectorXd ub(3*n);
+    VectorXd result = q0;
+
+    computeCentroids(subdreference_);
+
+    for(int i=0; i<n; i++)
+    {
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+        Vector3d curpt;
+        for(int j=0; j<3; j++)
+            curpt[j] = mesh_.point(vh)[j];
+        Vector3d projpt = approximateClosestZParallel(subdreference_, curpt);
+
+//        cout << "dist " << (projpt-curpt).norm() << endl;
+//        if( (projpt-curpt).norm() > 1e-8)
+//            mesh_.data(vh).set_outofenvelope(true);
+
+        for(int j=0; j<3; j++)
+        {
+            {
+                double dt;
+                if(mesh_.data(vh).pinned() || mesh_.is_boundary(vh))
+                    dt = 1e-4;
+                else if(j==1)
+                    dt = thickness;
+                else
+                    dt = .1;
+                lb[3*i+j] = (projpt[j]-0.4*dt);
+                ub[3*i+j] = (projpt[j]+0.4*dt);
+            }
+        }
+    }
+
+    int oldid = getMeshID();
+    ml.reset();
+
+
+    double before = (M*result-cerhs).norm();
+    cont_.getSolvers().solveBCLS(M, cerhs, lb, ub, result, 1e-8);
+    double residual = std::numeric_limits<double>::infinity();
+    double after = (M*result-cerhs).norm();
+
+    ml = acquireMesh();
+    if(oldid == getMeshID())
+    {
+        for(int i=0; i<n; i++)
+        {
+            MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
             MyMesh::Point &pt = mesh_.point(vh);
             for(int j=0; j<3; j++)
             {
@@ -1286,4 +1430,121 @@ bool NetworkMesh::exportReciprocalMesh(const char *name)
     }
     OpenMesh::IO::Options opts;
     return OpenMesh::IO::write_mesh(rmesh, name, opts);
+}
+
+void NetworkMesh::edgeFlip()
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+
+    for(MyMesh::EdgeIter e = mesh_.edges_begin(); e != mesh_.edges_end(); ++e)
+    {
+        MyMesh::EdgeHandle eh = e.handle();
+        if(mesh_.data(eh).weight() == 0.0 && !edgePinned(eh) && !mesh_.is_boundary(eh))
+        {
+            bool isolated = true;
+            MyMesh::HalfedgeHandle heh = mesh_.halfedge_handle(eh,0);
+            MyMesh::HalfedgeHandle next = mesh_.next_halfedge_handle(heh);
+            MyMesh::EdgeHandle nexte = mesh_.edge_handle(next);
+            if(mesh_.data(nexte).weight() == 0.0 && !edgePinned(nexte))
+                isolated = false;
+            MyMesh::HalfedgeHandle prev = mesh_.prev_halfedge_handle(heh);
+            MyMesh::EdgeHandle preve = mesh_.edge_handle(prev);
+            if(mesh_.data(preve).weight() == 0.0 && !edgePinned(preve))
+                isolated = false;
+            heh = mesh_.opposite_halfedge_handle(heh);
+            next = mesh_.next_halfedge_handle(heh);
+            nexte = mesh_.edge_handle(next);
+            if(mesh_.data(nexte).weight() == 0.0 && !edgePinned(nexte))
+                isolated = false;
+            prev = mesh_.prev_halfedge_handle(heh);
+            preve = mesh_.edge_handle(prev);
+            if(mesh_.data(preve).weight() == 0.0 && !edgePinned(preve))
+                isolated = false;
+
+            if(isolated)
+            {
+                flip(eh);
+                cout << "flipping " << eh.idx() << endl;
+            }
+        }
+    }
+    for(MyMesh::EdgeIter e = mesh_.edges_begin(); e != mesh_.edges_end(); ++e)
+    {
+        mesh_.data(e).set_weight(0);
+    }
+}
+
+void NetworkMesh::flip(MyMesh::EdgeHandle &_eh)
+{
+  // CAUTION : Flipping a halfedge may result in
+  // a non-manifold mesh, hence check for yourself
+  // whether this operation is allowed or not!
+  //assert(is_flip_ok(_eh));//let's make it sure it is actually checked
+  assert(!mesh_.is_boundary(_eh));
+
+  MyMesh::HalfedgeHandle a0 = mesh_.halfedge_handle(_eh, 0);
+  MyMesh::HalfedgeHandle b0 = mesh_.halfedge_handle(_eh, 1);
+
+  MyMesh::HalfedgeHandle a1 = mesh_.next_halfedge_handle(a0);
+  MyMesh::HalfedgeHandle a2 = mesh_.next_halfedge_handle(a1);
+
+  MyMesh::HalfedgeHandle b1 = mesh_.next_halfedge_handle(b0);
+  MyMesh::HalfedgeHandle b2 = mesh_.next_halfedge_handle(b1);
+
+  MyMesh::VertexHandle   va0 = mesh_.to_vertex_handle(a0);
+  MyMesh::VertexHandle   va1 = mesh_.to_vertex_handle(a1);
+
+  MyMesh::VertexHandle   vb0 = mesh_.to_vertex_handle(b0);
+  MyMesh::VertexHandle   vb1 = mesh_.to_vertex_handle(b1);
+
+  MyMesh::FaceHandle     fa  = mesh_.face_handle(a0);
+  MyMesh::FaceHandle     fb  = mesh_.face_handle(b0);
+
+  mesh_.set_vertex_handle(a0, va1);
+  mesh_.set_vertex_handle(b0, vb1);
+
+  mesh_.set_next_halfedge_handle(a0, a2);
+  mesh_.set_next_halfedge_handle(a2, b1);
+  mesh_.set_next_halfedge_handle(b1, a0);
+
+  mesh_.set_next_halfedge_handle(b0, b2);
+  mesh_.set_next_halfedge_handle(b2, a1);
+  mesh_.set_next_halfedge_handle(a1, b0);
+
+  mesh_.set_face_handle(a1, fb);
+  mesh_.set_face_handle(b1, fa);
+
+  mesh_.set_halfedge_handle(fa, a0);
+  mesh_.set_halfedge_handle(fb, b0);
+
+  if (mesh_.halfedge_handle(va0) == b0)
+    mesh_.set_halfedge_handle(va0, a1);
+  if (mesh_.halfedge_handle(vb0) == a0)
+    mesh_.set_halfedge_handle(vb0, b1);
+}
+
+double NetworkMesh::optimizeIPOPT()
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    Ipopt::TNLP *mynlp = new NMOPT(*this);
+
+    Ipopt::IpoptApplication *app = new Ipopt::IpoptApplication();
+
+ app->Options()->SetNumericValue("tol", 1e-6);
+ app->Options()->SetStringValue("mu_strategy", "adaptive");
+ app->Options()->SetStringValue("output_file", "ipopt.out");
+
+ // Intialize the IpoptApplication and process the options
+ Ipopt::ApplicationReturnStatus status;
+ status = app->Initialize();
+ if (status != Ipopt::Solve_Succeeded) {
+   printf("\n\n*** Error during initialization!\n");
+   return (int) status;
+ }
+
+ // Ask Ipopt to solve the problem
+ status = app->OptimizeTNLP(mynlp);
+ double err = calculateEquilibriumViolation();
+ cout << err << endl;
+ return 0;
 }

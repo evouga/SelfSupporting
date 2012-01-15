@@ -15,8 +15,8 @@ class Controller;
 
 struct MyTraits : public OpenMesh::DefaultTraits
 {
-    VertexAttributes(OpenMesh::Attributes::Status);
-    FaceAttributes(OpenMesh::Attributes::Status);
+    VertexAttributes(OpenMesh::Attributes::Status | OpenMesh::Attributes::Normal);
+    FaceAttributes(OpenMesh::Attributes::Status | OpenMesh::Attributes::Normal);
     EdgeAttributes(OpenMesh::Attributes::Status);
 
     FaceTraits

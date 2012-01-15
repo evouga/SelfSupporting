@@ -72,7 +72,7 @@
       <x>710</x>
       <y>460</y>
       <width>171</width>
-      <height>161</height>
+      <height>211</height>
      </rect>
     </property>
     <property name="title">
@@ -173,6 +173,19 @@
      </property>
      <property name="text">
       <string>Handle (top)</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="influenceEdit">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>170</y>
+       <width>31</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>1</string>
      </property>
     </widget>
    </widget>
@@ -563,6 +576,32 @@
     </property>
     <property name="readOnly">
      <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="edgeFlipButton">
+    <property name="geometry">
+     <rect>
+      <x>1030</x>
+      <y>10</y>
+      <width>97</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Edge-flip</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_6">
+    <property name="geometry">
+     <rect>
+      <x>750</x>
+      <y>630</y>
+      <width>81</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Influence</string>
     </property>
    </widget>
   </widget>

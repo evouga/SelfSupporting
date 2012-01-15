@@ -32,7 +32,8 @@ SOURCES += main.cpp\
     networkthread.cpp \
     YImage.cpp \
     stressmesh.cpp \
-    stressmeshrenderer.cpp
+    stressmeshrenderer.cpp \
+    NMOPT.cpp
 
 HEADERS  += \
     eiquadprog.hpp \
@@ -63,17 +64,18 @@ FORMS    += \
     mainwindow.ui \
     newmeshdialog.ui
 
-unix:!macx:!symbian: LIBS += -L$$PWD/../../OpenMesh-2.0.1/build/Build/lib/OpenMesh/ -lOpenMeshCore
+unix:!macx:!symbian: LIBS += -L$$PWD/../../OpenMesh-2.0.1/build/Build/lib/OpenMesh/ -lOpenMeshCore -L/usr/lib/coin
 
 INCLUDEPATH += $$PWD/../../OpenMesh-2.0.1/src \
     $$PWD/../../eigen \
     /usr/include/suitesparse
 DEPENDPATH += $$PWD/../../OpenMesh-2.0.1/src
 
-DEFINES += EIGEN_YES_I_KNOW_SPARSE_MODULE_IS_NOT_STABLE_YET EIGEN_NO_DEBUG
+DEFINES += EIGEN_YES_I_KNOW_SPARSE_MODULE_IS_NOT_STABLE_YET
 
 RESOURCES +=
 
-QMAKE_CXXFLAGS += -g -msse2
+QMAKE_CXXFLAGS += -g -msse2 -isystem /usr/include/coin
 
-unix:!macx:!symbian: LIBS += -lbcls -lblas
+unix:!macx:!symbian: LIBS += -lbcls -lblas -lipopt -llapack -ldmumps_seq
+

@@ -140,6 +140,10 @@ private slots:
 
     void on_projectVerticallyCheckBox_clicked();
 
+    void on_edgeFlipButton_clicked();
+
+    void on_influenceEdit_editingFinished();
+
 protected:
     void moveEvent(QMoveEvent *);
     void resizeEvent(QResizeEvent *);

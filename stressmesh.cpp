@@ -149,7 +149,7 @@ void StressMesh::integrateFace(NetworkMesh &nm, MyMesh::FaceHandle face)
         MyMesh::Point fromp = nm.getMesh().point(nm.getMesh().from_vertex_handle(heh));
         double vx = top[0]-fromp[0];
         double vy = top[2]-fromp[2];
-        double weight = nm.getMesh().data(nm.getMesh().edge_handle(heh)).weight();
+        double weight = nm.getMesh().data(nm.getMesh().edge_handle(heh)).weight()/100000;
         double newa = a - vy*weight;
         double newb = b + vx*weight;
 
@@ -171,7 +171,7 @@ void StressMesh::integrateFace(NetworkMesh &nm, MyMesh::FaceHandle face)
         for(MyMesh::FaceVertexIter fvi = mesh_.fv_iter(face); fvi; ++fvi)
         {
             MyMesh::Point &pt = mesh_.point(fvi.handle());
-            pt[1] = newa*pt[0] + newb*pt[2] + newc;
+            pt[1] = (newa*pt[0] + newb*pt[2] + newc);
         }
     }
 
