@@ -671,7 +671,7 @@ In our setting, parallelity is a property of {\em points} rather than
 planes, and the Gauss map $\sigma$ goes the other way, mapping the tangent
 planes of the unit sphere $z=\phi(x,y)$ to the corresponding tangent plane
 of the surface $z=s(x,y)$. If we know which point a plane is attached to,
-then it is determined by its gradient. So we simply write
+then the Gauss map is determined by the plane's gradient. So we simply write
 	\begin{align*}
 	\nabla \phi\overset\sigma\longmapsto\nabla s.
 	\end{align*}
@@ -1054,7 +1054,7 @@ finding $\SS$ amounts to minimizing some formulation of distance between
 $\RR$ and $\SS$, subject to constraints \eqref{eq:deqtop},
 \eqref{eq:deqz}, and $w_{ij} \geq 0$. For any choice of distance this
 minimization will be a nonlinear, non-convex, inequality-constrained
-variational problem. Our experience with black-box solvers is that
+variational problem. Our experience with black-box solvers~\cite{ipopt} is that
 they perform very well for surfaces without complex geometry or for
 polishing reference meshes close to self-supporting, but fail to converge
 in reasonable time for more complicated shapes such as the swiss cheese example (Fig. \ref{fig:cheese}).
@@ -1320,12 +1320,12 @@ and the density of the surface too high, a thrust network in equilibrium
 simply does not exist -- the vault is too ambitious and cannot be built to
 stand; pillars are needed.)
 
-We can, however, make a few remarks. Step~\ref{step3} always decreases the
+We can, however, make a few remarks. Only Step ~\ref{step2} can increase the
 equilibrium
  energy $E$ of Equation~\eqref{eq:eenergy}
 	\nix{$$E=\sum_i \Big\| \Forcevector
-		- \sum_{j\sim i} w_{ij} (\vw_j - \vw_i)\Big\|^2$$}
- and Step~\ref{step4} does as well as $\beta \to 0$. Moreover, as $\alpha
+		- \sum_{j\sim i} w_{ij} (\vw_j - \vw_i)\Big\|^2.$$}
+Step~\ref{step3} always decreases it, and Step~\ref{step4} does as well as $\beta \to 0$. Moreover, as $\alpha
 \to 0$ and $\beta \to 0$, Step~\ref{step4} approaches a linear system with
 as many equations as unknowns; if this system has full rank, its solution
 sets $E=0$. These facts suggest that the algorithm should generally
@@ -1441,8 +1441,9 @@ the user feedback on whether these designs are physically realizable.
 \sparagraph{Example: Top of the Lilium Tower.}
 Consider the top portion of the steel-glass exterior surface of the Lilium
 Tower, which is currently being built in Warszaw (see Figure
-\ref{fig:Lilium}). This surface contains a concave part with local minimum
-in its interior and so cannot possibly be self-supporting. Given this
+\ref{fig:Lilium}). What is we had wanted to build this surface out of masonry instead?
+This surface contains a concave part with local minimum
+in its interior and so cannot possibly be self-supporting without modification. Given this
 surface as a reference mesh, our algorithm constructs a nearby thrust
 network in equilibrium without the impossible feature. The user can then
 explore how editing the reference mesh -- adding a pillar, for example --
