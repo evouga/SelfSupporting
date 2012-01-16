@@ -6,4 +6,4 @@
 #macro triang(a,b,c) FStriang(a,b,c) #end
 SMesh("remove/remove-1nfaces.inc", concrete)
 
-Pfeil(441)
+Pfeil(332)
