@@ -1524,23 +1524,28 @@ a self\dash supporting structure which is in perfect force equilibrium
 
 
 \begin{figure*}[t]
-\begin{overpic}[width=.63\textwidth]{fig/lilium_pq3.jpg}
-		\put(0,0){(a)}
-		\put(32,0){(b)}
-		\put(63,0){(c)}
-	\end{overpic}\hfill
-	\begin{minipage}[b]{.36\textwidth}
-	\caption{Planar quad remeshing of the ``Lilium tower'' surface of
-Figure~\protect\ref{fig:Lilium}. (a) Relative principal directions which are found
-as eigenvectors of $(\Hess\phi)^{-1}\Hess s$. (b) Quad mesh
+	%\begin{overpic}[width=.63\textwidth]{fig/lilium_pq3.jpg}
+ \begin{minipage}[b]{.27\textwidth}
+	\caption{Planar quad remeshing of the surface of
+Fig.~\protect\ref{fig:Lilium}. (a) Relative principal directions,
+found from eigenvectors of $(\Hess\phi)^{-1}\Hess s$. (b) Quad mesh
 guided by principal directions is almost planar and almost self\dash
 supporting. (c) Small changes achieve both properties.}
- \label{fig:lilium:pq}\vspace*{1em}\end{minipage}
-  \vspace*{-1em}
-\end{figure*}
+ \label{fig:lilium:pq}\end{minipage}\hfill
+	\raise0.02\textwidth\hbox{\begin{overpic}
+		[width=.23\textwidth]{fig/lilium-vf.jpg}
+		\put(0,0){(a)}
+	\end{overpic}}\hfill
+	\raise0.02\textwidth\hbox{\begin{overpic}
+		[width=.23\textwidth]{fig/lilium-pq.jpg}
+		\put(0,0){(b)}
+	\end{overpic}}\hfill
+	\raise0.02\textwidth\hbox{\begin{overpic}
+		[width=.22\textwidth]{arch-fig/lilium-pq-93.jpg}
+		\put(0,0){(c)}
+	\end{overpic}}
 
-\begin{figure*}[t]
-	\begin{minipage}[b]{.31\textwidth}
+	\begin{minipage}[b]{.27\textwidth}
 	\caption{Planar quad remeshing of the surface of
 Figure~\protect\ref{fig:cas}. Left: Relative principal directions. Right: The
 result of optimization is a self\dash supporting PQ mesh, which guides a
