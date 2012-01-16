@@ -519,16 +519,16 @@ forces which is entirely contained within the structure.
 	\lput(63,3){$\ew_{ij}^*$}
   \end{overpic}\nix{
  \begin{overpic}[width=\columnwidth]{fig/reciprocal1}
-        \color{gelb}
-        \lput(100,15){$\SS'^*$}
-        \color{blau}
-        \put(1,25){$\SS$}
-        \lput(7,1){$\SS'$}
-        \lput(21,35){$\vw_i$}
-        \cput(21,29){$F_i$}
-        \color{drot}
-        \lput(13,8){\contour{white}{$w_{ij} \ew_{ij}'$}}
-        \lput(66,11){\contour{white}{$\ew_{ij}^*$}}
+	\color{gelb}
+	\lput(100,15){$\SS'^*$}
+	\color{blau}
+	\put(1,25){$\SS$}
+	\lput(7,1){$\SS'$}
+	\lput(21,35){$\vw_i$}
+	\cput(21,29){$F_i$}
+	\color{drot}
+	\lput(13,8){\contour{white}{$w_{ij} \ew_{ij}'$}}
+	\lput(66,11){\contour{white}{$\ew_{ij}^*$}}
   \end{overpic}}\relax
  \caption{A thrust network $\SS$ with dangling edges indicating external
 forces (left). This network together with compressive forces which balance
@@ -601,15 +601,15 @@ polyhedron exist only locally. Our computations do not require global existence.
 	\cput(4,31){$f_k$}
   \end{overpic}}
 %  \begin{overpic}[width=.94\columnwidth]{fig/beide1}
-%        \put(46,30){$\ww_k^*$}
-%        \put(46,16){$\vw_k^{*\prime}$}
-%        \color{gelb}
-%        \put(84,10){$\Sw'^*=\Phi^{*\prime}$}
-%        \put(78,30){$\Phi^*$}
-%        \color{blau}
-%        \cput(30,30){$\Phi$}
-%        \lput(8,1){$\Phi'=\SS'$}
-%        \cput(4,33){$f_k$}
+%	\put(46,30){$\ww_k^*$}
+%	\put(46,16){$\vw_k^{*\prime}$}
+%	\color{gelb}
+%	\put(84,10){$\Sw'^*=\Phi^{*\prime}$}
+%	\put(78,30){$\Phi^*$}
+%	\color{blau}
+%	\cput(30,30){$\Phi$}
+%	\lput(8,1){$\Phi'=\SS'$}
+%	\cput(4,33){$f_k$}
 %  \end{overpic}
  \caption{Airy stress potential $\Phi$ and its polar dual $\Phi^*$. $\Phi$
 projects onto the same planar mesh as $\SS$ does, while $\Phi^*$ projects
@@ -1269,16 +1269,19 @@ taken over interior vertices $\vw_i$).}\label{table:data}
 
   \begin{figure*}[t]
   \newdimen\tmplen\tmplen=0.09\textwidth
-  \centerline{\includegraphics[width=2.57\tmplen]{fig/remove-1n.jpg}\hfill
-	  \includegraphics[width=2.57\tmplen]{fig/remove-2n.jpg}\hfill
-	  \raise.43\tmplen
-	\hbox{\includegraphics[width=2.23\tmplen]{fig/remove-3n.jpg}}\hfill
-	  \raise.43\tmplen
-	\hbox{\includegraphics[width=2.24\tmplen]{fig/remove-4n.jpg}}}
-   \vskip-6ex
-   \leftline{(a)\hskip 2.5\tmplen (b)\hskip 2.5\tmplen (c)\hskip 2.2\tmplen
-		(d)}
-   \vskip1.5ex
+ \centerline{\begin{overpic}[width=2.57\tmplen]{fig/remove-1n.jpg}
+		\put(0,10){(a)}
+	\end{overpic}\hfill
+	 \begin{overpic}[width=2.57\tmplen]{fig/remove-2n.jpg}
+		\put(0,10){(b)}
+	\end{overpic}\hfill
+	\begin{overpic}[width=2.6\tmplen]{arch-fig/destruction3.jpg}
+		\put(0,10){(c)}
+	\end{overpic}\hfill
+	\begin{overpic}[width=2.6\tmplen]{arch-fig/destruction4.jpg}
+		\put(0,10){(d)}
+	\end{overpic}}
+	\vskip-2ex
 
 \caption{Destruction sequence. We simulate removing small parts of masonry
 (their location is shown by a yellow ball) and
@@ -1672,18 +1675,18 @@ the derived mesh formed by the intersection points of diagonals of faces
 again has planar faces \cite{bobenko-2008-ddg}.
 
 \begin{figure}[h]
-        \begin{overpic}[width=\columnwidth]{fig/enneper2.jpg}
-                \color{gelb}
-                \lput(12,0){$\Phi+\alpha\RR$}
-                \lput(45,0){$\Phi$}
-                \color{blau}
-                \lput(77,0){$\RR$}
-        \end{overpic}
+	\begin{overpic}[width=\columnwidth]{fig/enneper2.jpg}
+		\color{gelb}
+		\lput(12,0){$\Phi+\alpha\RR$}
+		\lput(45,0){$\Phi$}
+		\color{blau}
+		\lput(77,0){$\RR$}
+	\end{overpic}
  \caption{A ``Koebe'' mesh  $\Phi$ is self\dash supporting for unit dead
 load. An entire family of self-supporting meshes with the same top view
 is defined by $\SS_\alpha=\Phi+\alpha\RR$, where $\RR$ is chosen as $\Phi$'s
 Christoffel\dash dual.} \label{fig:enneper}
-        \end{figure}
+	\end{figure}
 
 
 \paragraph{Koebe meshes.}
