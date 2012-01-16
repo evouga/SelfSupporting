@@ -1731,7 +1731,7 @@ geometrization} of problems as a general solution paradigm.
 
 This work was very much inspired by Philippe Block's plenary lecture
 at the 2011 Symposium on Geometry Processing in Lausanne. Several
-illustrations (the destruction sequence of Figure \ref{fig:removal})
+illustrations (the destruction sequence of Figure \ref{fig:removal}
 and the maximum load example of Figure
 \ref{fig:load}) have real\dash world analogues on his web page \cite{catalan}.
 
@@ -1765,12 +1765,3 @@ and torsion moments.}\label{fig:structural}
 
 
 \end{document}
-
-% Work into limitations?
-
-\subsubsection{Possible pitfall}
-Though the above optimization problem always has a solution, there is one unpleasant situation can arise: the optimum weights around \emph{all} edges adjacent to a vertex might be 0. I've observed this occur when the reference mesh has an interior local minimum at vertex $i$: obviously such a reference mesh cannot be a thrust network in equilibrium. If the neighbors of $i$ have few edges (such as in a quad mesh) the optimal weights for the edges around $i$ will be positive, since these edges are "needed" by $i$'s neighbors to put them in equilibrium. On the other hand, if $i$'s neighbors are edge-rich (such as in a triangle mesh) occasionally the best solution is to set all of $i$'s edges to have weight 0, effectively deleting vertex $i$ from the thrust network. A vertex whose surrounding edge weights are all zero (or near-zero) clearly can never satisfy \eqref{eq:dcond}, and giving the next step of the algorithm such a vertex as input causes numerical instabilities. Therefore in the current code I simply delete such vertices from the thrust network.
-
-Reference meshes with large flat regions similarly cause numerical problems: again, in such regions no amount of altering the weights can improve the error in equation \eqref{eq:dcond}, leading the above optimization to sometimes assign many near-zero weights in such regions.
-
-
