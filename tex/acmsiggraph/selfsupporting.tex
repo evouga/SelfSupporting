@@ -1279,6 +1279,7 @@ to optimize meshes that have self-intersecting top views (i.e., aren't height fi
 have too many impossible features, or are insufficiently supported by fixed
 boundary points can also result in errors and instability.
 
+\nix{
 \begin{figure}[t]
 	%\begin{overpic}[width=0.25\textwidth]{fig/build-white.jpg}
 	%\begin{overpic}[width=0.25\textwidth]{fig/build-n.jpg}
@@ -1295,6 +1296,7 @@ but our algorithm finds a nearby perturbation of the reference surface
 reference surface (c), the thrust network automatically adjusts
 (d).} \protect\label{fig:vault}
 	\end{figure}
+}
 
  \begin{figure*}[t]
   \newdimen\tmplen\tmplen=0.095\textwidth
@@ -1312,7 +1314,7 @@ reference surface (c), the thrust network automatically adjusts
 	\begin{overpic}[width=2.6\tmplen]{arch-fig/destruction4.jpg}
 		\put(0,10){(d)}
 	\end{overpic}}
-	\vskip-3ex
+	\vskip-1ex
 
 \caption{Destruction sequence. We simulate removing small parts of masonry
 (their location is shown by a yellow ball) and
@@ -1325,40 +1327,21 @@ as seen in (c). (d) shows the result after one more removal (all images show
 the respective thrust networks, not the reference surface).}
 \label{fig:removal}
 
-\medskip
-	\begin{minipage}[b]{\columnwidth}
-	\caption{Stability Test. Left: Coloring and cross\dash section
-of edges visualize the magnitude of forces in a thrust network which is in
-equlibrium with this dome's dead load.
-Right: When an additional load is applied, there exists a corresponding
-compressive thrust network which is still contained in the masonry hull
-of the original dome. This implies stability of the dome under that load.}
-\label{fig:load}
-	\end{minipage}\hfill
-	\begin{overpic}[width=.49\columnwidth]{fig/dome-unloaded.jpg}
-		\small
-		\cput(30,0){14\,m}
-		\put(0,-4){\hbox to .3\columnwidth{\leftarrowfill}}
-		\lput(100,-4){\hbox to .3\columnwidth{\rightarrowfill}}
-		\put(0,49){shell thickness 0.1\,m, $\rho=2,500$\,kg/m$^3$}
-	\end{overpic}\hfill
-	\begin{overpic}[width=.49\columnwidth]{fig/dome-loaded.jpg}
-		\small
-		\put(60,44){11,000\,kg}
-	\end{overpic}
+\bigskip
 
-\medskip
-	\includegraphics[width=.23\textwidth]{fig/dome2-00.jpg}\hfill
-	\includegraphics[width=.25\textwidth]{fig/dome2-05.jpg}\hfill
-	\includegraphics[width=.25\textwidth]{fig/dome2-10.jpg}\hfill
-	\includegraphics[width=.25\textwidth]{fig/dome2-20.jpg}
-	\caption{Stability test similar to Figure~\protect\ref{fig:load},
-but with a shell thickness of 1\,m, in order to better visualize the way
-the thrust network starts to leave the masonry hull as the load increases.
-Additional loads are 0\,kg, 5,000\,kg, 10,000\,kg, and 20,000\,kg, resp., from
-left to right.} \label{fig:load2}
-
+\centerline{\includegraphics[width=.2\textwidth]{fig/video1}\relax
+\includegraphics[width=.23\textwidth]{fig/video3}\relax
+\includegraphics[width=.23\textwidth]{fig/video4}\hfill
+\begin{minipage}[b]{.30\textwidth}
+	\caption{Interactive Edits. (a) shows a 
+self\dash supporting thrust network --
+in fact it is a Koebe mesh as mentioned
+in \S\protect\ref{sec:special}.  In (b) pillars have been added. Cutting
+along the highlighted edge and optimizing for the self\dash supporting
+property results in the mesh shown in (c).} \label{fig:edit}
+\end{minipage}}
 \end{figure*}
+
 
 \section{Results}
 \label{sec:design}
@@ -1369,7 +1352,7 @@ The optimization algorithm described in the previous section forms the
 basis of an interactive design tool for self-supporting surfaces. Users
 manipulate a mesh representing a reference surface, and the computer
 searches for a nearby thrust network in equilibrium (see e.g.\
-Figure~\ref{fig:vault}). Features of the design tool include:
+Figure~\ref{fig:edit}). Features of the design tool include:
 
 \begin{itemize}\itemsep-\parsep
 
@@ -1406,20 +1389,8 @@ and corresponding reciprocal diagram.
 
 \def\sparagraph#1{\par\noindent{\it #1}}
 
-\sparagraph{{\sf\bfseries Examples.} Vault with Pillars:}
-As an example of the design and
-optimization workflow, consider a rectangular vault with six pillars, free
-boundary conditions along one edge, fixed boundary conditions along the
-others, and a tower extruded from the top of the surface (see Figure
-\ref{fig:vault}). This surface is neither convex nor simply connected, and
-exhibits a mix of boundary conditions, none of which cause our algorithm
-any difficulty; it finds a self-supporting thrust network near the
-designed reference mesh. The user is now free to make edits to the
-reference mesh, and the thrust network adapts to these edits, providing
-the user feedback on whether these designs are physically realizable.
 
-
-\sparagraph{Example: Top of the Lilium Tower.}
+\sparagraph{{\sf\bfseries Examples.} Top of the Lilium Tower.}
 Consider the top portion of the steel-glass exterior surface of the Lilium
 Tower, which is currently being built in Warszaw (see Figure
 \ref{fig:Lilium}). What is if we had wanted to build this surface
@@ -1438,6 +1409,53 @@ Our algorithm reveals those edits needed to make the
 structure sound -- principally around the entrance arch, and the area
 between the two pillars.
 
+\begin{figure*}
+	\begin{minipage}[b]{\columnwidth}
+	\caption{Stability Test. Left: Coloring and cross\dash section
+of edges visualize the magnitude of forces in a thrust network which is in
+equlibrium with this dome's dead load.
+Right: When an additional load is applied, there exists a corresponding
+compressive thrust network which is still contained in the masonry hull
+of the original dome. This implies stability of the dome under that load.}
+\label{fig:load}
+	\end{minipage}\hfill
+	\begin{overpic}[width=.49\columnwidth]{fig/dome-unloaded.jpg}
+		\small
+		\cput(30,0){14\,m}
+		\put(0,-4){\hbox to .3\columnwidth{\leftarrowfill}}
+		\lput(100,-4){\hbox to .3\columnwidth{\rightarrowfill}}
+		\put(0,49){shell thickness 0.1\,m, $\rho=2,500$\,kg/m$^3$}
+	\end{overpic}\hfill
+	\begin{overpic}[width=.49\columnwidth]{fig/dome-loaded.jpg}
+		\small
+		\put(60,44){11,000\,kg}
+	\end{overpic}
+
+\medskip
+	\includegraphics[width=.23\textwidth]{fig/dome2-00.jpg}\hfill
+	\includegraphics[width=.25\textwidth]{fig/dome2-05.jpg}\hfill
+	\includegraphics[width=.25\textwidth]{fig/dome2-10.jpg}\hfill
+	\includegraphics[width=.25\textwidth]{fig/dome2-20.jpg}
+	\caption{Stability test similar to Figure~\protect\ref{fig:load},
+but with a shell thickness of 1\,m, in order to better visualize the way
+the thrust network starts to leave the masonry hull as the load increases.
+Additional loads are 0\,kg, 5,000\,kg, 10,000\,kg, and 20,000\,kg, resp., from
+left to right.} \label{fig:load2}
+
+\end{figure*}
+
+\sparagraph{Interactive Editing:}
+As an example of the design and
+optimization workflow, consider a rectangular vault with six pillars, free
+boundary conditions along one edge, fixed boundary conditions along the
+others, and a tower extruded from the top of the surface (see Figure
+\ref{fig:vault}). This surface is neither convex nor simply connected, and
+exhibits a mix of boundary conditions, none of which cause our algorithm
+any difficulty; it finds a self-supporting thrust network near the
+designed reference mesh. The user is now free to make edits to the
+reference mesh, and the thrust network adapts to these edits, providing
+the user feedback on whether these designs are physically realizable.
+
 
 \sparagraph{Example: Destruction Sequence.}
 In Figure \ref{fig:removal} we simulate removing parts of masonry and
@@ -1448,24 +1466,6 @@ and solving for a new thrust network in compressive equilibrium
 close to the original reference surface. We delete those parts of the
 network which deviate too much and are no longer contained in the masonry
 hull, and iterate.
-
-\sparagraph{Example: Stability Test:} See Figures \ref{fig:load} and
-\ref{fig:load2} for a series of images which visualize the effect of
-additional loads on a thrust network.
-
-
- \begin{figure}[t]
-  \centerline{\begin{overpic}[width=0.5\columnwidth]{fig/cheese.jpg}
-		\put(0,5){(a)}
-	\end{overpic}\relax
-	\begin{overpic}[width=0.5\columnwidth]{fig/cheese-n.jpg}
-		\put(0,5){(b)}
-	\end{overpic}}
-	\vskip-1.5ex
-  \caption{A mesh with holes (a) requires large deformations
-to both the top view and heights to render it self\dash supporting
-(b)}\label{fig:cheese2}
-  \end{figure}
 
 
 
@@ -1478,10 +1478,28 @@ shows such an implausible and unstable surface; our optimization finds a
 nearby, equally implausible but stable surface without difficulty (see
 Figures~\ref{fig:teaser}, left and \ref{fig:cheese2}b).
 
+\sparagraph{Example: Stability Test:} See Figures \ref{fig:load} and
+\ref{fig:load2} for a series of images which visualize the effect of
+additional loads on a thrust network.
+
+
 \sparagraph{Example: Structural Glass}. See Figure \ref{fig:structural} for
 details on a self\dash supporting surface which is realized
 not as masonry, but as a steel\slash glass construction with glass as
 a structural element.
+
+ \begin{figure}[h]
+  \centerline{\begin{overpic}[width=0.5\columnwidth]{fig/cheese.jpg}
+		\put(0,5){(a)}
+	\end{overpic}\relax
+	\begin{overpic}[width=0.5\columnwidth]{fig/cheese-n.jpg}
+		\put(0,5){(b)}
+	\end{overpic}}
+	\vskip-1.5ex
+  \caption{A mesh with holes (a) requires large deformations
+to both the top view and heights to render it self\dash supporting
+(b)}\label{fig:cheese2}
+  \end{figure}
 
 	\begin{figure}[b]
   \centerline{\begin{overpic}[width=0.33\columnwidth]{fig/vault.jpg}
