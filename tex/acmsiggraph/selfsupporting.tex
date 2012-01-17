@@ -1409,6 +1409,19 @@ Our algorithm reveals those edits needed to make the
 structure sound -- principally around the entrance arch, and the area
 between the two pillars.
 
+ \begin{figure}[h]
+  \centerline{\begin{overpic}[width=0.5\columnwidth]{fig/cheese.jpg}
+		\put(0,5){(a)}
+	\end{overpic}\relax
+	\begin{overpic}[width=0.5\columnwidth]{fig/cheese-n.jpg}
+		\put(0,5){(b)}
+	\end{overpic}}
+	\vskip-1.5ex
+  \caption{A mesh with holes (a) requires large deformations
+to both the top view and heights to render it self\dash supporting
+(b)}\label{fig:cheese2}
+  \end{figure}
+
 \begin{figure*}
 	\begin{minipage}[b]{\columnwidth}
 	\caption{Stability Test. Left: Coloring and cross\dash section
@@ -1445,17 +1458,16 @@ left to right.} \label{fig:load2}
 \end{figure*}
 
 \sparagraph{Interactive Editing:}
-As an example of the design and
-optimization workflow, consider a rectangular vault with six pillars, free
-boundary conditions along one edge, fixed boundary conditions along the
-others, and a tower extruded from the top of the surface (see Figure
-\ref{fig:vault}). This surface is neither convex nor simply connected, and
+Figure \ref{fig:edit} shows an example of the design and optimization
+workflow. Starting with a mesh, we first add pillars in the center
+and clean up the outer boundary (by fixing it to the floor). A subsequent
+cut needs a further round of optimization.
+This surface is neither convex nor simply connected, and
 exhibits a mix of boundary conditions, none of which cause our algorithm
-any difficulty; it finds a self-supporting thrust network near the
-designed reference mesh. The user is now free to make edits to the
+any difficulty; it always finds a self-supporting thrust network near the
+designed reference mesh. The user is free to make edits to the
 reference mesh, and the thrust network adapts to these edits, providing
 the user feedback on whether these designs are physically realizable.
-
 
 \sparagraph{Example: Destruction Sequence.}
 In Figure \ref{fig:removal} we simulate removing parts of masonry and
@@ -1488,18 +1500,6 @@ details on a self\dash supporting surface which is realized
 not as masonry, but as a steel\slash glass construction with glass as
 a structural element.
 
- \begin{figure}[h]
-  \centerline{\begin{overpic}[width=0.5\columnwidth]{fig/cheese.jpg}
-		\put(0,5){(a)}
-	\end{overpic}\relax
-	\begin{overpic}[width=0.5\columnwidth]{fig/cheese-n.jpg}
-		\put(0,5){(b)}
-	\end{overpic}}
-	\vskip-1.5ex
-  \caption{A mesh with holes (a) requires large deformations
-to both the top view and heights to render it self\dash supporting
-(b)}\label{fig:cheese2}
-  \end{figure}
 
 	\begin{figure}[b]
   \centerline{\begin{overpic}[width=0.33\columnwidth]{fig/vault.jpg}
