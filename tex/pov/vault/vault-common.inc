@@ -24,8 +24,8 @@ light_source { <0,0,-20> color rgb <1,1,1> *0.8 shadowless}
 //plane {z,-0.1 texture {weiss}}
 background {color rgb <1,1,1>}
 box {<-1,-1,-1>*10 <1.5,1,-0.03>*2.5 texture {weiss}}
-#declare r1=0.002;
-#declare r2=0.002;
+#declare r1=0.003;
+#declare r2=0.003;
 
 #macro Etriang(a,b,c) cylinder {V[a] V[b] r2} cylinder {V[b] V[c] r2}
 		cylinder {V[c] V[a] r2} #end

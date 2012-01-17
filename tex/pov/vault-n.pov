@@ -6,10 +6,10 @@ union {
 	#macro Quad(a,b,c,d) EQuad(a,b,c,d) #end
 	union {
 	#declare i=0; #while (i<NV) sphere {V[i] r1} #declare i=i+1; #end
-	#include "vault/vault-n-faces.inc" texture {weiss}}
+	#include "vault/vault-n-faces.inc" texture {brownish}}
 
 	#macro Quad(a,b,c,d) FQuad(a,b,c,d) #end
-	mesh { #include "vault/vault-n-faces.inc" texture {gelb}}
+	mesh { #include "vault/vault-n-faces.inc" texture {hellgelb}}
 
 rotate -x*90
 }
