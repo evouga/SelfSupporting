@@ -1028,34 +1028,6 @@ convergence as the sampling density increases.
 A rigorous analysis is a  topic for future research.
 
 
-\begin{figure*}[t]
-	%\includegraphics[width=0.24\textwidth]{fig/build.png}
-	%\includegraphics[width=0.24\textwidth]{fig/build-n.png}
-	%\hfill
-	%\includegraphics[width=0.24\textwidth]{fig/build-edited.png}
-	%\includegraphics[width=0.24\textwidth]{fig/build-edited-n.png}
-\centerline{
-	\begin{overpic}[width=0.25\textwidth]{fig/build-white.jpg}
-	\put(0,0){(a)}
-	\end{overpic}\hfill
-	\begin{overpic}[width=0.25\textwidth]{fig/build-n.jpg}
-	\put(0,0){(b)}
-	\end{overpic}\hfill
-	\begin{overpic}[width=0.25\textwidth]{fig/build-edited-white.jpg}
-	\put(0,0){(c)}
-	\end{overpic}\hfill
-	\begin{overpic}[width=0.25\textwidth]{fig/build-edited-n.jpg}
-	\put(0,0){(d)}
-	\end{overpic}}
-	\vskip-1ex
-
-\caption{The user-designed reference mesh (a) is not self-supporting,
-but our algorithm finds a nearby perturbation of the reference surface
-(b) that is in equilibrium. As the user makes edits to the
-reference surface (c), the thrust network automatically adjusts
-(d). \label{fig:vault}}
-
-	\end{figure*}
 
 
 
@@ -1147,6 +1119,84 @@ integrate to a stress surface satisfying \eqref{eq:deqiso}, and this $\Phi$
 certifies that $\SS$ is self-supporting -- we are done. Otherwise, $\SS$
 is not self-supporting and its vertices must be moved.
 
+\begin{figure}[t]
+	\centerline{\includegraphics[height=0.11\textwidth]{fig/cas.jpg}\relax
+	\includegraphics[height=0.11\textwidth]{fig/cas-n.jpg}}
+	\vskip-1ex
+	\caption{A freeform surface
+(left) needs adjustments around the entrance arch and between the two
+pillars in order to be self-supporting; our algorithm finds the nearby
+surface in equilibrium (right) that incorporates these
+changes.}\label{fig:cas}
+	 \end{figure}
+
+
+\begin{table}[t]
+\begin{tabular}{@{}lccccr@{}}
+	%	\textit{Example} &
+		 \textit{Fig.}
+		& \textit{Vertices}
+		& \textit{Edges}
+			& \textit{Time} (s)
+			& \!\!\!\textit{Iterations} \!\!\!\!
+			& \textit{Max.\ Rel.\ Error} \\
+	\hline
+	%	Top of Lilium Tower &
+		 \protect\ref{fig:Lilium}b
+		& 1201
+		& 3504
+			& 21.6
+			& 9
+			& $4.2 \times 10^{-5}$
+	\\ %Top of Lilium Tower (with pillar)  &
+		 \protect\ref{fig:Lilium}d
+		& 1200
+		& 3500
+			& 26.5
+			& 10
+			& $8.5 \times 10^{-5}$
+	\\ %Freeform Structure with Two Pillars  &
+		 \protect\ref{fig:cas}
+		& 1535
+		& 2976
+			& 17.0
+			& 21
+			& $2.7\times 10^{-5}$
+	\\ %Brick Domes  &
+		 \protect\ref{fig:removal}
+		& 752
+		& 2165
+			& 8.0
+			& 9
+			& $5.8 \times 10^{-5}$
+	\\ %Swiss Cheese  &
+		 \protect\ref{fig:cheese2}
+		& 2358
+		& 4302
+			& 19.5
+			& 9
+			& $3.0 \times 10^{-4}$
+	\\ %Structural Glass  &
+		 \protect\ref{fig:structural}
+		& 527
+		& 998
+			& 5.7
+			& 25
+			& $2.4\times 10^{-5}$
+	\\ \hline
+  \end{tabular}
+	\caption{Numerical details about our examples.
+We show the clock time needed by an Intel Xeon 2.3GHz
+desktop PC with 4 GB of RAM to find a self\dash supporting thrust network and
+associated stress surface from the example's reference mesh; we also give
+the number of outer iterations of the four steps in \secref{sec:opt}. The
+maximum relative error is the dimensionless quantity
+$\max_i \| A_i F_i - \sum\nolimits_{j\sim i} w_{ij}
+(\vw_j-\vw_i) \|/\|A_i F_i\|$ (the maximum is
+taken over interior vertices $\vw_i$).}\label{table:data}
+
+\end{table}
+
 \paragraph{Step~\ref{step4}: Alter Positions.} In the previous step we fit
 as best as possible a stress surface $\Phi$ to $\SS$. There are two
 possible kinds of error with this fit: the faces around a vertex
@@ -1190,83 +1240,61 @@ this system, in practice we have observed that the method of conjugate
 gradients works well despite the potential ill-conditioning of the
 objective matrix.
 
+
+
+
+
+\paragraph{Limitations.}
+
+This algorithm is not guaranteed to always converge; this fact is not
+surprising from the physics of the problem (if the boundary of the
+reference mesh encloses too large of a region, $w_{\max}$ is set too low,
+and the density of the surface too high, a thrust network in equilibrium
+simply does not exist -- the vault is too ambitious and cannot be built to
+stand; pillars are needed.)
+
+We can, however, make a few remarks. Only Step~\ref{step2} can 
+increase the equilibrium
+ energy $E$ of Equation~\eqref{eq:eenergy}.
+Step~\ref{step3} always decreases it, and Step~\ref{step4} does as well as $\beta \to 0$. Moreover, as $\alpha
+\to 0$ and $\beta \to 0$, Step~\ref{step4} approaches a linear system with
+as many equations as unknowns; if this system has full rank, its solution
+sets $E=0$. These facts suggest that the algorithm should generally
+converge to a thrust network in equilibrium, provided that
+Step~\ref{step2} does not increase the loads by too much at every
+iteration, and this is indeed what we observe in practice. One case where
+this assumption is guaranteed to hold is if the thickness of the surface
+is allowed to freely vary, so that it can be chosen so that the surface
+has uniform density over the top view.
+
+If the linear system in Step~\ref{step4} is singular and infeasible, the
+algorithm can stall at $E > 0$. This failure occurs, for instance, when an
+interior vertex has height $z_i$ lower than all of its neighbors, and
+Step~\ref{step3} assigns all incident edges to that vertex a weight of
+zero: clearly no amount of moving the vertex or its neighbors can bring
+the vertex into equilibrium. We avoid such degenerate configurations by
+bounding weights slightly away from zero in \eqref{eq:wbounds}, trading
+increased robustness for slight smoothing of the resulting surface. Attempting
+to optimize meshes that have self-intersecting top views (i.e., aren't height fields),
+have too many impossible features, or are insufficiently supported by fixed
+boundary points can also result in errors and instability.
+
 \begin{figure}[t]
-	\centerline{\includegraphics[height=0.11\textwidth]{fig/cas.jpg}\relax
-	\includegraphics[height=0.11\textwidth]{fig/cas-n.jpg}}
-	\vskip-1ex
-	\caption{A freeform surface
-(left) needs adjustments around the entrance arch and between the two
-pillars in order to be self-supporting; our algorithm finds the nearby
-surface in equilibrium (right) that incorporates these
-changes.}\label{fig:cas}
-	 \end{figure}
+	%\begin{overpic}[width=0.25\textwidth]{fig/build-white.jpg}
+	%\begin{overpic}[width=0.25\textwidth]{fig/build-n.jpg}
+	%\begin{overpic}[width=0.25\textwidth]{fig/build-edited-white.jpg}
+	%\begin{overpic}[width=0.25\textwidth]{fig/build-edited-n.jpg}
+	\includegraphics[width=\columnwidth]{fig/edits.jpg}
+	\vskip-5em
+	(a)\hfill(b)\hfill(c)\hfill(d)\hfill~~
+	\vskip3.5em
 
-
-\begin{table}[t]
-\begin{tabular}{@{}lccccr@{}}
-	%	\textit{Example} &
-		 \textit{Fig.}
-		& \textit{Vertices}
-		& \textit{Edges}
-			& \textit{Time} (s)
-			& \!\!\!\textit{Iterations} \!\!\!\!
-			& \textit{Max.\ Rel.\ Error} \\
-	\hline
-	%	Top of Lilium Tower &
-		 \ref{fig:Lilium}b
-		& 1201
-		& 3504
-			& 21.6
-			& 9
-			& $4.2 \times 10^{-5}$
-	\\ %Top of Lilium Tower (with pillar)  &
-		 \ref{fig:Lilium}d
-		& 1200
-		& 3500
-			& 26.5
-			& 10
-			& $8.5 \times 10^{-5}$
-	\\ %Freeform Structure with Two Pillars  &
-		 \ref{fig:cas}
-		& 1535
-		& 2976
-			& 17.0
-			& 21
-			& $2.7\times 10^{-5}$
-	\\ %Brick Domes  &
-		 \ref{fig:removal}
-		& 752
-		& 2165
-			& 8.0
-			& 9
-			& $5.8 \times 10^{-5}$
-	\\ %Swiss Cheese  &
-		 \ref{fig:cheese2}
-		& 2358
-		& 4302
-			& 19.5
-			& 9
-			& $3.0 \times 10^{-4}$
-	\\ %Structural Glass  &
-		 \ref{fig:structural}
-		& 527
-		& 998
-			& 5.7
-			& 25
-			& $2.4\times 10^{-5}$
-	\\ \hline
-  \end{tabular}
-	\caption{Numerical details about our examples.
-We show the clock time needed by an Intel Xeon 2.3GHz
-desktop PC with 4 GB of RAM to find a self\dash supporting thrust network and
-associated stress surface from the example's reference mesh; we also give
-the number of outer iterations of the four steps in \secref{sec:opt}. The
-maximum relative error is the dimensionless quantity
-$\max_i \| A_i F_i - \sum\nolimits_{j\sim i} w_{ij}
-(\vw_j-\vw_i) \|/\|A_i F_i\|$ (the maximum is
-taken over interior vertices $\vw_i$).}\label{table:data}
-
-\end{table}
+\caption{The user-designed reference mesh (a) is not self-supporting,
+but our algorithm finds a nearby perturbation of the reference surface
+(b) that is in equilibrium. As the user makes edits to the
+reference surface (c), the thrust network automatically adjusts
+(d).} \protect\label{fig:vault}
+	\end{figure}
 
  \begin{figure*}[t]
   \newdimen\tmplen\tmplen=0.095\textwidth
@@ -1331,43 +1359,6 @@ Additional loads are 0\,kg, 5,000\,kg, 10,000\,kg, and 20,000\,kg, resp., from
 left to right.} \label{fig:load2}
 
 \end{figure*}
-
-\paragraph{Limitations.}
-
-This algorithm is not guaranteed to always converge; this fact is not
-surprising from the physics of the problem (if the boundary of the
-reference mesh encloses too large of a region, $w_{\max}$ is set too low,
-and the density of the surface too high, a thrust network in equilibrium
-simply does not exist -- the vault is too ambitious and cannot be built to
-stand; pillars are needed.)
-
-We can, however, make a few remarks. Only Step~\ref{step2} can 
-increase the equilibrium
- energy $E$ of Equation~\eqref{eq:eenergy}.
-Step~\ref{step3} always decreases it, and Step~\ref{step4} does as well as $\beta \to 0$. Moreover, as $\alpha
-\to 0$ and $\beta \to 0$, Step~\ref{step4} approaches a linear system with
-as many equations as unknowns; if this system has full rank, its solution
-sets $E=0$. These facts suggest that the algorithm should generally
-converge to a thrust network in equilibrium, provided that
-Step~\ref{step2} does not increase the loads by too much at every
-iteration, and this is indeed what we observe in practice. One case where
-this assumption is guaranteed to hold is if the thickness of the surface
-is allowed to freely vary, so that it can be chosen so that the surface
-has uniform density over the top view.
-
-If the linear system in Step~\ref{step4} is singular and infeasible, the
-algorithm can stall at $E > 0$. This failure occurs, for instance, when an
-interior vertex has height $z_i$ lower than all of its neighbors, and
-Step~\ref{step3} assigns all incident edges to that vertex a weight of
-zero: clearly no amount of moving the vertex or its neighbors can bring
-the vertex into equilibrium. We avoid such degenerate configurations by
-bounding weights slightly away from zero in \eqref{eq:wbounds}, trading
-increased robustness for slight smoothing of the resulting surface. Attempting
-to optimize meshes that have self-intersecting top views (i.e., aren't height fields),
-have too many impossible features, or are insufficiently supported by fixed
-boundary points can also result in errors and instability.
-
-
 
 \section{Results}
 \label{sec:design}
