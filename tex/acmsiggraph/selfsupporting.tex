@@ -148,7 +148,7 @@
 
 \keywords{Discrete differential geometry, architectural geometry,
 self\dash supporting masonry, thrust networks,
-reciprocal force diagrams, discrete Laplace operators,
+reciprocal force diagrams, discrete Laplacians,
 isotropic geometry, mean curvature}
 
 %%% The ``\begin{document}'' command is the start of the document.
@@ -165,10 +165,11 @@ isotropic geometry, mean curvature}
 %%% If you choose to have a ``teaser'' image, it needs to be placed between
 %%% ``\begin{document}'' and ``\maketitle.''
 
- \teaser{\centerline{%{arch-fig/1roo64.jpg}}
-	\includegraphics[height=.30\textwidth]{arch-fig/cheesevault78.jpg}\hfill
-	\includegraphics[height=.30\textwidth]{arch-fig/1roo97}}
+\teaser{\centering
+        \includegraphics[height=.28\textwidth]{arch-fig/cheesevault78.jpg}
+        \includegraphics[height=.28\textwidth]{arch-fig/1roo97}
 
+	\vskip-2ex
 	\caption{{\em Left:} Surfaces with irregularly placed holes
 are hard to realize as masonry, where the mortar between bricks
 must not be subject to tensile stresses. The surface shown here has
@@ -177,8 +178,8 @@ self\dash supporting shape from a given freeform geometry.
 The fictitious thrust network used in our algorithms is also shown, with 
 edges' cross-section and coloring visualizing the magnitude of
 forces (warmer colors represent higher stresses.)
-{\em Right:} Curvature analysis with respect the so\dash called Airy stress
-surface
+{\em Right:} Curvature analysis with respect to the so\dash called
+Airy stress surface
 tells us how to remesh shapes by self\dash supporting quad meshes
 with planar faces, which guide steel\slash glass constructions with
 low moments in nodes.}
@@ -197,13 +198,13 @@ low moments in nodes.}
 and elegant techniques for building curved shapes. Because of the
 very geometric nature of their failure, analyzing and modeling such strutures
 is more a geometry processing problem than
-one of classical continuum mechanics. In this paper we use the thrust network method
-of analysis and present an iterative nonlinear optimization algorithm for
+one of classical continuum mechanics. This paper uses the thrust network method
+of analysis and presents an iterative nonlinear optimization algorithm for
 efficiently approximating freeform shapes by self\dash supporting ones.
 The rich geometry of thrust networks leads us to
 close connections between different topics of discrete differential geometry,
 such as a finite\dash element discretization of the Airy stress potential, perfect graph
-Laplacians, and the problem of computing admissible loads via curvatures of polyhedral
+Laplacians, and computing admissible loads via curvatures of polyhedral
 surfaces. This geometric viewpoint allows us, in particular, to remesh self\dash supporting
 shapes by self\dash supporting quad meshes with planar faces. This leads
 to another application of the theory: steel\slash glass constructions
@@ -311,24 +312,21 @@ forces (warmer colors represent higher stresses.)}
 
 \paragraph{Contributions.}
 
-%\begin{list}{$\bullet$}{\leftmargin0pt\itemindent1em}
 
-\begin{itemize}
-
-\item We present an optimization algorithm, based on the theory of
+$\bullet$ We present an optimization algorithm, based on the theory of
 thrust networks and Airy potentials, for efficiently finding a
 self\dash supporting surface near a given arbitrary reference surface
 \secref{sec:opt}, and build a tool for interactive design of
 self\dash supporting surfaces based on this algorithm \secref{sec:design}.
 Freeform masonry is based on such surfaces.
 
-\item The discrete ``stress Laplacian''
+$\bullet$ The discrete ``stress Laplacian''
 derived from a thrust network with compressive
 forces is a so\dash called perfect one \secref{sec:thrustnetworks}.
 We use it to argue why our discretizations are 
 faithful to the continuous case.
 
-\item We connect the physics of self\dash supporting surfaces with
+$\bullet$ We connect the physics of self\dash supporting surfaces with
 the geometry of isotropic 3\dash space , and express the
 equations governing self\dash supporting surfaces in terms of curvatures
 \secref{sec:smooth} and \secref{sec:discrete}.
@@ -337,13 +335,12 @@ mean curvatures of polyhedral surfaces. This theoretical part of the
 paper is a contribution to Discrete Differential Geometry.
 
 
-\item We use the geometric knowledge we have gathered to 
+$\bullet$ We use the geometric knowledge we have gathered to 
 find particularly nice families of self\dash supporting surfaces,
 especially planar quadrilateral representations of thrust networks
 \secref{sec:special}. This leads to steel\slash glass structures
 with low bending and torsion moments.
 
-\end{itemize}
 
 
 \paragraph{Related Work.}
@@ -367,7 +364,6 @@ work in this area includes \cite{O'Dwyer98} and
 \cite{andreu-2007}. Fraternali~\shortcite{Fraternali2010} proposed solving
 for the structure's discrete stress surface, and examining its convex hull
 to study the structure's stability and susceptibility to cracking.
-
 Philippe Block's seminal thesis introduced {\it Thrust
 Network Analysis}, which pioneered the use of thrust networks and their
 reciprocal diagrams for efficient and practical design of self\dash supporting
@@ -381,7 +377,7 @@ heights can be found using the method of least squares~\cite{vanmele2011},
 and the search for the best such reciprocal diagram can be automated using
 a genetic algorithm~\cite{Block2011}.
 
-Other approaches to the interactive design of self-supporting structures
+Other approaches to the design of self-supporting structures
 include modeling these structures as damped particle-spring
 systems~\cite{Kilian2005,barnes09}, and mirroring the rich tradition in
 architecture of designing self-supporting surfaces using hanging chain
@@ -391,7 +387,7 @@ on the structural feasibility were incorporated into procedural modeling
 of buildings~\cite{Whiting09}.
 
 Algorithmic and mathematical methods relevant to this paper are work on
-the geometry of quad meshes with planar faces \cite{Glymph2004,Liu2006},
+the geometry of PQ meshes \cite{Glymph2004,Liu2006},
 discrete curvatures for such meshes \cite{Pottmann2007b,bobenko-2010-ct},
 in particular curvatures in isotropic geometry \cite{Pottmann2007}.
 Schiftner and Balzer \shortcite{Schiftner2010} discuss approximating a
@@ -409,9 +405,7 @@ modeling algorithms. The connection
 with isotropic geometry (\S\ref{sec:smooth} and \S\ref{sec:discrete})
 is important for the later Section \ref{sec:special},
 which deals with self\dash supporting PQ meshes and
-moment\dash free steel\slash glass constructions. Finally
-\S\ref{ssec:convergence} deals with the question how faithful our
-discretizations are.
+moment\dash free steel\slash glass constructions.
 
 \subsection{The Continuous Theory}
 \label{ssec:cont}
@@ -872,7 +866,7 @@ corresponding diagonals of corresponding quads in $\SS^*,\Phi^*$.}
 	\begin{overpic}[width=0.25\textwidth]{fig/lilium-pillar-n2.jpg}
 		\put(0,0){(d) \small (view from below)}
 	\end{overpic}}
-
+	\vskip-1ex
  \caption{The top of the Lilium Tower (a) cannot stand as a masonry
 structure, because its central part is concave. Our algorithm finds a
 nearby self-supporting mesh (b) without this impossible feature. (c) shows
@@ -990,16 +984,15 @@ equivalent. This is the case because the proposition above implies
 	$
 	\end{proof}
 
-\subsection{Convergence} \label{ssec:convergence}
+\subsection{Convergence.}
 
 When considering discrete thrust networks as discretizations of continuous
 self\dash supporting surfaces, the following question is important: For a
-given smooth surface $s(x,y)$ with Airy stress function $\phi$, does there
+given smooth surface $s(x,y)$ with stress potential $\phi$, does there
 exist a polyhedral surface $\SS$ in equilibrium approximating $s(x,y)$,
 whose top view is a given planar mesh $\SS'$? We restrict our attention to
 triangle meshes, where planarity of the faces of the discrete stress
-surface $\Phi$ is not an issue. This question has several equivalent
-reformulations:
+surface $\Phi$ is not an issue. Equivalently, we ask:
 
 \begin{itemize}\itemsep-\parsep
 
@@ -1034,6 +1027,7 @@ approximating its continuous counterpart $s(x,y)$, and we have
 convergence as the sampling density increases.
 A rigorous analysis is a  topic for future research.
 
+
 \begin{figure*}[t]
 	%\includegraphics[width=0.24\textwidth]{fig/build.png}
 	%\includegraphics[width=0.24\textwidth]{fig/build-n.png}
@@ -1053,13 +1047,15 @@ A rigorous analysis is a  topic for future research.
 	\begin{overpic}[width=0.25\textwidth]{fig/build-edited-n.jpg}
 	\put(0,0){(d)}
 	\end{overpic}}
+	\vskip-1ex
 
 \caption{The user-designed reference mesh (a) is not self-supporting,
 but our algorithm finds a nearby perturbation of the reference surface
 (b) that is in equilibrium. As the user makes edits to the
 reference surface (c), the thrust network automatically adjusts
 (d). \label{fig:vault}}
-	 \end{figure*}
+
+	\end{figure*}
 
 
 
@@ -1194,6 +1190,16 @@ this system, in practice we have observed that the method of conjugate
 gradients works well despite the potential ill-conditioning of the
 objective matrix.
 
+\begin{figure}[t]
+	\centerline{\includegraphics[height=0.11\textwidth]{fig/cas.jpg}\relax
+	\includegraphics[height=0.11\textwidth]{fig/cas-n.jpg}}
+	\vskip-1ex
+	\caption{A freeform surface
+(left) needs adjustments around the entrance arch and between the two
+pillars in order to be self-supporting; our algorithm finds the nearby
+surface in equilibrium (right) that incorporates these
+changes.}\label{fig:cas}
+	 \end{figure}
 
 
 \begin{table}[t]
@@ -1262,23 +1268,9 @@ taken over interior vertices $\vw_i$).}\label{table:data}
 
 \end{table}
 
-	\begin{figure*}[t]
-	\centerline{\includegraphics[height=0.14\textwidth]{fig/cas.jpg}\hfill
-	\includegraphics[height=0.14\textwidth]{fig/cas-n.jpg}\hfill
-	\begin{minipage}[b]{.7\columnwidth}
-	\caption{A freeform surface
-(left) needs adjustments around the entrance arch and between the two
-pillars in order to be self-supporting; our algorithm finds the nearby
-surface in equilibrium (right) that incorporates these
-changes.}\label{fig:cas}
-	\end{minipage}}
-
-\bigskip
-\bigskip
-
-  \newdimen\tmplen\tmplen=0.12\textwidth
-
-\centerline{\raise.1\tmplen\hbox{\begin{overpic}[width=2.6\tmplen]
+ \begin{figure*}[t]
+  \newdimen\tmplen\tmplen=0.095\textwidth
+ \centerline{\raise.1\tmplen\hbox{\begin{overpic}[width=2.6\tmplen]
 		{arch-fig/destruction1.jpg}
 		\put(0,10){(a)}
 	\end{overpic}}\hfill
@@ -1288,13 +1280,12 @@ changes.}\label{fig:cas}
 	\end{overpic}}\hfill
 	\begin{overpic}[width=2.6\tmplen]{arch-fig/destruction3.jpg}
 		\put(0,10){(c)}
-	\end{overpic}}
-
+	\end{overpic}\hfill
 	\begin{overpic}[width=2.6\tmplen]{arch-fig/destruction4.jpg}
 		\put(0,10){(d)}
-	\end{overpic}
-		\hfill
-	\begin{minipage}[b]{5.2\tmplen}
+	\end{overpic}}
+	\vskip-3ex
+
 \caption{Destruction sequence. We simulate removing small parts of masonry
 (their location is shown by a yellow ball) and
 the falling off of further pieces which are no longer supported after
@@ -1305,9 +1296,41 @@ will cause a greater part of the structure to collapse,
 as seen in (c). (d) shows the result after one more removal (all images show
 the respective thrust networks, not the reference surface).}
 \label{fig:removal}
-	\end{minipage}
-\end{figure*}
 
+\medskip
+	\begin{minipage}[b]{\columnwidth}
+	\caption{Stability Test. Left: Coloring and cross\dash section
+of edges visualize the magnitude of forces in a thrust network which is in
+equlibrium with this dome's dead load.
+Right: When an additional load is applied, there exists a corresponding
+compressive thrust network which is still contained in the masonry hull
+of the original dome. This implies stability of the dome under that load.}
+\label{fig:load}
+	\end{minipage}\hfill
+	\begin{overpic}[width=.49\columnwidth]{fig/dome-unloaded.jpg}
+		\small
+		\cput(30,0){14\,m}
+		\put(0,-4){\hbox to .3\columnwidth{\leftarrowfill}}
+		\lput(100,-4){\hbox to .3\columnwidth{\rightarrowfill}}
+		\put(0,49){shell thickness 0.1\,m, $\rho=2,500$\,kg/m$^3$}
+	\end{overpic}\hfill
+	\begin{overpic}[width=.49\columnwidth]{fig/dome-loaded.jpg}
+		\small
+		\put(60,44){11,000\,kg}
+	\end{overpic}
+
+\medskip
+	\includegraphics[width=.23\textwidth]{fig/dome2-00.jpg}\hfill
+	\includegraphics[width=.25\textwidth]{fig/dome2-05.jpg}\hfill
+	\includegraphics[width=.25\textwidth]{fig/dome2-10.jpg}\hfill
+	\includegraphics[width=.25\textwidth]{fig/dome2-20.jpg}
+	\caption{Stability test similar to Figure~\protect\ref{fig:load},
+but with a shell thickness of 1\,m, in order to better visualize the way
+the thrust network starts to leave the masonry hull as the load increases.
+Additional loads are 0\,kg, 5,000\,kg, 10,000\,kg, and 20,000\,kg, resp., from
+left to right.} \label{fig:load2}
+
+\end{figure*}
 
 \paragraph{Limitations.}
 
@@ -1345,52 +1368,6 @@ have too many impossible features, or are insufficiently supported by fixed
 boundary points can also result in errors and instability.
 
 
-\begin{figure*}
-	\begin{minipage}[b]{\columnwidth}
-	\caption{Stability Test. Left: Coloring and cross\dash section
-of edges visualize the magnitude of forces in a thrust network which is in
-equlibrium with this dome's dead load.
-Right: When an additional load is applied, there exists a corresponding
-compressive thrust network which is still contained in the masonry hull
-of the original dome. This implies stability of the dome under that load.}
-\label{fig:load}
-	\end{minipage}\hfill
-	\begin{overpic}[width=.49\columnwidth]{fig/dome-unloaded.jpg}
-		\small
-		\cput(30,0){14\,m}
-		\put(0,-4){\hbox to .3\columnwidth{\leftarrowfill}}
-		\lput(100,-4){\hbox to .3\columnwidth{\rightarrowfill}}
-		\put(0,50){shell thickness 0.1\,m, $\rho=2,500$\,kg/m$^3$}
-	\end{overpic}\hfill
-	\begin{overpic}[width=.49\columnwidth]{fig/dome-loaded.jpg}
-		\small
-		\put(60,44){11,000\,kg}
-	\end{overpic}
-
-\medskip
-	\includegraphics[width=.23\textwidth]{fig/dome2-00.jpg}\hfill
-	\includegraphics[width=.25\textwidth]{fig/dome2-05.jpg}\hfill
-	\includegraphics[width=.25\textwidth]{fig/dome2-10.jpg}\hfill
-	\includegraphics[width=.25\textwidth]{fig/dome2-20.jpg}
-	\caption{Stability test similar to Figure~\protect\ref{fig:load},
-but with a shell thickness of 1\,m, in order to better visualize the way
-the thrust network starts to leave the masonry hull as the load increases.
-Additional loads are 0\,kg, 5,000\,kg, 10,000\,kg, and 20,000\,kg, resp., from
-left to right.} \label{fig:load2}
-
-\bigskip
-  \centerline{\begin{overpic}[width=0.33\textwidth]{fig/cheese.jpg}
-		\put(0,5){(a)}
-	\end{overpic}\relax
-	\begin{overpic}[width=0.33\textwidth]{fig/cheese-n.jpg}
-		\put(0,5){(b)}
-	\end{overpic}\hfill
-	\begin{minipage}[b]{.3\textwidth}
-  \caption{A mesh with holes (a) requires large deformations
-to both the top view and heights to render it self\dash supporting
-(b)}\label{fig:cheese2}
-	\end{minipage}}
-  \end{figure*}
 
 \section{Results}
 \label{sec:design}
@@ -1403,7 +1380,7 @@ manipulate a mesh representing a reference surface, and the computer
 searches for a nearby thrust network in equilibrium (see e.g.\
 Figure~\ref{fig:vault}). Features of the design tool include:
 
-\begin{itemize}
+\begin{itemize}\itemsep-\parsep
 
 \item Handle-based 3D editing of the reference mesh using Laplacian
 coordinates~\cite{Lipman2004,Sorkine2003} to extrude vaults, insert
@@ -1486,6 +1463,18 @@ hull, and iterate.
 additional loads on a thrust network.
 
 
+ \begin{figure}[t]
+  \centerline{\begin{overpic}[width=0.5\columnwidth]{fig/cheese.jpg}
+		\put(0,5){(a)}
+	\end{overpic}\relax
+	\begin{overpic}[width=0.5\columnwidth]{fig/cheese-n.jpg}
+		\put(0,5){(b)}
+	\end{overpic}}
+	\vskip-1.5ex
+  \caption{A mesh with holes (a) requires large deformations
+to both the top view and heights to render it self\dash supporting
+(b)}\label{fig:cheese2}
+  \end{figure}
 
 
 
@@ -1503,9 +1492,7 @@ details on a self\dash supporting surface which is realized
 not as masonry, but as a steel\slash glass construction with glass as
 a structural element.
 
-
-
-	\begin{figure}[h]
+	\begin{figure}[b]
   \centerline{\begin{overpic}[width=0.33\columnwidth]{fig/vault.jpg}
 	\put(0,0)({(a)}
 	\end{overpic}\hfill
@@ -1523,8 +1510,8 @@ yields a self-supporting, PQ mesh far more faithful to the original (c).}
 	\label{fig:badpq}
 \end{figure}
 
-\section{Special Self-Supporting Surfaces} \label{sec:special}
 
+\section{Special Self-Supporting Surfaces} \label{sec:special}
 
 \paragraph{PQ Meshes.}
 
@@ -1540,28 +1527,26 @@ a self\dash supporting structure which is in perfect force equilibrium
 
 
 \begin{figure*}[t]
-
-\centerline{\raise0.02\textwidth\hbox{\begin{overpic}
-		[width=.28\textwidth]{fig/lilium-vf.jpg}
-		\put(0,0){(a)}
-	\end{overpic}}\hfill
-	\raise0.02\textwidth\hbox{\begin{overpic}
-		[width=.28\textwidth]{fig/lilium-pq.jpg}
-		\put(0,0){(b)}
-	\end{overpic}}\hfill
-	\raise0.02\textwidth\hbox{\begin{overpic}
-		[width=.26\textwidth]{arch-fig/lilium-pq-93.jpg}
-		\put(0,0){(c)}
-	\end{overpic}}}
-
+	%\begin{overpic}[width=.63\textwidth]{fig/lilium_pq3.jpg}
+ \begin{minipage}[b]{.27\textwidth}
 	\caption{Planar quad remeshing of the surface of
 Fig.~\protect\ref{fig:Lilium}. (a) Relative principal directions,
 found from eigenvectors of $(\Hess\phi)^{-1}\Hess s$. (b) Quad mesh
 guided by principal directions is almost planar and almost self\dash
 supporting. (c) Small changes achieve both properties.}
- \label{fig:lilium:pq}
-
-\bigskip
+ \label{fig:lilium:pq}\end{minipage}\hfill
+	\raise0.02\textwidth\hbox{\begin{overpic}
+		[width=.23\textwidth]{fig/lilium-vf.jpg}
+		\put(0,0){(a)}
+	\end{overpic}}\hfill
+	\raise0.02\textwidth\hbox{\begin{overpic}
+		[width=.23\textwidth]{fig/lilium-pq.jpg}
+		\put(0,0){(b)}
+	\end{overpic}}\hfill
+	\raise0.02\textwidth\hbox{\begin{overpic}
+		[width=.22\textwidth]{arch-fig/lilium-pq-93.jpg}
+		\put(0,0){(c)}
+	\end{overpic}}
 
 	\begin{minipage}[b]{.27\textwidth}
 	\caption{Planar quad remeshing of the surface of
@@ -1573,7 +1558,7 @@ Fig.~\protect\ref{fig:teaser}).}
 	\end{minipage}\hfill
 	\includegraphics[height=0.16\textwidth]{fig/cas-vf.jpg}\hfill
 	%\includegraphics[height=0.15\textwidth]{arch-fig/1roo62.jpg}
-	\includegraphics[height=0.20\textwidth]{arch-fig/1roo58.jpg}
+	\includegraphics[height=0.18\textwidth]{arch-fig/1roo58.jpg}
   \end{figure*}
 
 Taking an arbitrary non-planar
@@ -1757,16 +1742,16 @@ geometrization} of problems as a general solution paradigm.
 
 This work was very much inspired by Philippe Block's plenary lecture
 at the 2011 Symposium on Geometry Processing in Lausanne. Several
-illustrations (the destruction sequence of Figure \ref{fig:removal}
-and the maximum load example of Figure
-\ref{fig:load}) have real\dash world analogues on his web page \cite{catalan}.
+illustrations (the destruction sequence of Fig.~\ref{fig:removal}
+and the maximum load example of Fig.~\ref{fig:load}) have real\dash 
+orld analogues on his web page \cite{catalan}.
 
 
  \begin{figure*}[t]\fboxsep0pt
  {\begin{overpic}[width=.52\textwidth]{arch-fig/schneider91.jpg}
  	\put(100,-33){{\includegraphics[width=\columnwidth]
 		{arch-fig/schneider84.jpg}}}
-  \end{overpic}}
+  \end{overpic}}\vspace*{-1em}
 
  \begin{minipage}[b]{1.23\columnwidth}
  \caption{Glass as a structural element can support stresses up to, say,
@@ -1784,8 +1769,8 @@ and torsion moments.}\label{fig:structural}
 
 \bibliographystyle{acmsiggraph}
 
-	%\let\otb=\thebibliography
-	%\def\thebibliography#1{\otb{#1}\itemsep-5pt\footnotesize}
+	\let\otb=\thebibliography
+	\def\thebibliography#1{\otb{#1}\itemsep-0.2pt}
 
 \bibliography{selfsupporting}
 
