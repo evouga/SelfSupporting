@@ -172,16 +172,16 @@ isotropic geometry, mean curvature}
 	\vskip-2ex
 	\caption{{\em Left:} Surfaces with irregularly placed holes
 are hard to realize as masonry, where the mortar between bricks
-must not be subject to tensile stresses. The surface shown here has
-this surprising property -- it has been found as the nearest
+must not be subject to tensile stresses. The surface shown here, surprisingly, has
+this property -- it has been found as the nearest
 self\dash supporting shape from a given freeform geometry.
-The fictitious thrust network used in our algorithms is also shown, with 
+The fictitious thrust network used in our algorithms is superimposed, with 
 edges' cross-section and coloring visualizing the magnitude of
 forces (warmer colors represent higher stresses.)
-{\em Right:} Curvature analysis with respect to the so\dash called
+{\em Right:} Curvature analysis with respect to the
 Airy stress surface
 tells us how to remesh shapes by self\dash supporting quad meshes
-with planar faces, which guide steel\slash glass constructions with
+with planar faces. This guides steel\slash glass constructions with
 low moments in nodes.}
 	\label{fig:teaser}
 }
@@ -202,11 +202,11 @@ one of classical continuum mechanics. This paper uses the thrust network method
 of analysis and presents an iterative nonlinear optimization algorithm for
 efficiently approximating freeform shapes by self\dash supporting ones.
 The rich geometry of thrust networks leads us to
-close connections between different topics of discrete differential geometry,
+close connections between diverse topics in discrete differential geometry,
 such as a finite\dash element discretization of the Airy stress potential, perfect graph
 Laplacians, and computing admissible loads via curvatures of polyhedral
 surfaces. This geometric viewpoint allows us, in particular, to remesh self\dash supporting
-shapes by self\dash supporting quad meshes with planar faces. This leads
+shapes by self\dash supporting quad meshes with planar faces, and leads
 to another application of the theory: steel\slash glass constructions
 with low moments in nodes.
 
@@ -275,7 +275,7 @@ that system.
 
 Our approach is twofold: We first give an overview of the continuous case
 of a smooth surface under stress, which turns out to be governed locally by the
-so\dash called Airy stress function. This mathematical
+Airy stress function. This mathematical
 model is called a membrane in the engineering literature and has been
 applied to the analysis of masonry before. The surface is self\dash
 supporting if and only if stresses are entirely compressive.
@@ -352,8 +352,7 @@ by Jacques Heyman \shortcite{Heyman66} and are available as the textbook
 case was studied by Maxwell \cite{Maxwell64};
 a unifying view on polyhedral surfaces, compressive
 forces and corresponding ``convex'' force diagrams is presented by
-\cite{Ash1988}. F.~Fraternali \shortcite{Fraternali2002a},
-\shortcite{Fraternali2010} established a connection between the continuous
+\cite{Ash1988}. F.~Fraternali \shortcite{Fraternali2002a,Fraternali2010} established a connection between the continuous
 theory of stresses in membranes and the discrete theory of forces in
 thrust networks, by interpreting the latter as a non-conforming
 finite element discretization of the former.
@@ -398,13 +397,13 @@ by statics properties of that surface.
 
 \section{Self-supporting Surfaces}
 
-This section is the theoretical basis of the paper. \S\ref{ssec:cont}
+This section contains the theoretical basis of the paper. \S\ref{ssec:cont}
 and \S\ref{sec:thrustnetworks} explain the mathematical
-model for unspported masonry and the discretization needed in our
+model for unsupported masonry and the discretization needed in our
 algorithms. The connection
 with isotropic geometry (\S\ref{sec:smooth} and \S\ref{sec:discrete})
 is important for the later Section \ref{sec:special},
-which deals with self\dash supporting PQ meshes and
+which deals with self\dash supporting PQ (planar quad) meshes and
 moment\dash free steel\slash glass constructions. Finally we 
 discuss convergence \secref{sec:convergence}.
 
@@ -1115,9 +1114,7 @@ solve
  Here $w_{\max}$ is an optional maximum weight we are willing to assign
 (to limit the amount of stress in the surface). This convex, sparse,
 box-constrained least-squares problem \cite{BCLS} always has a solution.
-If the objective is $0$ at this solution, the faces of $\Phi$ locally
-integrate to a stress surface satisfying \eqref{eq:deqiso}, and this $\Phi$
-certifies that $\SS$ is self-supporting -- we are done. Otherwise, $\SS$
+If the objective is $0$ at this solution, $\SS$ is self-supporting -- we are done. Otherwise, $\SS$
 is not self-supporting and its vertices must be moved.
 
 \begin{figure}[t]
@@ -1225,7 +1222,7 @@ reference mesh:
 step of the optimization, $\nw_i$ is the starting vertex normal (computed
 as the average of the incident face normals), $\vw^0_P$ is the projection
 of $\vw^0$ onto the reference mesh, and $\alpha > \beta$ are penalty
-coefficients that are decreased every iteration of Steps
+coefficients that are decreased proportionally to the decrease in $E$ at every iteration of Steps
 \ref{step2}--\ref{step4}. The second term allows $\SS$ to
 slide over itself (if doing so improves equilibrium) but penalizes drift
 in the normal direction. The third term, weaker than the second,
