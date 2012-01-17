@@ -5,14 +5,14 @@
 
 camera {
 	orthographic
-	location <-1,0,.7>*15 
+	location <-1,0,.5>*5 
 	angle 30
-	look_at <0,0,-0.5>
+	look_at <0,0,0>
 	sky <0,0,1>
 }
 
 
-light_source { <-10,-20,30>*2 color rgb <1,1,1> *.6 
+light_source { <-10,-5,30>*2 color rgb <1,1,1> *.6 
 	//shadowless
 	area_light <20,0,0>*5 <0,20,0>*5 5 5 jitter circular 
 	}
@@ -21,7 +21,7 @@ light_source { <0,0,-20> color rgb <1,1,1> *0.7 shadowless}
 
 
 plane {z,-.8 texture {weiss}}
-#declare r1=0.003;
-#declare r2=0.003;
+#declare r1=0.0016;
+#declare r2=0.0016;
 
 #include "facemacros.inc"
