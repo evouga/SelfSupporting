@@ -25,8 +25,8 @@
 
 // store textures
 
-#macro FText(i) #if (i<3) gelb #else weiss #end #end
-#macro EText(i) #if (i<3) weiss #else dblau #end #end
+#macro FText(i) #if (i<3) hellgelb #else weiss #end #end
+#macro EText(i) #if (i<3) schwarz #else dblau #end #end
 
 // render intermediate surfaces
 

@@ -8,4 +8,6 @@
 #declare concrete = texture {pigment {color rgb <1,1,.9> }  
         finish {ambient 0.2 diffuse 0.6}}
 
+#declare hellgelb = texture {  pigment { rgb <1,0.9,0.7> }
+                             finish { ambient 0.4 diffuse 0.6 phong 1 }};
 
