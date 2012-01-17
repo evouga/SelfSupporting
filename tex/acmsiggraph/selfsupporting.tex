@@ -1066,7 +1066,7 @@ using their current positions.
 
 \end{enumerate}
 
-{\it Remark:} This staggered approach shares the several advantages of
+{\it Remark:} This staggered approach shares several advantages of
 solving the full nonlinear problem: a nearby self\dash supporting surface
 is found given only a suggested reference shape, without needing to single
 one of the many possible top view reciprocal diagrams or needing to
@@ -1307,7 +1307,8 @@ reference surface (c), the thrust network automatically adjusts
 	\caption{Interactive Edits. (a) shows a 
 self\dash supporting thrust network --
 in fact it is a Koebe mesh as mentioned
-in \S\protect\ref{sec:special}.  In (b) pillars have been added. Cutting
+in \S\protect\ref{sec:special}.  In (b) boundary conditions
+are defined and pillars have been added. Cutting
 along the highlighted edge and optimizing for the self\dash supporting
 property results in the mesh shown in (c).} \label{fig:edit}
 \end{minipage}}
@@ -1568,7 +1569,7 @@ moment\dash free steel\slash glass construction (interior view, see also
 Fig.~\protect\ref{fig:teaser}).}
 	\label{fig:cas:pq}
 	\end{minipage}\hfill
-	\includegraphics[height=0.16\textwidth]{fig/cas-vf.jpg}\hfill
+	\includegraphics[height=0.17\textwidth]{fig/cas-vf.jpg}\hfill
 	%\includegraphics[height=0.15\textwidth]{arch-fig/1roo62.jpg}
 	\includegraphics[height=0.18\textwidth]{arch-fig/1roo58.jpg}
   \end{figure*}
@@ -1695,17 +1696,19 @@ the derived mesh formed by the intersection points of diagonals of faces
 again has planar faces \cite{bobenko-2008-ddg}.
 
 \begin{figure}[h]
-	\begin{overpic}[width=\columnwidth]{fig/enneper2.jpg}
+	\centering
+	\begin{overpic}[width=.8\columnwidth]{fig/enneper_v.jpg}
 		\color{gelb}
-		\lput(12,0){$\Phi+\alpha\RR$}
-		\lput(45,0){$\Phi$}
+		\put(35,65){$\Phi+\alpha\RR$}
+		\put(0,37){$\Phi$}
 		\color{blau}
-		\lput(77,0){$\RR$}
+		\put(0,5){$\RR$}
 	\end{overpic}
- \caption{A ``Koebe'' mesh  $\Phi$ is self\dash supporting for unit dead
+ \caption{Left: A ``Koebe'' mesh  $\Phi$ is self\dash supporting for unit dead
 load. An entire family of self-supporting meshes with the same top view
 is defined by $\SS_\alpha=\Phi+\alpha\RR$, where $\RR$ is chosen as $\Phi$'s
-Christoffel\dash dual.} \label{fig:enneper}
+Christoffel\dash dual. The right hand image shows a different 
+example of the same connectivity.} \label{fig:enneper}
 	\end{figure}
 
 
