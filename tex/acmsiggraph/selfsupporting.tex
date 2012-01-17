@@ -400,12 +400,13 @@ by statics properties of that surface.
 
 This section is the theoretical basis of the paper. \S\ref{ssec:cont}
 and \S\ref{sec:thrustnetworks} explain the mathematical
-model for unspported masonry and its discretization, which is needed in our
-modeling algorithms. The connection
+model for unspported masonry and the discretization needed in our
+algorithms. The connection
 with isotropic geometry (\S\ref{sec:smooth} and \S\ref{sec:discrete})
 is important for the later Section \ref{sec:special},
 which deals with self\dash supporting PQ meshes and
-moment\dash free steel\slash glass constructions.
+moment\dash free steel\slash glass constructions. Finally we 
+discuss convergence \secref{sec:convergence}.
 
 \subsection{The Continuous Theory}
 \label{ssec:cont}
@@ -984,7 +985,7 @@ equivalent. This is the case because the proposition above implies
 	$
 	\end{proof}
 
-\subsection{Convergence.}
+\subsection{Convergence.} \label{sec:convergence}
 
 When considering discrete thrust networks as discretizations of continuous
 self\dash supporting surfaces, the following question is important: For a
@@ -1390,7 +1391,7 @@ and corresponding reciprocal diagram.
 \def\sparagraph#1{\par\noindent{\it #1}}
 
 
-\sparagraph{{\sf\bfseries Examples.} Top of the Lilium Tower.}
+\sparagraph{{\sf\bfseries Examples.} Top of the Lilium Tower:}
 Consider the top portion of the steel-glass exterior surface of the Lilium
 Tower, which is currently being built in Warszaw (see Figure
 \ref{fig:Lilium}). What is if we had wanted to build this surface
@@ -1457,7 +1458,7 @@ left to right.} \label{fig:load2}
 
 \end{figure*}
 
-\sparagraph{Interactive Editing:}
+\sparagraph{Example: Interactive Editing.}
 Figure \ref{fig:edit} shows an example of the design and optimization
 workflow. Starting with a mesh, we first add pillars in the center
 and clean up the outer boundary (by fixing it to the floor). A subsequent
@@ -1468,8 +1469,8 @@ any difficulty; it always finds a self-supporting thrust network near the
 designed reference mesh. The user is free to make edits to the
 reference mesh, and the thrust network adapts to these edits, providing
 the user feedback on whether these designs are physically realizable
-[we generally refer to the accompanying video for interactive building and editing
-of freeform self\dash supporting shapes].
+{\it [we refer to the accompanying video for interactive building and editing
+of freeform self\dash supporting shapes].}
 
 \sparagraph{Example: Destruction Sequence.}
 In Figure \ref{fig:removal} we simulate removing parts of masonry and
