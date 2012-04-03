@@ -108,8 +108,6 @@ private slots:
 
     void on_actionHeights_triggered();
 
-    void on_avgHeightsButton_clicked();
-
     void on_enforcePlanarityCheckBox_clicked();
 
     void on_actionTrim_triggered();
@@ -143,6 +141,16 @@ private slots:
     void on_edgeFlipButton_clicked();
 
     void on_influenceEdit_editingFinished();
+
+    void on_actionSelect_Pinned_triggered();
+
+    void on_actionAverage_Selected_Heights_triggered();
+
+    void on_actionNone_triggered();
+
+    void on_actionPin_triggered();
+
+    void on_excludePinnedBox_clicked();
 
 protected:
     void moveEvent(QMoveEvent *);

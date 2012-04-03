@@ -31,6 +31,7 @@ struct Params
     int edges;
     bool projectVertically;
     int influence;
+    bool excludePinned;
 };
 
 class Controller
@@ -39,7 +40,7 @@ public:
     Controller(MainWindow &w);
     ~Controller();
 
-    enum EditMode {EM_CAMERA, EM_FREEHANDLE, EM_HEIGHTHANDLE, EM_DELETEFACE, EM_PIN, EM_ANCHOR, EM_TOPHANDLE};
+    enum EditMode {EM_CAMERA, EM_FREEHANDLE, EM_HEIGHTHANDLE, EM_DELETEFACE, EM_PIN, EM_ANCHOR, EM_TOPHANDLE, EM_EDGECOLLAPSE};
 
     void initialize();
 
@@ -91,6 +92,9 @@ public:
     void setAnchor(std::vector<int> &vidx);
     void clearAnchor(std::vector<int> &vidx);
     void deleteFace(int fidx);
+    void edgeCollapse(int eidx);
+    void deselectAll();
+    void pinSelected();
 
     EditMode getEditMode();
 
@@ -111,6 +115,7 @@ public:
     void laplacianTest();
     void computeConjugateDirs();
     void setInfluence(int influence);
+    void setExcludePinned(bool state);
 
     void pinReferenceBoundary();
     void unpinReferenceBoundary();
@@ -119,6 +124,7 @@ public:
     void invertY();
 
     void averageHeights();
+    void selectPinned();
     void dilate();
 
     void updateGLWindows();

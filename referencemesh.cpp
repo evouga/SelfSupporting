@@ -232,6 +232,20 @@ void ReferenceMesh::applyLaplacianDeformationHeight(int, const Vector3d &delta, 
 
     int n = mesh_.n_vertices();
 
+    set<int> toAdd;
+
+    for(int i=0; i<n; i++)
+    {
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
+        if(mesh_.data(vh).handled())
+        {
+            set<int> nring;
+            getNRing(i, 3, nring);
+            for(set<int>::iterator it = nring.begin(); it != nring.end(); ++it)
+                toAdd.insert(*it);
+        }
+    }
+
     set<int> toAlter;
 
     for(int i=0; i<n; i++)
@@ -281,12 +295,19 @@ void ReferenceMesh::applyLaplacianDeformationHeight(int, const Vector3d &delta, 
     for(int i=0; i<n; i++)
     {
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
-        if(mesh_.data(vh).handled())
+        //if(mesh_.data(vh).handled())
+        if(mesh_.data(vh).handled() || (radius == 6 && toAdd.count(i) > 0))
         {
             MyMesh::Point movedpt = mesh_.point(vh);
             rhs[i] += (movedpt[1]+delta[1]);
             LTL.coeffRef(i, i) += 1.0;
         }
+//        else if(toAlter.count(i) > 0)
+//        {
+//            MyMesh::Point movedpt = mesh_.point(vh);
+//            rhs[i] += (movedpt[1] + 0.5*delta[1]);
+//            LTL.coeffRef(i, i) += 1.0;
+//        }
         else if(mesh_.data(vh).pinned() || mesh_.data(vh).anchored())
         {
             LTL.coeffRef(i, i) += 1.0;
@@ -409,7 +430,7 @@ void ReferenceMesh::applyLaplacianDeformation(int, const Vector3d &delta)
     }
 }
 
-void ReferenceMesh::applyLaplacianDeformationTop(int, const Vector3d &delta, int radius)
+void ReferenceMesh::applyLaplacianDeformationTop(int, const Vector3d &delta, int radius, bool excludePinned)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
 
@@ -477,7 +498,7 @@ void ReferenceMesh::applyLaplacianDeformationTop(int, const Vector3d &delta, int
             LTL.coeffRef(2*i+1,2*i+1) += 1.0;
 
         }
-        else if(mesh_.data(vh).pinned())
+        else if(mesh_.data(vh).pinned() && excludePinned)
         {
             LTL.coeffRef(2*i + 0, 2*i + 0) += 1.0;
             LTL.coeffRef(2*i + 1, 2*i + 1) += 1.0;
@@ -612,7 +633,7 @@ bool ReferenceMesh::addOBJ(const char *filename)
         assert(closestpt != -1);
         assert(closestdist < 1e-8);
         MyMesh::Point &pt = mesh_.point(mesh_.vertex_handle(closestpt));
-        pt[1] += addpt[1];
+        pt[1] -= addpt[1];
     }
     return true;
 }
@@ -743,4 +764,16 @@ double ReferenceMesh::computeBestDWeights(const VectorXd &dQ, VectorXd &dW)
     SparseMatrix<double> M(Md.transpose()*Md);
     cont_.getSolvers().linearSolveCG(M, Md.transpose()*rhs, dW);
     return (Md*dW-rhs).norm();
+}
+
+void ReferenceMesh::selectPinned()
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+
+    for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
+    {
+        MyMesh::VertexHandle vh = vi.handle();
+        if(mesh_.data(vh).pinned())
+            mesh_.data(vh).set_handled(true);
+    }
 }

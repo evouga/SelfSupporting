@@ -136,6 +136,7 @@ OpenGLPanel3D::MouseAction OpenGLPanel3D::deduceAction(QMouseEvent *event)
         if(event->buttons() & Qt::LeftButton)
         {
             return MA_ADDHANDLEHEIGHT;
+
         }
         else if(event->buttons() & Qt::RightButton)
         {
@@ -181,6 +182,12 @@ OpenGLPanel3D::MouseAction OpenGLPanel3D::deduceAction(QMouseEvent *event)
     {
         if(event->buttons() & Qt::LeftButton)
             return MA_DELETEFACE;
+        return MA_NONE;
+    }
+    else if(curmode == Controller::EM_EDGECOLLAPSE)
+    {
+        if(event->buttons() & Qt::LeftButton)
+            return MA_EDGECOLLAPSE;
         return MA_NONE;
     }
 
@@ -265,6 +272,12 @@ void OpenGLPanel3D::mousePressEvent(QMouseEvent *event)
         case MA_DELETEFACE:
         {
             selector_.startEditing(pos, Selector::SM_DELETEFACE);
+            cont_->updateGLWindows();
+            break;
+        }
+        case MA_EDGECOLLAPSE:
+        {
+            selector_.startEditing(pos, Selector::SM_EDGECOLLAPSE);
             cont_->updateGLWindows();
             break;
         }

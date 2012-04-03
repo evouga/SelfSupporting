@@ -219,8 +219,8 @@ void Controller::iterateNetwork()
     double maxstress = p_.maxStress;
     if(!p_.enforceMaxWeight)
         maxstress = std::numeric_limits<double>::infinity();
-    //double tol = 1e-4;
-    double tol = 1e-8;
+    double tol = 1e-4;
+    //double tol = 1e-8;
     double residualw = nm_->computeBestWeights(maxstress, p_.thickness, tol);
     double residualp = nm_->computeBestPositionsTangentLS(p_.alpha, p_.beta, p_.thickness, p_.planarity, p_.projectVertically);
     //double residualp = nm_->computeBestPositionsBCLS(p_.alpha, p_.beta, p_.thickness, p_.planarity, p_.projectVertically);
@@ -300,6 +300,7 @@ void Controller::subdivideReferenceMesh(bool andboundary)
 {
     rm_->subdivide(andboundary);
     resetParams();
+    resetNetworkMesh();
     p_.statusmsg = "Subdivided reference mesh.";
     w_.updateGLWindows();
 }
@@ -309,6 +310,7 @@ void Controller::subdivideReferenceMeshLoop(bool andboundary)
     rm_->triangleSubdivide(andboundary);
     resetParams();
     p_.statusmsg = "Subdivided reference mesh.";
+    resetNetworkMesh();
     w_.updateGLWindows();
 }
 
@@ -358,7 +360,7 @@ void Controller::dragVertexHeight(int vidx, const Vector3d &translation)
 
 void Controller::dragVertexTop(int vidx, const Vector3d &translation)
 {
-    rm_->applyLaplacianDeformationTop(vidx, translation, p_.influence);
+    rm_->applyLaplacianDeformationTop(vidx, translation, p_.influence, p_.excludePinned);
     resetNetworkMesh();
     updateGLWindows();
 }
@@ -482,6 +484,13 @@ void Controller::deleteFace(int fidx)
     w_.updateGLWindows();
 }
 
+void Controller::edgeCollapse(int eidx)
+{
+    rm_->collapse(eidx);
+    resetNetworkMesh();
+    w_.updateGLWindows();
+}
+
 void Controller::resetParams()
 {
     p_.statusmsg = "Ready";
@@ -527,6 +536,11 @@ void Controller::setEnforcePlanarity(bool state)
 void Controller::setProjectVertically(bool state)
 {
     p_.projectVertically = state;
+}
+
+void Controller::setExcludePinned(bool state)
+{
+    p_.excludePinned = state;
 }
 
 void Controller::enforceMaxWeight(bool state)
@@ -621,11 +635,17 @@ vector<int> Controller::selectRectangle(const Vector2d &c1, const Vector2d &c2, 
 void Controller::averageHeights()
 {
     rm_->averageHandledHeights();
+    w_.updateGLWindows();
+}
+
+void Controller::selectPinned()
+{
+    rm_->selectPinned();
 }
 
 void Controller::dilate()
 {
-    rm_->dilate(2);
+    rm_->dilate(0.5);
     resetNetworkMesh();
     w_.updateGLWindows();
 }
@@ -654,4 +674,16 @@ void Controller::envelopeTest()
 void Controller::setInfluence(int influence)
 {
     p_.influence = influence;
+}
+
+void Controller::deselectAll()
+{
+    rm_->dehandleAll();
+    w_.updateGLWindows();
+}
+
+void Controller::pinSelected()
+{
+    rm_->pinHandled();
+    w_.updateGLWindows();
 }

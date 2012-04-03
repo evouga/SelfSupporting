@@ -82,18 +82,18 @@ void NetworkMeshRenderer::renderSurface()
 
         glBegin(GL_POLYGON);
         for (MyMesh::ConstFaceVertexIter v = mesh_.cfv_iter(f); v; ++v) {
-            if(((NetworkMesh &)m_).isBadVertex(v.handle()))
-                glColor4f(1.0,0.0,0.0,1.0);
-            else
+            //if(((NetworkMesh &)m_).isBadVertex(v.handle()))
+//                glColor4f(1.0,0.0,0.0,1.0);
+//            else
                 glColor4f(156/255., 213/255., 86/255., 1);
 
-            double viol = 1+log(mesh_.data(v.handle()).violation())/24.0;
-            glColor4f(viol, 213/255., 86/255., 1);
+            //double viol = 1+log(mesh_.data(v.handle()).violation())/24.0;
+            //glColor4f(viol, 213/255., 86/255., 1);
 
-            if(mesh_.data(v.handle()).handled())
-                glColor4f(1.0,0.0,0.0,1.0);
-            else if(mesh_.data(v.handle()).outofenvelope())
-                glColor4f(0,0,0,1.0);
+//            if(mesh_.data(v.handle()).handled())
+//                glColor4f(1.0,0.0,0.0,1.0);
+//            else if(mesh_.data(v.handle()).outofenvelope())
+//                glColor4f(0,0,0,1.0);
 
 
 

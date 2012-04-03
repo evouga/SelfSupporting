@@ -141,14 +141,30 @@ void MainWindow::resizeEvent(QResizeEvent *)
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
-    if(event->key() == 'q' || event->key() == 'Q')
-        close();
-    if(event->key() == 'i' || event->key() == 'I')
+    switch(event->key())
     {
-        c_.iterateNetwork();
-        updateGLWindows();
+        case 'q':
+        case 'Q':
+            close();
+            break;
+        case 'i':
+        case 'I':
+            c_.iterateNetwork();
+            updateGLWindows();
+            break;
+        case 'h':
+        case 'H':
+            c_.pinSelected();
+            break;
+        case 's':
+        case 'S':
+            c_.selectPinned();
+            break;
+        case 'd':
+        case 'D':
+            c_.deselectAll();
+            break;
     }
-
 }
 
 void MainWindow::updateGLWindows()
@@ -247,6 +263,8 @@ Controller::EditMode MainWindow::getEditMode()
         return Controller::EM_ANCHOR;
     else if(ui->topHandleButton->isChecked())
         return Controller::EM_TOPHANDLE;
+    else if(ui->edgeButton->isChecked())
+        return Controller::EM_EDGECOLLAPSE;
     assert(false);
 }
 
@@ -306,6 +324,7 @@ void MainWindow::reportParams()
     c_.setExtraMass(ui->extraMassEdit->text().toDouble());
     c_.setProjectVertically(ui->projectVerticallyCheckBox->isChecked());
     c_.setInfluence(ui->influenceEdit->text().toInt());
+    c_.setExcludePinned(ui->excludePinnedBox->isChecked());
 }
 
 void MainWindow::on_actionSubdivide_triggered()
@@ -383,11 +402,6 @@ void MainWindow::on_actionHeights_triggered()
     c_.computeBestHeights();
 }
 
-
-void MainWindow::on_avgHeightsButton_clicked()
-{
-    c_.averageHeights();
-}
 
 void MainWindow::on_enforcePlanarityCheckBox_clicked()
 {
@@ -502,4 +516,29 @@ void MainWindow::on_edgeFlipButton_clicked()
 void MainWindow::on_influenceEdit_editingFinished()
 {
     c_.setInfluence(ui->influenceEdit->text().toInt());
+}
+
+void MainWindow::on_actionSelect_Pinned_triggered()
+{
+    c_.selectPinned();
+}
+
+void MainWindow::on_actionAverage_Selected_Heights_triggered()
+{
+    c_.averageHeights();
+}
+
+void MainWindow::on_actionNone_triggered()
+{
+    c_.deselectAll();
+}
+
+void MainWindow::on_actionPin_triggered()
+{
+    c_.pinSelected();
+}
+
+void MainWindow::on_excludePinnedBox_clicked()
+{
+    c_.setExcludePinned(ui->excludePinnedBox->isChecked());
 }

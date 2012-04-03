@@ -31,7 +31,7 @@ public:
 
     void applyLaplacianDeformation(int vidx, const Eigen::Vector3d &delta);
     void applyLaplacianDeformationHeight(int vidx, const Eigen::Vector3d &delta, int radius);
-    void applyLaplacianDeformationTop(int vidx, const Eigen::Vector3d &delta, int radius);
+    void applyLaplacianDeformationTop(int vidx, const Eigen::Vector3d &delta, int radius, bool excludePinned);
 
     void setHandle(int vidx, bool state);
     void deleteFace(int fidx);
@@ -46,6 +46,7 @@ public:
 
     void averageHandledHeights();
     void trimBoundary();
+    void selectPinned();
 
     std::vector<int> selectRectangle(const Eigen::Vector2d &c1, const Eigen::Vector2d &c2, Camera &c);
 

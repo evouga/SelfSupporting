@@ -97,7 +97,6 @@ double NetworkMesh::calculateEquilibriumViolation()
 double NetworkMesh::computeBestWeights(double maxstress, double thickness, double tol)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
-    cout << "start bw" << endl;
 
     int n = mesh_.n_vertices();
     int e = mesh_.n_edges();
@@ -205,12 +204,10 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness, doubl
     SparseMatrix<double, RowMajor> M(Md);
     int oldid = getMeshID();
 
-    cout << "start computing bw" << endl;
     ml.reset();
 
     cont_.getSolvers().solveBCLS(M, rhs, lb, ub, result,tol);
 
-    cout << "after computing bw" << endl;
     ml = acquireMesh();
     if(getMeshID() == oldid)
     {
@@ -224,14 +221,12 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness, doubl
         invalidateMesh();
     }
     double after = calculateEquilibriumViolation();
-    cout << "done computing bw" << endl;
     return after;
 }
 
 double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, double thickness, bool planarity, bool projectVertically)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
-    cout << "start bp" << endl;
     int n = mesh_.n_vertices();
 
     double fac = 0;
@@ -516,16 +511,12 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, dou
     VectorXd result = q0;
 
     int oldid = getMeshID();
-    cout << "solving bp" << endl;
     ml.reset();
 
     SparseMatrix<double, RowMajor> M(Md);
-    cout << "before solve" << endl;
     cont_.getSolvers().linearSolveCG(M, rhs, result);
-    cout << "after solve" << endl;
     double residual = std::numeric_limits<double>::infinity();
 
-    cout << "after solving bp" << endl;
     ml = acquireMesh();
     if(oldid == getMeshID())
     {
@@ -545,7 +536,6 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, dou
         //distanceFromReference(subdreference_, thickness);
         invalidateMesh();
     }
-    cout << "done bp" << endl;
     return residual;
 }
 

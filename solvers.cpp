@@ -98,6 +98,7 @@ void Solvers::solveBCLS(const SparseMatrix<double, RowMajor> &A, VectorXd &b, Ve
     ls->newton_step = BCLS_NEWTON_STEP_LSQR;
     ls->optTol = tol;
     ls->print_level =0 ;
+    //ls->itnMinLim /= 8;
     bcls_solve_prob(ls);
     bcls_free_prob(ls);
 
@@ -116,7 +117,6 @@ void Solvers::linearSolveLDLT(const SparseMatrix<double> &A, const VectorXd &rhs
 void Solvers::linearSolveCG(const SparseMatrix<double, RowMajor> &A, const VectorXd &rhs, VectorXd &result)
 {
     int n = A.rows();
-    cout << "ls " << n << endl;
     assert(A.cols() == n);
     VectorXd residual = rhs - A*result;
     VectorXd p = residual;

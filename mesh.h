@@ -155,6 +155,9 @@ public:
     Eigen::Matrix2d approximateHessianVertex(MyMesh::VertexHandle vert);
     double faceAreaOnPlane(MyMesh::FaceHandle face);
     void dilate(double factor);
+    void collapse(int edge);
+    void dehandleAll();
+    void pinHandled();
 
     friend class MeshLock;
 protected:

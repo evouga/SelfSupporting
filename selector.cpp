@@ -118,6 +118,13 @@ void Selector::primitiveSelected(Mesh::PrimType primtype, int primidx)
                 cont_->deleteFace(primidx);
             break;
         }
+        case SM_EDGECOLLAPSE:
+        {
+            state_ = SS_NONE;
+            if(primtype == Mesh::PT_EDGE)
+                cont_->edgeCollapse(primidx);
+            break;
+        }
         default:
             assert(!"Bad select mode");
     }

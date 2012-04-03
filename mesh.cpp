@@ -1146,3 +1146,40 @@ void Mesh::computeCentroids(MyMesh &m)
         m.data(fi.handle()).set_centroid(centroid);
     }
 }
+
+void Mesh::collapse(int edge)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    assert(edge >= 0 && edge < (int)mesh_.n_edges());
+    MyMesh::EdgeHandle eh = mesh_.edge_handle(edge);
+    MyMesh::HalfedgeHandle heh = mesh_.halfedge_handle(eh, 0);
+    MyMesh::VertexHandle tov = mesh_.to_vertex_handle(heh);
+    if(mesh_.data(tov).handled())
+        mesh_.collapse(heh);
+    else
+    {
+        heh = mesh_.opposite_halfedge_handle(heh);
+        tov = mesh_.to_vertex_handle(heh);
+        if(mesh_.data(tov).handled())
+            mesh_.collapse(heh);
+    }
+}
+
+void Mesh::dehandleAll()
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
+    {
+        mesh_.data(vi).set_handled(false);
+    }
+}
+
+void Mesh::pinHandled()
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
+    {
+        if(mesh_.data(vi).handled())
+            mesh_.data(vi).set_pinned(true);
+    }
+}
