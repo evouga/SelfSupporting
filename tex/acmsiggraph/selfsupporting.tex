@@ -14,7 +14,7 @@
 %%% [review] - A technical paper submitted for review. Includes line
 %%%   numbers and anonymization of author and affiliation information.
 
-\documentclass[review]{acmsiggraph}
+\documentclass[annual]{acmsiggraph}
 
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -66,7 +66,7 @@
 \def\SS{{\mathcal S}}
 \def\RR{{\mathcal R}}
 
-
+\newcommand{\newtext}[1]{\textcolor{red}{#1}}
 \newcommand{\todo}[1]{\textcolor{red}{#1}}
 \newcommand{\secref}[1]{(\S\ref{#1})}
 
@@ -141,7 +141,7 @@
 %%% The ``pdfauthor'' command accepts the authors of the work,
 %%% comma-delimited, and adds this information to the PDF metadata.
 
-\pdfauthor{Anonymous}
+\pdfauthor{Etienne Vouga, Mathias H\"{o}binger, Johannes Wallner, Helmut Pottmann}
 
 %%% Keywords that describe your work. The ``\keywordlist'' command will print
 %%% them out.
@@ -362,7 +362,7 @@ force networks contained within the boundary of masonry structures; previous
 work in this area includes \cite{O'Dwyer98} and
 \cite{andreu-2007}. Fraternali~\shortcite{Fraternali2010} proposed solving
 for the structure's discrete stress surface, and examining its convex hull
-to study the structure's stability and susceptibility to cracking.
+to study the structure's stability and susceptibility to cracking. \newtext{This approach works well for analyzing existing structures, where the boundary tractions can be measured and the stress surface is known to be close to convex, but is not an ideal design tool since in such settings the boundary tractions are unknown, and where replacing a non-convex intial stress surface by its convex hull can cause large, uncontrolled global changes to the surface being designed.}
 Philippe Block's seminal thesis introduced {\it Thrust
 Network Analysis}, which pioneered the use of thrust networks and their
 reciprocal diagrams for efficient and practical design of self\dash supporting
@@ -378,9 +378,9 @@ a genetic algorithm~\cite{Block2011}.
 
 Other approaches to the design of self-supporting structures
 include modeling these structures as damped particle-spring
-systems~\cite{Kilian2005,barnes09}, and mirroring the rich tradition in
-architecture of designing self-supporting surfaces using hanging chain
-models~\cite{Heyman98}. Alternatively, masonry structures can be
+systems \newtext{(``dynamic relaxation'' methods)}~\cite{Kilian2005,barnes09}, and mirroring the rich tradition in
+architecture of designing self-supporting surfaces using \newtext{hanging chain
+or membrane models (for instance by Frei Otto, Antoni Gaudi, and Heinz Isler)~\cite{Heyman98,Kotnik12}.} \newtext{Force density methods~\cite{linkwitz71} linearize the form-finding problem by solving for static equilibrium with respect to position variables, given prescribed prestresses in the form of axial force densities~\cite{grundig00}.} Alternatively, masonry structures can be
 represented by networks of rigid blocks~\cite{Livesley92}, whose conditions
 on the structural feasibility were incorporated into procedural modeling
 of buildings~\cite{Whiting09}.
@@ -392,8 +392,6 @@ in particular curvatures in isotropic geometry \cite{Pottmann2007}.
 Schiftner and Balzer \shortcite{Schiftner2010} discuss approximating a
 reference surface by a quad mesh with planar faces, whose layout is guided
 by statics properties of that surface.
-
-%\cite{Koenderink2002}, etc PQ meshes
 
 \section{Self-supporting Surfaces}
 
@@ -1337,7 +1335,8 @@ of single bricks does not affect stability (a,b). Removal of material at a
 certain point (yellow ball in (b))
 will cause a greater part of the structure to collapse,
 as seen in (c). (d) shows the result after one more removal (all images show
-the respective thrust networks, not the reference surface).}
+the respective thrust networks, not the reference surface). \newtext{This sequence of figures was inspired by images of real-world destruction of masonry structures by the Block Research Group~\protect\cite{catalan}.}
+}
 \label{fig:removal}
 \end{figure*}
 
@@ -1452,7 +1451,7 @@ of the original dome. This implies stability of the dome under that load.}
 but with a shell thickness of 1\,m, in order to better visualize the way
 the thrust network starts to leave the masonry hull as the load increases.
 Additional loads are 0\,kg, 5,000\,kg, 10,000\,kg, and 20,000\,kg, resp., from
-left to right.} \label{fig:load2}
+left to right. \newtext{These load tests were inspired by real-world experiments performed by the Block Research Group~\protect\cite{catalan,blockfigs}} } \label{fig:load2}
 
 \end{figure*}
 
@@ -1745,7 +1744,7 @@ This work was very much inspired by Philippe Block's plenary lecture
 at the 2011 Symposium on Geometry Processing in Lausanne. Several
 illustrations (the destruction sequence of Fig.~\ref{fig:removal}
 and the maximum load example of Fig.~\ref{fig:load}) have real\dash 
-world analogues on his web page at ETH Zurich.
+world analogues on his web page at ETH Zurich.~\cite{catalan}
 
 \paragraph{Future Work.}
 
