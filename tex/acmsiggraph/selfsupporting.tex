@@ -467,7 +467,7 @@ strictly convex. The balance condition \eqref{eq:conds} may be written as
 
 We discretize a self-supporting surface by a mesh $\SS=(V,E,F)$
 (see Figure~\ref{fig:reciprocal}). Loads are again vertical,
-and we discretize them as force densities $F_i$ associated with vertices
+and following Block~\shortcite{Block07} we discretize them as force densities $F_i$ associated with vertices
 $\vw_i$. The load acting on this vertex is then given by $F_iA_i$, where
 $A_i$ is an area of influence (using a prime to indicate projection onto
 the $xy$ plane, $A_i$ is the area of the Voronoi cell of $\vw_i'$ w.r.t.\
@@ -496,7 +496,7 @@ as follows: With $\vw_i=(x_i,y_i,s_i)$ we have
 			\label{eq:deqz}
 	\end{align}
  A mesh equipped with edge weights in this way is a discrete \emph{thrust
-network}. Invoking the safe theorem, we can state that a masonry structure
+network}~\cite{block09}. Invoking the safe theorem, we can state that a masonry structure
 is self\dash supporting, if we can find a thrust network with compressive
 forces which is entirely contained within the structure.
 
@@ -551,7 +551,7 @@ closed cycle. Rotating them by 90 degrees, we see that likewise
  form a closed cycle (see Figure \ref{fig:reciprocal}). If the mesh $\SS$
 is simply connected, there exists an entire {\em reciprocal diagram}
 $\SS^{\prime *}$ which is a combinatorial dual of $\SS$, and which has
-edge vectors $\ew_{ij}'^*$. Its vertices are denoted by $\vw_i^{\prime
+edge vectors $\ew_{ij}'^*$~\cite{Block07}. Its vertices are denoted by $\vw_i^{\prime
 *}$.
 
 {\it Remark:} If $\SS'$ is a Delaunay triangulation, then the
