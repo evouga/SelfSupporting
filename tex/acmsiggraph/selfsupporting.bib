@@ -1,3 +1,9 @@
+@preamble{ "\def\Http#1{{\small \ttfamily \bfseries \spaceskip 0pt plus .5pt 
+	http:// #1}}" }
+@preamble{ "\def\Http#1{{\it\spaceskip 0pt plus .5pt 
+	http:// #1}}" }
+
+
 @incollection{Pottmann2007,
 	author = {Pottmann, Helmut and Liu, Yang},
 	title = {Discrete surfaces in isotropic geometry},
@@ -117,7 +123,8 @@ keywords={ approximated local frame; coefficient matrix factorization; global co
 @incollection{Sorkine2003,
 	author = {Sorkine, Olga and Cohen-Or, Daniel and Toledo, Sivan},
 	title = {High-pass quantization for mesh encoding},
-	booktitle = {Symposium Geometry processing},
+	xxbooktitle = {Symposium Geometry processing},
+	booktitle = {Proc. SGP},
 	xxeditor = "L. Kobbelt and P. Schr{\"o}der and H. Hoppe",
 	year = {2003},
 	isbn = {1-58113-687-0},
@@ -288,7 +295,7 @@ keywords = "Thrust network approach, Masonry vaults, No-tension model, Stress fu
 	author = "F. Fraternali and M. Angelillo and A. Fortunato",
 	year = 2002,
 	title = "A lumped stress method for plane elastic problems 
-		and the discrete-continuum approximation",
+		and the dis\-crete-continuum approximation",
 	journal = "Int. J. Solids Struct.",
 	volume = 39,
 	pages = "6211-6240",
@@ -374,8 +381,7 @@ keywords = "Thrust network approach, Masonry vaults, No-tension model, Stress fu
 	author = "Michael P. Friedlander",
 	year = 2007,
 	title = "{BCLS}: Bound Constrained Least Squares",
-	howpublished = {{\it\spaceskip=0pt plus 0.5pt
-		http:// www. cs. ubc. ca/$\sim$mpf/ bcls}},
+	howpublished = {\Http{www. cs. ubc. ca/$\sim$mpf/ bcls}},
 }
 @inproceedings{block2011,
 	author = "P. Block and L. Lachauer",
@@ -411,8 +417,8 @@ keywords = "Thrust network approach, Masonry vaults, No-tension model, Stress fu
 @phdthesis{block09,
 	author = "Philippe Block",
 	title = "Thrust Network Analysis: Exploring Three-dimensional Equilibrium",
-	school = "Massachusetts Institute of Technology",
-	xxschool = "M.I.T.",
+	xxschool = "Massachusetts Institute of Technology",
+	school = "M.I.T.",
 	year = 2009,
 }
 
@@ -487,15 +493,18 @@ keywords = "Thrust network approach, Masonry vaults, No-tension model, Stress fu
 	pages = "25--57",
 }
 
-@article{grundig00,
-  title= "A history of the principal developments and applications of the force density method in Germany 1970--1999",
+@incollection{grundig00,
+  title= "A history of the principal developments and applications of the force density method in {G}ermany 1970--1999",
   author= "Gr{\"u}ndig, L. and Moncrieff, E. and Singer, P. and Str{\"o}bel, D.",
   year=2000,
-  journal = "Fourth International Colloquium on Computation of Shell {\&} Spatial Structures",
+  longbooktitle = "Fourth International Colloquium on Computation of Shell {\&} Spatial Structures",
+  booktitle = "4th Int. Coll. Computation of Shell {\&} Spatial Structures",
+  xxbooktitle = "Proc. IASS-IACM",
+ xxnote = "\Http{technet-gmbh. com/ fileadmin/ Leich\-te\_ Flae\-chen\-trag\-wer\-ke/ Publikationen/ Density2. pdf}"
 }
 
 @article{linkwitz71,
-  title = "Einige Bemerkungen zur Berechnung von vorgespannten Seilnetzkonstruktionen",
+  title = "{Einige Bemerkungen zur Berechnung von vorgespannten Seilnetzkonstruktionen}",
   author = "K. Linkwitz and H.-J. Schek",
   journal = "Ingenieur-Archiv",
   volume = 40,

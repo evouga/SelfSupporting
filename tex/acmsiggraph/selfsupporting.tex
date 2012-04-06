@@ -166,8 +166,8 @@ isotropic geometry, mean curvature}
 %%% ``\begin{document}'' and ``\maketitle.''
 
 \teaser{\centering
-        \includegraphics[height=.28\textwidth]{arch-fig/cheesevault78.jpg}
-        \includegraphics[height=.28\textwidth]{arch-fig/1roo97}
+        \includegraphics[height=.24\textwidth]{arch-fig/cheesevault78.jpg}
+        \includegraphics[height=.24\textwidth]{arch-fig/1roo97}
 
 	\vskip-2ex
 	\caption{{\em Left:} Surfaces with irregularly placed holes
@@ -349,7 +349,7 @@ Unsupported masonry has been an active topic of research in the
 engineering community. The foundations for the modern approach were laid
 by Jacques Heyman \shortcite{Heyman66} and are available as the textbook
 \cite{Heyman95}. The theory of reciprocal force diagrams in the planar
-case was studied by Maxwell \cite{Maxwell64};
+case was studied by J.~Maxwell;
 a unifying view on polyhedral surfaces, compressive
 forces and corresponding ``convex'' force diagrams is presented by
 \cite{Ash1988}. F.~Fraternali \shortcite{Fraternali2002a,Fraternali2010} established a connection between the continuous
@@ -396,14 +396,11 @@ by statics properties of that surface.
 \section{Self-supporting Surfaces}
 
 This section contains the theoretical basis of the paper. \S\ref{ssec:cont}
-and \S\ref{sec:thrustnetworks} explain the mathematical
-model for unsupported masonry and the discretization needed in our
-algorithms. The connection
+and \S\ref{sec:thrustnetworks} explain our mathematical
+model and discretization. The connection
 with isotropic geometry (\S\ref{sec:smooth} and \S\ref{sec:discrete})
-is important for the later Section \ref{sec:special},
-which deals with self\dash supporting PQ (planar quad) meshes and
-moment\dash free steel\slash glass constructions. Finally we 
-discuss convergence \secref{sec:convergence}.
+is important for the later Section \ref{sec:special}.
+Finally we discuss convergence \secref{sec:convergence}.
 
 \subsection{The Continuous Theory}
 \label{ssec:cont}
@@ -437,10 +434,8 @@ the notation
 	\end{align*}
  it is clear that $\Div M=0$ is an integrability condition for $\wh M$, so
 locally there is a potential $\phi$ with
-	\begin{align*}
-	\wh M = \Hess\phi, \quad \text{i.e.,}\quad
-	M = \wh{\Hess\phi}.
-	\end{align*}
+	$\wh M = \Hess\phi$, i.e., 
+	$M = \wh{\Hess\phi}$.
  If the domain $\Omega$ is simply connected, this relation holds globally.
 Positive semidefiniteness of $M$ (or equivalently of $\wh M$)
 characterizes {\em convexity} of the Airy potential $\phi$. The Airy
@@ -502,7 +497,7 @@ forces which is entirely contained within the structure.
 
   \begin{figure}[t]
   \centering
-  \begin{overpic}[width=.94\columnwidth]{fig/reciprocal}
+  \begin{overpic}[width=.85\columnwidth]{fig/reciprocal}
 	\put(0,33){$\SS$}
 	\lput(13,33){$\vw_i$}
 	\cput(14,25){\contour{white}{$A_iF_i$}}
@@ -513,19 +508,7 @@ forces which is entirely contained within the structure.
 	\color{drot}
 	\put(1,0){$w_{ij} \ew_{ij}'$}
 	\lput(63,3){$\ew_{ij}^*$}
-  \end{overpic}\nix{
- \begin{overpic}[width=\columnwidth]{fig/reciprocal1}
-	\color{gelb}
-	\lput(100,15){$\SS'^*$}
-	\color{blau}
-	\put(1,25){$\SS$}
-	\lput(7,1){$\SS'$}
-	\lput(21,35){$\vw_i$}
-	\cput(21,29){$F_i$}
-	\color{drot}
-	\lput(13,8){\contour{white}{$w_{ij} \ew_{ij}'$}}
-	\lput(66,11){\contour{white}{$\ew_{ij}^*$}}
-  \end{overpic}}\relax
+  \end{overpic}
  \caption{A thrust network $\SS$ with dangling edges indicating external
 forces (left). This network together with compressive forces which balance
 vertical loads $A_iF_i$ projects onto a planar mesh $\SS'$ with
@@ -583,9 +566,9 @@ If the mesh is not simply connected, the reciprocal diagram and the Airy
 polyhedron exist only locally. Our computations do not require global existence.
 
   \begin{figure}[t]
- \centerline{\vphantom{\includegraphics[width=.94\columnwidth]
+ \centerline{\vphantom{\includegraphics[width=.85\columnwidth]
 		{fig/reciprocal}}\relax
-  \begin{overpic}[width=.94\columnwidth]{fig/beide}
+  \begin{overpic}[width=.85\columnwidth]{fig/beide}
 	\lput(49,33){$\ww_k^*$}
 	\lput(49,15){$\vw_k^{*\prime}$}
 	\color{gelb}
@@ -596,17 +579,6 @@ polyhedron exist only locally. Our computations do not require global existence.
 	\put(0,0){$\Phi'=\SS'$}
 	\cput(4,31){$f_k$}
   \end{overpic}}
-%  \begin{overpic}[width=.94\columnwidth]{fig/beide1}
-%	\put(46,30){$\ww_k^*$}
-%	\put(46,16){$\vw_k^{*\prime}$}
-%	\color{gelb}
-%	\put(84,10){$\Sw'^*=\Phi^{*\prime}$}
-%	\put(78,30){$\Phi^*$}
-%	\color{blau}
-%	\cput(30,30){$\Phi$}
-%	\lput(8,1){$\Phi'=\SS'$}
-%	\cput(4,33){$f_k$}
-%  \end{overpic}
  \caption{Airy stress potential $\Phi$ and its polar dual $\Phi^*$. $\Phi$
 projects onto the same planar mesh as $\SS$ does, while $\Phi^*$ projects
 onto the reciprocal force diagram.  A primal face $f_k$ lies in the plane
@@ -1335,10 +1307,10 @@ of single bricks does not affect stability (a,b). Removal of material at a
 certain point (yellow ball in (b))
 will cause a greater part of the structure to collapse,
 as seen in (c). (d) shows the result after one more removal (all images show
-the respective thrust networks, not the reference surface). \newtext{This sequence of figures was inspired by images of real-world destruction of masonry structures by the Block Research Group~\protect\cite{catalan}.}
-}
-\label{fig:removal}
+the respective thrust networks, not the reference surface).} \label{fig:removal}
 \end{figure*}
+
+%\newtext{This sequence of figures was inspired by images of real-world destruction of masonry structures by the Block Research Group~\protect\cite{catalan}.}
 
 
 \section{Results}
@@ -1369,8 +1341,8 @@ reference surface and the ground or environment are specified by
 must coincide with the reference mesh at this point, and relaxing the
 condition that forces must be in equilibrium there.
 
-\item Interactive adjustment of surface density $\rho$, external loads,
-and maximum permissible stress per edge $w_{\textrm{max}}$, with visual
+\item Interactive adjustment of surface density, external loads,
+and maximum permissible stress per edge, with visual
 feedback of how these parameters affect the fitted thrust network.
 
 \item Upsampling of the thrust network through Catmull\dash Clark
@@ -1390,7 +1362,7 @@ and corresponding reciprocal diagram.
 
 \sparagraph{{\sf\bfseries Examples.} Top of the Lilium Tower:}
 Consider the top portion of the steel-glass exterior surface of the Lilium
-Tower, which is currently being built in Warszaw (see Figure
+Tower (being built in Warszaw, see Fig.\
 \ref{fig:Lilium}). What is if we had wanted to build this surface
 out of masonry instead? This surface contains a concave part with local minimum
 in its interior and so cannot possibly be self-supporting without
@@ -1451,7 +1423,9 @@ of the original dome. This implies stability of the dome under that load.}
 but with a shell thickness of 1\,m, in order to better visualize the way
 the thrust network starts to leave the masonry hull as the load increases.
 Additional loads are 0\,kg, 5,000\,kg, 10,000\,kg, and 20,000\,kg, resp., from
-left to right. \newtext{These load tests were inspired by real-world experiments performed by the Block Research Group~\protect\cite{catalan,blockfigs}} } \label{fig:load2}
+left to right.} \label{fig:load2}
+%\newtext{These load tests were inspired by real-world experiments performed by the Block Research Group~\protect\cite{catalan,blockfigs}} 
+
 
 \end{figure*}
 
@@ -1487,10 +1461,10 @@ causes dramatic global changes to the surface stresses, often to the point
 that the surface is no longer in equilibrium. Whether a given surface with
 many such holes can stand is far from obvious. Figure~\ref{fig:cheese2}a
 shows such an implausible and unstable surface; our optimization finds a
-nearby, equally implausible but stable surface without difficulty (see
-Figures~\ref{fig:teaser}, left and \ref{fig:cheese2}b).
+nearby, equally implausible but stable surface without difficulty 
+(Figs.~\ref{fig:teaser}, left and \ref{fig:cheese2}b).
 
-\sparagraph{Example: Stability Test:} See Figures \ref{fig:load} and
+\sparagraph{Example: Stability Test:} See Figures \ref{fig:load},
 \ref{fig:load2} for a series of images which visualize the effect of
 additional loads on a thrust network.
 
@@ -1556,6 +1530,7 @@ supporting. (c) Small changes achieve both properties.}
 		[width=.22\textwidth]{arch-fig/lilium-pq-93.jpg}
 		\put(0,0){(c)}
 	\end{overpic}}
+\vskip-1em
 
 	\begin{minipage}[b]{.27\textwidth}
 	\caption{Planar quad remeshing of the surface of
@@ -1567,7 +1542,7 @@ Fig.~\protect\ref{fig:teaser}).}
 	\end{minipage}\hfill
 	\includegraphics[height=0.17\textwidth]{fig/cas-vf.jpg}\hfill
 	%\includegraphics[height=0.15\textwidth]{arch-fig/1roo62.jpg}
-	\includegraphics[height=0.18\textwidth]{arch-fig/1roo58.jpg}
+	\includegraphics[height=0.15\textwidth]{arch-fig/1roo58.jpg}
   \end{figure*}
 
 Taking an arbitrary non-planar
@@ -1610,20 +1585,6 @@ view of \S\ref{sec:smooth}, $\aw_1,\aw_2$ indicate the principal
 directions of the surface $s(x,y)$ relative to $\phi(x,y)$.
 
 
-\nix{\begin{figure}[h]
-	\begin{overpic}[width=.45\columnwidth]{fig/curvature1}
-		\put(55,5){$\phi(x,y)$}
-		\put(55,51){$s(x,y)$}
-	\end{overpic}\hfill
-	\begin{minipage}[b]{.55\columnwidth}
- \caption{Planar quad remeshing of a self-supporting surface $s(x,y)$ with
-stress potential $\phi$ is guided by the principal curvature directions of
-$s$ relative to $\phi$ (found from eigenvectors of
-$(\protect\Hess\phi)^{-1}\protect\Hess s$).}
- \label{fig:relative}
-	\end{minipage}
- \end{figure}}
-
 
 In the discrete case, where $s,\phi$ are not given as continuous surfaces,
 but are represented by a mesh in equilibrium and its Airy mesh, we use the
@@ -1642,8 +1603,8 @@ Convexity of $\Phi$ ensures that $\SS$ is self\dash supporting.
 
 Note that for each $\Phi$, the relative principal curvature directions give the
 \emph{unique} curve network along which a planar quad discretization of a
-self\dash supporting surface is possible. Other networks lead to results
-like the one shown by Figure~\ref{fig:badpq}.
+self\dash supporting surface is possible. Other networks won't work 
+(see Figure~\ref{fig:badpq}).
 Figures~\ref{fig:lilium:pq} and \ref{fig:cas:pq}
 further illustrate the result of applying this procedure to
 self-supporting surfaces.
@@ -1677,10 +1638,8 @@ The condition of equal loads then is expressed as
 $\Delta_\phi(s+r)=\Delta_\phi s$ in terms of Laplacians or
 as $H^\rel_\SS=H^\rel_{\SS+\RR}$ in terms of mean curvature, and is equivalent
 to
-	\begin{align*}
-	\Delta_\phi r = 0, \quad \mbox{i.e.,}\quad
-	H^\rel_\RR = 0.
-	\end{align*}
+	$ \Delta_\phi r = 0$,  i.e., 
+	$H^\rel_\RR = 0$.
  So $\RR$ is a {\em minimal surface} relative to $\Phi$.  While in the
 triangle mesh case there are enough degrees of freedom for nontrivial
 solutions, the case of planar quad meshes is more intricate:
@@ -1692,19 +1651,20 @@ the derived mesh formed by the intersection points of diagonals of faces
 again has planar faces \cite{bobenko-2008-ddg}.
 
 \begin{figure}[h]
-	\centering
-	\begin{overpic}[width=.8\columnwidth]{fig/enneper_v.jpg}
+	\centerline{\begin{overpic}[width=.53\columnwidth]{fig/enneper_v.jpg}
 		\color{gelb}
 		\put(35,65){$\Phi+\alpha\RR$}
 		\put(0,37){$\Phi$}
 		\color{blau}
 		\put(0,5){$\RR$}
-	\end{overpic}
+	\end{overpic}\hfill
+  \begin{minipage}[b]{.44\columnwidth}
  \caption{Left: A ``Koebe'' mesh  $\Phi$ is self\dash supporting for unit dead
-load. An entire family of self-supporting meshes with the same top view
+load. An family of self-supporting meshes with the same top view
 is defined by $\SS_\alpha=\Phi+\alpha\RR$, where $\RR$ is chosen as $\Phi$'s
 Christoffel\dash dual. The right hand image shows a different 
 example of the same connectivity.} \label{fig:enneper}
+\end{minipage}}
 	\end{figure}
 
 
@@ -1715,7 +1675,7 @@ isotropic geometry, i.e., a PQ mesh whose edges touch the Maxwell
 paraboloid. Since $\Phi$ approximates the Maxwell paraboloid, we get
 $2K(\vw_i)H^{\rel}(\vw_i)$ $ \approx 1$ and $\Phi$ consequently is
 self\dash supporting for unit load. Applying the Christoffel dual
-construction described above yields a minimal mesh $\RR$ and a family of
+construction described above yields a minimal mesh $\RR$, and 
 meshes $\Phi+\alpha\RR$ which are self\dash supporting for unit load (see
 Figure~\ref{fig:enneper}).
 
@@ -1738,13 +1698,14 @@ moments. This theory and accompanying algorithms thus constitute a new
 contribution to architectural geometry, connecting statics and geometric
 design.
 
-\paragraph*{Real-World Examples.}
+\paragraph*{Acknowledgments.}
 
 This work was very much inspired by Philippe Block's plenary lecture
 at the 2011 Symposium on Geometry Processing in Lausanne. Several
 illustrations (the destruction sequence of Fig.~\ref{fig:removal}
 and the maximum load example of Fig.~\ref{fig:load}) have real\dash 
-world analogues on his web page at ETH Zurich.~\cite{catalan}
+world analogues on his web page at ETH Zurich, see
+\cite{catalan} and \cite{blockfigs}.
 
 \paragraph{Future Work.}
 
@@ -1784,7 +1745,7 @@ and torsion moments.}\label{fig:structural}
 \bibliographystyle{acmsiggraph}
 
 	\let\otb=\thebibliography
-	\def\thebibliography#1{\otb{#1}\itemsep-0.2pt}
+	\def\thebibliography#1{\otb{#1}\itemsep-2pt}
 
 \bibliography{selfsupporting}
 
