@@ -395,29 +395,26 @@ by statics properties of that surface.
 
 \section{Self-supporting Surfaces}
 
-This section contains the theoretical basis of the paper. \S\ref{ssec:cont}
-and \S\ref{sec:thrustnetworks} explain our mathematical
-model and discretization. The connection
-with isotropic geometry (\S\ref{sec:smooth} and \S\ref{sec:discrete})
-is important for the later Section \ref{sec:special}.
-Finally we discuss convergence \secref{sec:convergence}.
+This section contains the theoretical basis of the paper. \newtext{We begin in \S\ref{ssec:cont}
+and \S\ref{sec:thrustnetworks} with a review of the continuous theory of self-supporting surfaces, and their discretization as thrust networks~\cite{Block07}. This discrete model and its associated equilibrium equations form the groundwork of our optimization algorithm (\S\ref{sec:design}) for designing self-supporting surfaces. In \S\ref{sec:smooth}, \S\ref{sec:discrete}, and \S\ref{sec:convergence} we draw connections
+between the theory of self-supporting surfaces, curvature measures in isotropic geometry, and discrete Laplace-Beltrami operators. These insights lead to some observations on existence of convergence of discrete approximations to smooth self-supporting surfaces, and are important for the later discussions of planar quad remeshing and special classes of self-supporting surfaces (\S\ref{sec:special}).}
 
 \subsection{The Continuous Theory}
 \label{ssec:cont}
 
 We model masonry as a surface given by a height field $s(x,y)$
-defined in some planar domain $\Omega$. We assume that there are vertical
-loads $F(x,y)$ --- usually $F$ represents the structure's own weight. By
+defined in some planar domain $\Omega$. \newtext{We assume a vertical
+load density $F(x,y)$ over the top view} --- usually $F$ represents the structure's own weight. By
 definition this surface is self\dash supporting if and only if there
-exists a field of compressive stresses which are in equilibrium with the
-acting forces. This is equivalent to existence of a field $M(x,y)$ of
-$2\times 2$ symmetric positive semidefinite matrices satisfying
+exists \newtext{a negative semidefinite (compressive) stress tensor $\sigma$ over the surface whose stresses are in equilibrium with the
+acting forces. Rewriting the equilibrium equations in plane coordinates $(x,y)$, we have that such a stress tensor exists if and only if there exists a field $M(x,y) = -\sigma g^{-1} \det g$ of
+$2\times 2$ symmetric positive semidefinite matrices satisfying}
 	\begin{align}
 	\Div (M\nabla s) = F, \quad
 	\Div M &= 0,
 	  \label{eq:conds}
 	\end{align}
- where the divergence operator $\Div{u(x,y)\choose v(x,y}= u_x + v_y$ is
+ \newtext{where $g$ is the induced metric $\left[\begin{smallmatrix}1+z_x^2 & z_xz_y \\ z_xz_y & 1+z_y^2\end{smallmatrix}\right]$ and} the divergence operator $\Div{u(x,y)\choose v(x,y}= u_x + v_y$ is
 understood to act on the columns of a matrix (see e.g.\
 \cite{Fraternali2010}, \cite{Giaquinta1985}).
 
@@ -1707,12 +1704,14 @@ and the maximum load example of Fig.~\ref{fig:load}) have real\dash
 world analogues on his web page at ETH Zurich, see
 \cite{catalan} and \cite{blockfigs}.
 
+\newtext{We would also like to thank Florin Isvoranu and Alexander Schiftner for their help and input during preparation of this paper; the developers of the OpenMesh, Ipopt, Eigen, and BCLS software packages used in our implementation; and Mikl\'{o}s Bergou, Eitan Grinspun, Danny Kaufman, and Niloy Mitra for their advice and suggestions on early drafts of the paper. This work was funded in part by the NSF (CMMI-11-29917, IIS-11-17257, IIS-10-48948, IIS-09-16129, CCF-06-43268) and generous gifts from Adobe, ATI, Autodesk, mental images, NVIDIA, Side Effects Software, the Walt Disney Company, and Weta Digital.}
+
 \paragraph{Future Work.}
 
 There are several directions of future research. One is to incorporate
 non\dash manifold meshes, which occur naturally when e.g.\ supporting
 walls are introduced. It is also obvious that non\dash vertical loads,
-e.g.\ wind load, play a role. There are also some directions to pursue in
+e.g.\ wind load, play a role. \newtext{The surfaces produced by our algorithm are the solutions of discrete elliptic boundary value problems and so tend to be smooth; another avenue for future work is modification of the discretization to allow for self-supporting surfaces with sharp features.} There are also some directions to pursue in
 improving the algorithms, for instance adaptive remeshing in problem
 areas. Probably the interesting connections between statics and
 geometry are not yet exhausted: on the one hand we expect that interesting
