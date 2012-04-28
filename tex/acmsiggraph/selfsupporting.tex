@@ -169,7 +169,6 @@ isotropic geometry, mean curvature}
         \includegraphics[height=.24\textwidth]{arch-fig/cheesevault78.jpg}
         \includegraphics[height=.24\textwidth]{arch-fig/1roo97}
 
-	\vskip-2ex
 	\caption{{\em Left:} Surfaces with irregularly placed holes
 are hard to realize as masonry, where the mortar between bricks
 must not be subject to tensile stresses. The surface shown here, surprisingly, has
@@ -431,8 +430,8 @@ the notation
 	\end{align*}
  it is clear that $\Div M=0$ is an integrability condition for $\wh M$, so
 locally there is a potential $\phi$ with
-	$\wh M = \Hess\phi$, i.e., 
-	$M = \wh{\Hess\phi}$.
+	$$\wh M = \Hess\phi, \quad \text{i.e.,}\quad
+	M = \wh{\Hess\phi}.$$
  If the domain $\Omega$ is simply connected, this relation holds globally.
 Positive semidefiniteness of $M$ (or equivalently of $\wh M$)
 characterizes {\em convexity} of the Airy potential $\phi$. The Airy
@@ -494,7 +493,7 @@ forces which is entirely contained within the structure.
 
   \begin{figure}[t]
   \centering
-  \begin{overpic}[width=.85\columnwidth]{fig/reciprocal}
+  \begin{overpic}[width=.94\columnwidth]{fig/reciprocal}
 	\put(0,33){$\SS$}
 	\lput(13,33){$\vw_i$}
 	\cput(14,25){\contour{white}{$A_iF_i$}}
@@ -563,7 +562,7 @@ If the mesh is not simply connected, the reciprocal diagram and the Airy
 polyhedron exist only locally. Our computations do not require global existence.
 
   \begin{figure}[t]
- \centerline{\vphantom{\includegraphics[width=.85\columnwidth]
+ \centerline{\vphantom{\includegraphics[width=.94\columnwidth]
 		{fig/reciprocal}}\relax
   \begin{overpic}[width=.85\columnwidth]{fig/beide}
 	\lput(49,33){$\ww_k^*$}
@@ -833,7 +832,6 @@ corresponding diagonals of corresponding quads in $\SS^*,\Phi^*$.}
 	\begin{overpic}[width=0.25\textwidth]{fig/lilium-pillar-n2.jpg}
 		\put(0,0){(d) \small (view from below)}
 	\end{overpic}}
-	\vskip-1ex
  \caption{The top of the Lilium Tower (a) cannot stand as a masonry
 structure, because its central part is concave. Our algorithm finds a
 nearby self-supporting mesh (b) without this impossible feature. (c) shows
@@ -1087,7 +1085,6 @@ is not self-supporting and its vertices must be moved.
 \begin{figure}[t]
 	\centerline{\includegraphics[height=0.11\textwidth]{fig/cas.jpg}\relax
 	\includegraphics[height=0.11\textwidth]{fig/cas-n.jpg}}
-	\vskip-1ex
 	\caption{A freeform surface
 (left) needs adjustments around the entrance arch and between the two
 pillars in order to be self-supporting; our algorithm finds the nearby
@@ -1150,14 +1147,16 @@ changes.}\label{fig:cas}
 			& $2.4\times 10^{-5}$
 	\\ \hline
   \end{tabular}
+ \def\Tmp{A_iF_i(\raise.4ex\hbox{\tiny
+	$\begin{array}{@{}c@{}}0\\[-1ex]0\\[-1ex]1\end{array}$})}
 	\caption{Numerical details about our examples.
 We show the clock time needed by an Intel Xeon 2.3GHz
 desktop PC with 4 GB of RAM to find a self\dash supporting thrust network and
 associated stress surface from the example's reference mesh; we also give
 the number of outer iterations of the four steps in \secref{sec:opt}. The
 maximum relative error is the dimensionless quantity
-$\max_i \| A_i F_i - \sum\nolimits_{j\sim i} w_{ij}
-(\vw_j-\vw_i) \|/\|A_i F_i\|$ (the maximum is
+$\max_i \| \protect\Tmp - \sum\nolimits_{j\sim i} w_{ij}
+(\vw_j-\vw_i) \|/A_i F_i$ (the maximum is
 taken over interior vertices $\vw_i$).}\label{table:data}
 
 \end{table}
@@ -1279,7 +1278,7 @@ property results in the mesh shown in (c).} \label{fig:edit}
 
 \bigskip
 
-  \newdimen\tmplen\tmplen=0.095\textwidth
+  \newdimen\tmplen\tmplen=0.098\textwidth
  \centerline{\raise.1\tmplen\hbox{\begin{overpic}[width=2.6\tmplen]
 		{arch-fig/destruction1.jpg}
 		\put(0,10){(a)}
@@ -1294,7 +1293,6 @@ property results in the mesh shown in (c).} \label{fig:edit}
 	\begin{overpic}[width=2.6\tmplen]{arch-fig/destruction4.jpg}
 		\put(0,10){(d)}
 	\end{overpic}}
-	\vskip-1ex
 
 \caption{Destruction sequence. We simulate removing small parts of masonry
 (their location is shown by a yellow ball) and
@@ -1383,7 +1381,6 @@ between the two pillars.
 	\begin{overpic}[width=0.5\columnwidth]{fig/cheese-n.jpg}
 		\put(0,5){(b)}
 	\end{overpic}}
-	\vskip-1.5ex
   \caption{A mesh with holes (a) requires large deformations
 to both the top view and heights to render it self\dash supporting
 (b)}\label{fig:cheese2}
@@ -1527,7 +1524,6 @@ supporting. (c) Small changes achieve both properties.}
 		[width=.22\textwidth]{arch-fig/lilium-pq-93.jpg}
 		\put(0,0){(c)}
 	\end{overpic}}
-\vskip-1em
 
 	\begin{minipage}[b]{.27\textwidth}
 	\caption{Planar quad remeshing of the surface of
@@ -1647,22 +1643,6 @@ have such a dual; the condition is that the mesh is {\em Koenigs}, i.e.,
 the derived mesh formed by the intersection points of diagonals of faces
 again has planar faces \cite{bobenko-2008-ddg}.
 
-\begin{figure}[h]
-	\centerline{\begin{overpic}[width=.53\columnwidth]{fig/enneper_v.jpg}
-		\color{gelb}
-		\put(35,65){$\Phi+\alpha\RR$}
-		\put(0,37){$\Phi$}
-		\color{blau}
-		\put(0,5){$\RR$}
-	\end{overpic}\hfill
-  \begin{minipage}[b]{.44\columnwidth}
- \caption{Left: A ``Koebe'' mesh  $\Phi$ is self\dash supporting for unit dead
-load. An family of self-supporting meshes with the same top view
-is defined by $\SS_\alpha=\Phi+\alpha\RR$, where $\RR$ is chosen as $\Phi$'s
-Christoffel\dash dual. The right hand image shows a different 
-example of the same connectivity.} \label{fig:enneper}
-\end{minipage}}
-	\end{figure}
 
 
 \paragraph{Koebe meshes.}
@@ -1676,6 +1656,21 @@ construction described above yields a minimal mesh $\RR$, and
 meshes $\Phi+\alpha\RR$ which are self\dash supporting for unit load (see
 Figure~\ref{fig:enneper}).
 
+\begin{figure}[h]
+	\centering
+	\begin{overpic}[width=.8\columnwidth]{fig/enneper_v.jpg}
+		\color{gelb}
+		\put(35,65){$\Phi+\alpha\RR$}
+		\put(0,37){$\Phi$}
+		\color{blau}
+		\put(0,5){$\RR$}
+	\end{overpic}
+ \caption{Left: A ``Koebe'' mesh  $\Phi$ is self\dash supporting for unit dead
+load. An family of self-supporting meshes with the same top view
+is defined by $\SS_\alpha=\Phi+\alpha\RR$, where $\RR$ is chosen as $\Phi$'s
+Christoffel\dash dual. The right hand image shows a different 
+example of the same connectivity.} \label{fig:enneper}
+	\end{figure}
 
 \section{Conclusion and Future Work}
 
@@ -1743,8 +1738,8 @@ and torsion moments.}\label{fig:structural}
 
 \bibliographystyle{acmsiggraph}
 
-	\let\otb=\thebibliography
-	\def\thebibliography#1{\otb{#1}\itemsep-2pt}
+	%\let\otb=\thebibliography
+	%\def\thebibliography#1{\otb{#1}\itemsep-2pt}
 
 \bibliography{selfsupporting}
 
