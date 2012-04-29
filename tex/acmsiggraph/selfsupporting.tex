@@ -1231,17 +1231,18 @@ this assumption is guaranteed to hold is if the thickness of the surface
 is allowed to freely vary, so that it can be chosen so that the surface
 has uniform density over the top view.
 
-If the linear system in Step~\ref{step4} is singular and infeasible, the
-algorithm can stall at $E > 0$. This failure occurs, for instance, when an
+\newtext{We have observed several situations where our algorithm has difficulty converging to a high-quality solution, even though the underlying optimization problem is feasible:}
+\begin{itemize}
+\item \newtext{Vertices with high valence (such as can occur at irregular vertices of triangle meshes) often become local maxima (``bumps'') after optimization. In the worst case, the algorithm can stall at $E>0$ due to the linear system in Step~\ref{step4} becoming singular and infeasible.} This failure occurs, for instance, when an
 interior vertex has height $z_i$ lower than all of its neighbors, and
 Step~\ref{step3} assigns all incident edges to that vertex a weight of
 zero: clearly no amount of moving the vertex or its neighbors can bring
 the vertex into equilibrium. We avoid such degenerate configurations by
 bounding weights slightly away from zero in \eqref{eq:wbounds}, trading
-increased robustness for slight smoothing of the resulting surface. Attempting
-to optimize meshes that have self-intersecting top views (i.e., aren't height fields),
-have too many impossible features, or are insufficiently supported by fixed
-boundary points can also result in errors and instability.
+increased robustness for slight smoothing of the resulting surface. \newtext{We also haven't noticed these artifacts in lower-valence meshes such as quad meshes.}
+\item \newtext{The algorithm does not usually converge if the reference mesh has a self-intersecting top view (i.e., isn't a height field), although it can occasionally correct slight overhangs (by deforming the top view so that the network mesh is a height field).}
+\item \newtext{The algorithm may not converge if the deformation needed to make the refence mesh self-supporting is too large. Specifying a reference mesh insufficiently supported by fixed boundary vertices is the most common such situation -- for instance, marking the bases of the pillars in Fig.~\ref{fig:edit} as free instead of fixed boundaries causes our algorithm to fail, even though a (drastic) self-supporting deformation of that surface does exist.}
+\end{itemize}
 
 \nix{
 \begin{figure}[t]
