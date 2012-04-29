@@ -1161,6 +1161,52 @@ taken over interior vertices $\vw_i$).}\label{table:data}
 
 \end{table}
 
+ \begin{figure*}[t]
+ \centerline{\includegraphics[width=.2\textwidth]{fig/video1}\relax
+ \includegraphics[width=.23\textwidth]{fig/video3}\relax
+ \includegraphics[width=.23\textwidth]{fig/video4}\hfill
+ \begin{minipage}[b]{.30\textwidth}
+	\caption{Interactive Edits. (a) shows a 
+self\dash supporting thrust network --
+in fact it is a Koebe mesh as mentioned
+in \S\protect\ref{sec:special}.  In (b) boundary conditions
+are defined and pillars have been added. Cutting
+along the highlighted edge and optimizing for the self\dash supporting
+property results in the mesh shown in (c).} \label{fig:edit}
+\end{minipage}}
+
+\bigskip
+
+  \newdimen\tmplen\tmplen=0.098\textwidth
+ \centerline{\raise.1\tmplen\hbox{\begin{overpic}[width=2.6\tmplen]
+		{arch-fig/destruction1.jpg}
+		\put(0,10){(a)}
+	\end{overpic}}\hfill
+	\raise.1\tmplen\hbox{\begin{overpic}[width=2.6\tmplen]
+		{arch-fig/destruction2.jpg}
+		\put(0,10){(b)}
+	\end{overpic}}\hfill
+	\begin{overpic}[width=2.6\tmplen]{arch-fig/destruction3.jpg}
+		\put(0,10){(c)}
+	\end{overpic}\hfill
+	\begin{overpic}[width=2.6\tmplen]{arch-fig/destruction4.jpg}
+		\put(0,10){(d)}
+	\end{overpic}}
+
+\caption{Destruction sequence. We simulate removing small parts of masonry
+(their location is shown by a yellow ball) and
+the falling off of further pieces which are no longer supported after
+removal. For this example, removing a certain small number
+of single bricks does not affect stability (a,b). Removal of material at a
+certain point (yellow ball in (b))
+will cause a greater part of the structure to collapse,
+as seen in (c). (d) shows the result after one more removal (all images show
+the respective thrust networks, not the reference surface).} \label{fig:removal}
+\end{figure*}
+
+%\newtext{This sequence of figures was inspired by images of real-world destruction of masonry structures by the Block Research Group~\protect\cite{catalan}.}
+
+
 \paragraph{Step~\ref{step4}: Alter Positions.} In the previous step we fit
 as best as possible a stress surface $\Phi$ to $\SS$. There are two
 possible kinds of error with this fit: the faces around a vertex
@@ -1244,70 +1290,42 @@ increased robustness for slight smoothing of the resulting surface. \newtext{We 
 \item \newtext{The algorithm may not converge if the deformation needed to make the refence mesh self-supporting is too large. Specifying a reference mesh insufficiently supported by fixed boundary vertices is the most common such situation -- for instance, marking the bases of the pillars in Fig.~\ref{fig:edit} as free instead of fixed boundaries causes our algorithm to fail, even though a (drastic) self-supporting deformation of that surface does exist.}
 \end{itemize}
 
-\nix{
-\begin{figure}[t]
-	%\begin{overpic}[width=0.25\textwidth]{fig/build-white.jpg}
-	%\begin{overpic}[width=0.25\textwidth]{fig/build-n.jpg}
-	%\begin{overpic}[width=0.25\textwidth]{fig/build-edited-white.jpg}
-	%\begin{overpic}[width=0.25\textwidth]{fig/build-edited-n.jpg}
-	\includegraphics[width=\columnwidth]{fig/edits.jpg}
-	\vskip-5em
-	(a)\hfill(b)\hfill(c)\hfill(d)\hfill~~
-	\vskip3.5em
-
-\caption{The user-designed reference mesh (a) is not self-supporting,
-but our algorithm finds a nearby perturbation of the reference surface
-(b) that is in equilibrium. As the user makes edits to the
-reference surface (c), the thrust network automatically adjusts
-(d).} \protect\label{fig:vault}
-	\end{figure}
-}
-
- \begin{figure*}[t]
- \centerline{\includegraphics[width=.2\textwidth]{fig/video1}\relax
- \includegraphics[width=.23\textwidth]{fig/video3}\relax
- \includegraphics[width=.23\textwidth]{fig/video4}\hfill
- \begin{minipage}[b]{.30\textwidth}
-	\caption{Interactive Edits. (a) shows a 
-self\dash supporting thrust network --
-in fact it is a Koebe mesh as mentioned
-in \S\protect\ref{sec:special}.  In (b) boundary conditions
-are defined and pillars have been added. Cutting
-along the highlighted edge and optimizing for the self\dash supporting
-property results in the mesh shown in (c).} \label{fig:edit}
-\end{minipage}}
-
-\bigskip
-
-  \newdimen\tmplen\tmplen=0.098\textwidth
- \centerline{\raise.1\tmplen\hbox{\begin{overpic}[width=2.6\tmplen]
-		{arch-fig/destruction1.jpg}
-		\put(0,10){(a)}
-	\end{overpic}}\hfill
-	\raise.1\tmplen\hbox{\begin{overpic}[width=2.6\tmplen]
-		{arch-fig/destruction2.jpg}
-		\put(0,10){(b)}
-	\end{overpic}}\hfill
-	\begin{overpic}[width=2.6\tmplen]{arch-fig/destruction3.jpg}
-		\put(0,10){(c)}
+\begin{figure*}
+	\begin{minipage}[b]{\columnwidth}
+	\caption{Stability Test. Left: Coloring and cross\dash section
+of edges visualize the magnitude of forces in a thrust network which is in
+equlibrium with this dome's dead load.
+Right: When an additional load is applied, there exists a corresponding
+compressive thrust network which is still contained in the masonry hull
+of the original dome. This implies stability of the dome under that load.}
+\label{fig:load}
+	\end{minipage}\hfill
+	\begin{overpic}[width=.49\columnwidth]{fig/dome-unloaded.jpg}
+		\small
+		\cput(30,0){14\,m}
+		\put(0,-4){\hbox to .3\columnwidth{\leftarrowfill}}
+		\lput(100,-4){\hbox to .3\columnwidth{\rightarrowfill}}
+		\put(0,49){shell thickness 0.1\,m, $\rho=2,500$\,kg/m$^3$}
 	\end{overpic}\hfill
-	\begin{overpic}[width=2.6\tmplen]{arch-fig/destruction4.jpg}
-		\put(0,10){(d)}
-	\end{overpic}}
+	\begin{overpic}[width=.49\columnwidth]{fig/dome-loaded.jpg}
+		\small
+		\put(60,44){11,000\,kg}
+	\end{overpic}
 
-\caption{Destruction sequence. We simulate removing small parts of masonry
-(their location is shown by a yellow ball) and
-the falling off of further pieces which are no longer supported after
-removal. For this example, removing a certain small number
-of single bricks does not affect stability (a,b). Removal of material at a
-certain point (yellow ball in (b))
-will cause a greater part of the structure to collapse,
-as seen in (c). (d) shows the result after one more removal (all images show
-the respective thrust networks, not the reference surface).} \label{fig:removal}
+\medskip
+	\includegraphics[width=.23\textwidth]{fig/dome2-00.jpg}\hfill
+	\includegraphics[width=.25\textwidth]{fig/dome2-05.jpg}\hfill
+	\includegraphics[width=.25\textwidth]{fig/dome2-10.jpg}\hfill
+	\includegraphics[width=.25\textwidth]{fig/dome2-20.jpg}
+	\caption{Stability test similar to Figure~\protect\ref{fig:load},
+but with a shell thickness of 1\,m, in order to better visualize the way
+the thrust network starts to leave the masonry hull as the load increases.
+Additional loads are 0\,kg, 5,000\,kg, 10,000\,kg, and 20,000\,kg, resp., from
+left to right.} \label{fig:load2}
+%\newtext{These load tests were inspired by real-world experiments performed by the Block Research Group~\protect\cite{catalan,blockfigs}} 
+
+
 \end{figure*}
-
-%\newtext{This sequence of figures was inspired by images of real-world destruction of masonry structures by the Block Research Group~\protect\cite{catalan}.}
-
 
 \section{Results}
 \label{sec:design}
@@ -1375,6 +1393,8 @@ Our algorithm reveals those edits needed to make the
 structure sound -- principally around the entrance arch, and the area
 between the two pillars.
 
+
+
  \begin{figure}[h]
   \centerline{\begin{overpic}[width=0.5\columnwidth]{fig/cheese.jpg}
 		\put(0,5){(a)}
@@ -1386,43 +1406,6 @@ between the two pillars.
 to both the top view and heights to render it self\dash supporting
 (b)}\label{fig:cheese2}
   \end{figure}
-
-\begin{figure*}
-	\begin{minipage}[b]{\columnwidth}
-	\caption{Stability Test. Left: Coloring and cross\dash section
-of edges visualize the magnitude of forces in a thrust network which is in
-equlibrium with this dome's dead load.
-Right: When an additional load is applied, there exists a corresponding
-compressive thrust network which is still contained in the masonry hull
-of the original dome. This implies stability of the dome under that load.}
-\label{fig:load}
-	\end{minipage}\hfill
-	\begin{overpic}[width=.49\columnwidth]{fig/dome-unloaded.jpg}
-		\small
-		\cput(30,0){14\,m}
-		\put(0,-4){\hbox to .3\columnwidth{\leftarrowfill}}
-		\lput(100,-4){\hbox to .3\columnwidth{\rightarrowfill}}
-		\put(0,49){shell thickness 0.1\,m, $\rho=2,500$\,kg/m$^3$}
-	\end{overpic}\hfill
-	\begin{overpic}[width=.49\columnwidth]{fig/dome-loaded.jpg}
-		\small
-		\put(60,44){11,000\,kg}
-	\end{overpic}
-
-\medskip
-	\includegraphics[width=.23\textwidth]{fig/dome2-00.jpg}\hfill
-	\includegraphics[width=.25\textwidth]{fig/dome2-05.jpg}\hfill
-	\includegraphics[width=.25\textwidth]{fig/dome2-10.jpg}\hfill
-	\includegraphics[width=.25\textwidth]{fig/dome2-20.jpg}
-	\caption{Stability test similar to Figure~\protect\ref{fig:load},
-but with a shell thickness of 1\,m, in order to better visualize the way
-the thrust network starts to leave the masonry hull as the load increases.
-Additional loads are 0\,kg, 5,000\,kg, 10,000\,kg, and 20,000\,kg, resp., from
-left to right.} \label{fig:load2}
-%\newtext{These load tests were inspired by real-world experiments performed by the Block Research Group~\protect\cite{catalan,blockfigs}} 
-
-
-\end{figure*}
 
 \sparagraph{Example: Interactive Editing.}
 Figure \ref{fig:edit} shows an example of the design and optimization
@@ -1470,7 +1453,22 @@ not as masonry, but as a steel\slash glass construction with glass as
 a structural element.
 
 
-	\begin{figure}[b]
+
+
+\section{Special Self-Supporting Surfaces} \label{sec:special}
+
+\paragraph{PQ Meshes.}
+
+Meshes with {\em planar} faces are of particular interest in architecture,
+so in this section we discuss how to remesh a given thrust network in
+equilibrium such that it becomes a quad mesh with planar faces (again in
+equilibrium). If this mesh is realized as a steel\dash glass construction,
+it is self\dash supporting in its beams alone, with no forces exerted on
+the glass (this is the usual manner of using glass). The beams constitute
+a self\dash supporting structure which is in perfect force equilibrium
+(without moments in the nodes) if only the deadload is applied.
+
+	\begin{figure}[h]
   \centerline{\begin{overpic}[width=0.33\columnwidth]{fig/vault-n.jpg}
 	\put(0,0)({(a)}
 	\end{overpic}\hfill
@@ -1489,21 +1487,6 @@ yields a self-supporting, PQ mesh far more faithful to the original (c).}
 \end{figure}
 
 
-\section{Special Self-Supporting Surfaces} \label{sec:special}
-
-\paragraph{PQ Meshes.}
-
-Meshes with {\em planar} faces are of particular interest in architecture,
-so in this section we discuss how to remesh a given thrust network in
-equilibrium such that it becomes a quad mesh with planar faces (again in
-equilibrium). If this mesh is realized as a steel\dash glass construction,
-it is self\dash supporting in its beams alone, with no forces exerted on
-the glass (this is the usual manner of using glass). The beams constitute
-a self\dash supporting structure which is in perfect force equilibrium
-(without moments in the nodes) if only the deadload is applied.
-
-
-
 \begin{figure*}[t]
 	%\begin{overpic}[width=.63\textwidth]{fig/lilium_pq3.jpg}
  \begin{minipage}[b]{.27\textwidth}
@@ -1516,16 +1499,17 @@ supporting. (c) Small changes achieve both properties.}
 	\raise0.02\textwidth\hbox{\begin{overpic}
 		[width=.23\textwidth]{fig/lilium-vf.jpg}
 		\put(0,0){(a)}
-	\end{overpic}}\hfill
+	\end{overpic}}\relax
 	\raise0.02\textwidth\hbox{\begin{overpic}
 		[width=.23\textwidth]{fig/lilium-pq.jpg}
 		\put(0,0){(b)}
-	\end{overpic}}\hfill
+	\end{overpic}}\relax
 	\raise0.02\textwidth\hbox{\begin{overpic}
 		[width=.22\textwidth]{arch-fig/lilium-pq-93.jpg}
 		\put(0,0){(c)}
 	\end{overpic}}
 
+\bigskip
 	\begin{minipage}[b]{.27\textwidth}
 	\caption{Planar quad remeshing of the surface of
 Figure~\protect\ref{fig:cas}. Left: Relative principal directions. Right: The
@@ -1536,7 +1520,7 @@ Fig.~\protect\ref{fig:teaser}).}
 	\end{minipage}\hfill
 	\includegraphics[height=0.17\textwidth]{fig/cas-vf.jpg}\hfill
 	%\includegraphics[height=0.15\textwidth]{arch-fig/1roo62.jpg}
-	\includegraphics[height=0.15\textwidth]{arch-fig/1roo58.jpg}
+	\includegraphics[height=0.19\textwidth]{arch-fig/1roo58.jpg}
   \end{figure*}
 
 Taking an arbitrary non-planar
