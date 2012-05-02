@@ -99,7 +99,7 @@
 %%% article page and direct PDF link in the ACM Digital Library.
 %%% Replace ``1111111.2222222'' with the values you are given.
 
-\TOGarticleDOI{1111111.2222222}
+\TOGarticleDOI{10.1145/2185520.2185577}
 
 %%% 4. ``\TOGprojectURL'', ``\TOGvideoURL'', ``\TOGdataURL'', ``\TOGcodeURL''
 %%% If you would like to include links to personal repositories for auxiliary
@@ -418,7 +418,7 @@ understood to act on the columns of a matrix (see e.g.\
 \cite{Fraternali2010}, \cite{Giaquinta1985}).
 
 The condition $\Div M=0$ says that $M$ is locally the Hessian of a
-real\dash valued function $\phi$ (the {\em Airy stress potential}): With
+real\dash valued function $\phi$ (the {\em Airy stress potential})~\cite{green02}: With
 the notation
 	\begin{align*}
 	M =
@@ -471,7 +471,7 @@ is given by
 	\text{where}\quad
 	w_{ij}=w_{ji}\ge 0.
 	\end{align*}
- The nonnegativity of the individual weights $w_{ij}$ expresses the
+\newtext{The weights $w_{ij}$ in these equations can be interpreted as axial force densities along the edges.} The nonnegativity of the individual weights $w_{ij}$ expresses the
 compressive nature of forces. The balance conditions at vertices then read
 as follows: With $\vw_i=(x_i,y_i,s_i)$ we have
 	\begin{align}
@@ -487,9 +487,7 @@ as follows: With $\vw_i=(x_i,y_i,s_i)$ we have
 			\label{eq:deqz}
 	\end{align}
  A mesh equipped with edge weights in this way is a discrete \emph{thrust
-network}~\cite{block09}. Invoking the safe theorem, we can state that a masonry structure
-is self\dash supporting, if we can find a thrust network with compressive
-forces which is entirely contained within the structure.
+network}~\cite{block09}. Invoking the safe theorem, we can state that a masonry structure is self\dash supporting, if we can find a thrust network with compressive forces which is entirely contained within the structure. In other words, \newtext{for a given surface the $\vw_i$ are known and the $w_{ij}$ are unknown; the surface is self-supporting whenever a solution $\{w_{ij}\}$ to the above equations exist. Finding a self-supporting surface near one that is not amounts to solving for a simultaneous solution in $\vw_i$ and $w_{ij}$; we describe one efficient approach for doing so in \S\ref{sec:opt}. } 
 
   \begin{figure}[t]
   \centering
@@ -1162,9 +1160,10 @@ taken over interior vertices $\vw_i$).}\label{table:data}
 \end{table}
 
  \begin{figure*}[t]
- \centerline{\includegraphics[width=.2\textwidth]{fig/video1}\relax
- \includegraphics[width=.23\textwidth]{fig/video3}\relax
- \includegraphics[width=.23\textwidth]{fig/video4}\hfill
+ \centerline{\begin{overpic}[width=.2\textwidth]{fig/video1}\put(0,10){(a)}
+     \end{overpic}\relax
+ \begin{overpic}[width=.23\textwidth]{fig/video3}\put(0,10){(b)}\end{overpic}\relax
+ \begin{overpic}[width=.23\textwidth]{fig/video4}\put(0,10){(c)}\end{overpic}\hfill
  \begin{minipage}[b]{.30\textwidth}
 	\caption{Interactive Edits. (a) shows a 
 self\dash supporting thrust network --
@@ -1235,7 +1234,7 @@ step of the optimization, $\nw_i$ is the starting vertex normal (computed
 as the average of the incident face normals), $\vw^0_P$ is the projection
 of $\vw^0$ onto the reference mesh, and $\alpha > \beta$ are penalty
 coefficients that are decreased proportionally to the decrease in $E$ at every iteration of Steps
-\ref{step2}--\ref{step4}. The second term allows $\SS$ to
+\ref{step2}--\ref{step4}. \newtext{$\alpha=1$ and $\beta=0.1$ worked well as initial values of these parameters for the examples shown in this paper.} The second term allows $\SS$ to
 slide over itself (if doing so improves equilibrium) but penalizes drift
 in the normal direction. The third term, weaker than the second,
 regularizes the optimization by preventing large drift away from the
@@ -1466,7 +1465,7 @@ equilibrium). If this mesh is realized as a steel\dash glass construction,
 it is self\dash supporting in its beams alone, with no forces exerted on
 the glass (this is the usual manner of using glass). The beams constitute
 a self\dash supporting structure which is in perfect force equilibrium
-(without moments in the nodes) if only the deadload is applied.
+(without moments in the nodes) if only the deadload is applied. \newtext{(In such constructions, the restriction that the internal forces are compressive does not apply.)}
 
 	\begin{figure}[h]
   \centerline{\begin{overpic}[width=0.33\columnwidth]{fig/vault-n.jpg}
