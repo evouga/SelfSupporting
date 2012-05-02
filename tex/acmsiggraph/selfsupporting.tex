@@ -362,6 +362,7 @@ work in this area includes \cite{O'Dwyer98} and
 \cite{andreu-2007}. Fraternali~\shortcite{Fraternali2010} proposed solving
 for the structure's discrete stress surface, and examining its convex hull
 to study the structure's stability and susceptibility to cracking. \newtext{This approach works well for analyzing existing structures, where the boundary tractions can be measured and the stress surface is known to be close to convex, but is not an ideal design tool since in such settings the boundary tractions are unknown, and where replacing a non-convex intial stress surface by its convex hull can cause large, uncontrolled global changes to the surface being designed.}
+
 Philippe Block's seminal thesis introduced {\it Thrust
 Network Analysis}, which pioneered the use of thrust networks and their
 reciprocal diagrams for efficient and practical design of self\dash supporting
@@ -413,7 +414,7 @@ $2\times 2$ symmetric positive semidefinite matrices satisfying}
 	\Div M &= 0,
 	  \label{eq:conds}
 	\end{align}
- \newtext{where $g$ is the induced metric $\left[\begin{smallmatrix}1+z_x^2 & z_xz_y \\ z_xz_y & 1+z_y^2\end{smallmatrix}\right]$ and} the divergence operator $\Div{u(x,y)\choose v(x,y}= u_x + v_y$ is
+ \newtext{where $g$ is the induced metric ${1+s_x^2 \quad s_x s_y \choose s_x s_y \quad 1+s_y^2}$ and} the divergence operator $\Div{u(x,y)\choose v(x,y}= u_x + v_y$ is
 understood to act on the columns of a matrix (see e.g.\
 \cite{Fraternali2010}, \cite{Giaquinta1985}).
 
@@ -452,6 +453,28 @@ strictly convex. The balance condition \eqref{eq:conds} may be written as
 	\Delta_\phi s = F.
 	$
 
+  \begin{figure}[t]
+  \centering
+  \begin{overpic}[width=.94\columnwidth]{fig/reciprocal}
+	\put(0,33){$\SS$}
+	\lput(13,33){$\vw_i$}
+	\cput(14,25){\contour{white}{$A_iF_i$}}
+	\color{gelb}
+	\lput(100,19){$\SS'^*$}
+	\color{blau}
+	\put(0,9){$\SS'$}
+	\color{drot}
+	\put(1,0){$w_{ij} \ew_{ij}'$}
+	\lput(63,3){$\ew_{ij}^*$}
+  \end{overpic}
+ \caption{A thrust network $\SS$ with dangling edges indicating external
+forces (left). This network together with compressive forces which balance
+vertical loads $A_iF_i$ projects onto a planar mesh $\SS'$ with
+equilibrium compressive forces $w_{ij}\ew_{ij}'$ in its edges. Rotating
+forces by 90$^\circ$ leads to the reciprocal force diagram $\SS'^*$
+(right).}
+  \label{fig:reciprocal}
+  \end{figure}
 
 \subsection{Discrete Theory: Thrust Networks}
 \label{sec:thrustnetworks}
@@ -489,28 +512,6 @@ as follows: With $\vw_i=(x_i,y_i,s_i)$ we have
  A mesh equipped with edge weights in this way is a discrete \emph{thrust
 network}~\cite{block09}. Invoking the safe theorem, we can state that a masonry structure is self\dash supporting, if we can find a thrust network with compressive forces which is entirely contained within the structure. In other words, \newtext{for a given surface the $\vw_i$ are known and the $w_{ij}$ are unknown; the surface is self-supporting whenever a solution $\{w_{ij}\}$ to the above equations exist. Finding a self-supporting surface near one that is not amounts to solving for a simultaneous solution in $\vw_i$ and $w_{ij}$; we describe one efficient approach for doing so in \S\ref{sec:opt}. } 
 
-  \begin{figure}[t]
-  \centering
-  \begin{overpic}[width=.94\columnwidth]{fig/reciprocal}
-	\put(0,33){$\SS$}
-	\lput(13,33){$\vw_i$}
-	\cput(14,25){\contour{white}{$A_iF_i$}}
-	\color{gelb}
-	\lput(100,19){$\SS'^*$}
-	\color{blau}
-	\put(0,9){$\SS'$}
-	\color{drot}
-	\put(1,0){$w_{ij} \ew_{ij}'$}
-	\lput(63,3){$\ew_{ij}^*$}
-  \end{overpic}
- \caption{A thrust network $\SS$ with dangling edges indicating external
-forces (left). This network together with compressive forces which balance
-vertical loads $A_iF_i$ projects onto a planar mesh $\SS'$ with
-equilibrium compressive forces $w_{ij}\ew_{ij}'$ in its edges. Rotating
-forces by 90$^\circ$ leads to the reciprocal force diagram $\SS'^*$
-(right).}
-  \label{fig:reciprocal}
-  \end{figure}
 
 \paragraph{Reciprocal Diagram.}
 
@@ -1050,6 +1051,17 @@ vertex by calculating its Voronoi surface area on each of its incident faces
 (note that this surface area is distinct from $A_i$, the vertex's Voronoi
 area on the top view), and then multiplying by a user-specified surface density $\rho$.
 
+\begin{figure}[t]
+	\centerline{\includegraphics[height=0.11\textwidth]{fig/cas.jpg}\relax
+	\includegraphics[height=0.11\textwidth]{fig/cas-n.jpg}}
+	\caption{A freeform surface
+(left) needs adjustments around the entrance arch and between the two
+pillars in order to be self-supporting; our algorithm finds the nearby
+surface in equilibrium (right) that incorporates these
+changes.}\label{fig:cas}
+	 \end{figure}
+
+
 \paragraph{Step~\ref{step3}: Fit a Stress Surface.}
 
 In this step, we fix $\SS$ and try to fit a stress surface $\Phi$
@@ -1079,16 +1091,6 @@ solve
 box-constrained least-squares problem \cite{BCLS} always has a solution.
 If the objective is $0$ at this solution, $\SS$ is self-supporting -- we are done. Otherwise, $\SS$
 is not self-supporting and its vertices must be moved.
-
-\begin{figure}[t]
-	\centerline{\includegraphics[height=0.11\textwidth]{fig/cas.jpg}\relax
-	\includegraphics[height=0.11\textwidth]{fig/cas-n.jpg}}
-	\caption{A freeform surface
-(left) needs adjustments around the entrance arch and between the two
-pillars in order to be self-supporting; our algorithm finds the nearby
-surface in equilibrium (right) that incorporates these
-changes.}\label{fig:cas}
-	 \end{figure}
 
 
 \begin{table}[t]
