@@ -9,6 +9,8 @@
 
 #include <Eigen/Sparse>
 
+typedef Eigen::Triplet<double> T;
+
 using namespace Eigen;
 using namespace std;
 
@@ -260,19 +262,20 @@ void ReferenceMesh::applyLaplacianDeformationHeight(int, const Vector3d &delta, 
         }
     }
 
-    DynamicSparseMatrix<double> L(n,n);
+    SparseMatrix<double> L(n,n);
+    vector<T> Lcoeffs;
     for(set<int>::iterator it = toAlter.begin(); it != toAlter.end(); ++it)
     {
         int i = *it;
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
         int valence = mesh_.valence(vh);
-        L.coeffRef(i,i) = 1.0;
+        Lcoeffs.push_back(T(i,i, 1.0));
         for(MyMesh::VertexVertexIter vv = mesh_.vv_iter(vh); vv; ++vv)
         {
             MyMesh::VertexHandle adj = vv;
             int adjidx = adj.idx();
             if(toAlter.count(adjidx) > 0)
-                L.coeffRef(i, adjidx) = -1.0/valence;
+                Lcoeffs.push_back(T(i, adjidx, -1.0/valence));
             else
             {
 
@@ -280,7 +283,9 @@ void ReferenceMesh::applyLaplacianDeformationHeight(int, const Vector3d &delta, 
         }
     }
 
-    DynamicSparseMatrix<double> LTL(L.transpose()*L);
+    L.setFromTriplets(Lcoeffs.begin(), Lcoeffs.end());
+
+    SparseMatrix<double> LTL(L.transpose()*L);
     VectorXd v0(n);
     for(int i=0; i<n; i++)
     {
@@ -362,23 +367,26 @@ void ReferenceMesh::applyLaplacianDeformation(int, const Vector3d &delta)
 
     int n = mesh_.n_vertices();
 
-    DynamicSparseMatrix<double> L(3*n,3*n);
+    SparseMatrix<double> L(3*n,3*n);
+    vector<T> Lcoeffs;
     for(int i=0; i<n; i++)
     {
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
         int valence = mesh_.valence(vh);
         for(int j=0; j<3; j++)
-            L.coeffRef(3*i+j, 3*i+j) = 1.0;
+            Lcoeffs.push_back(T(3*i+j, 3*i+j, 1.0));
         for(MyMesh::VertexVertexIter vv = mesh_.vv_iter(vh); vv; ++vv)
         {
             MyMesh::VertexHandle adj = vv;
             int adjidx = adj.idx();
             for(int j=0; j<3; j++)
-                L.coeffRef(3*i+j, 3*adjidx+j) = -1.0/valence;
+                Lcoeffs.push_back(T(3*i+j, 3*adjidx+j, -1.0/valence));
         }
     }
 
-    DynamicSparseMatrix<double> LTL(L.transpose()*L);
+    L.setFromTriplets(Lcoeffs.begin(), Lcoeffs.end());
+
+    SparseMatrix<double> LTL(L.transpose()*L);
     VectorXd v0(3*n);
     for(int i=0; i<n; i++)
     {
@@ -452,14 +460,15 @@ void ReferenceMesh::applyLaplacianDeformationTop(int, const Vector3d &delta, int
         }
     }
 
-    DynamicSparseMatrix<double> L(2*n,2*n);
+    SparseMatrix<double> L(2*n,2*n);
+    vector<T> Lcoeffs;
     for(set<int>::iterator it = toApply.begin(); it != toApply.end(); ++it)
     {
         int i = *it;
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
         int valence = mesh_.valence(vh);
         for(int j=0; j<2; j++)
-            L.coeffRef(2*i+j, 2*i+j) = 1.0;
+            Lcoeffs.push_back(T(2*i+j, 2*i+j, 1.0));
         for(MyMesh::VertexVertexIter vv = mesh_.vv_iter(vh); vv; ++vv)
         {
             MyMesh::VertexHandle adj = vv;
@@ -467,12 +476,14 @@ void ReferenceMesh::applyLaplacianDeformationTop(int, const Vector3d &delta, int
             if(toApply.count(adjidx) > 0)
             {
                 for(int j=0; j<2; j++)
-                    L.coeffRef(2*i+j, 2*adjidx+j) = -1.0/valence;
+                    Lcoeffs.push_back(T(2*i+j, 2*adjidx+j, -1.0/valence));
             }
         }
     }
 
-    DynamicSparseMatrix<double> LTL(L.transpose()*L);
+    L.setFromTriplets(Lcoeffs.begin(), Lcoeffs.end());
+
+    SparseMatrix<double> LTL(L.transpose()*L);
     VectorXd v0(2*n);
     for(int i=0; i<n; i++)
     {
@@ -717,7 +728,8 @@ double ReferenceMesh::computeBestDWeights(const VectorXd &dQ, VectorXd &dW)
     if(interiorn == 0 || boundarye == 0)
         return 0;
 
-    DynamicSparseMatrix<double> Md(3*interiorn+boundarye, e);
+    SparseMatrix<double> Md(3*interiorn+boundarye, e);
+    vector<T> Mdcoeffs;
     VectorXd rhs(3*interiorn+boundarye);
     rhs.setZero();
 
@@ -740,9 +752,9 @@ double ReferenceMesh::computeBestDWeights(const VectorXd &dQ, VectorXd &dW)
             int eidx = eh.idx();
             MyMesh::Point adj = mesh_.point(tov);
             MyMesh::Point dadj(dQ[3*tov.idx()], dQ[3*tov.idx()+1],dQ[3*tov.idx()+2]);
-            Md.coeffRef(row, eidx) += center[0]-adj[0];
-            Md.coeffRef(row+1, eidx) += (center[1]-adj[1]);
-            Md.coeffRef(row+2, eidx) += center[2]-adj[2];
+            Mdcoeffs.push_back(T(row, eidx, center[0]-adj[0]));
+            Mdcoeffs.push_back(T(row+1, eidx, (center[1]-adj[1])));
+            Mdcoeffs.push_back(T(row+2, eidx, center[2]-adj[2]));
             double weight = mesh_.data(eh).weight();
             rhs[row] -= weight*(dcenter[0]-dadj[0]);
             rhs[row+1] -= weight*(dcenter[1]-dadj[1]);
@@ -755,10 +767,11 @@ double ReferenceMesh::computeBestDWeights(const VectorXd &dQ, VectorXd &dW)
         MyMesh::EdgeHandle eh = mesh_.edge_handle(i);
         if(edgePinned(eh))
         {
-            Md.coeffRef(row, i) = 1.0;
+            Mdcoeffs.push_back(T(row, i, 1.0));
             row++;
         }
     }
+    Md.setFromTriplets(Mdcoeffs.begin(), Mdcoeffs.end());
     assert(row == 3*interiorn + boundarye);
 
     SparseMatrix<double> M(Md.transpose()*Md);

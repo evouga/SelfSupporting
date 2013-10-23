@@ -3,12 +3,13 @@
 
 #include "mesh.h"
 #include <QtOpenGL>
+#include <GL/glu.h>
 
 class MeshRenderer
 {
 public:
     MeshRenderer(Mesh &m);
-    ~MeshRenderer();
+    virtual ~MeshRenderer();
 
     virtual void render3D()=0;
     virtual void render2D()=0;

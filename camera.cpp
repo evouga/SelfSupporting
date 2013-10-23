@@ -2,6 +2,7 @@
 #include <Eigen/Geometry>
 #include <QGLWidget>
 #include <iostream>
+#include <GL/glu.h>
 
 using namespace Eigen;
 

@@ -9,10 +9,13 @@
 #include <set>
 #include "unsupported/Eigen/IterativeSolvers"
 #include <fstream>
-#include "IpIpoptApplication.hpp"
 
 using namespace Eigen;
 using namespace std;
+
+typedef Eigen::Triplet<double> T;
+
+
 
 NetworkMesh::NetworkMesh(Controller &cont) : Mesh(cont)
 {
@@ -132,7 +135,8 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness, doubl
 
     int interiore = cure;
 
-    DynamicSparseMatrix<double, RowMajor> Md(3*interiorn, interiore);
+    SparseMatrix<double, RowMajor> Md(3*interiorn, interiore);
+    vector<T> Mdcoeffs;
     VectorXd rhs(3*interiorn);
     rhs.setZero();
 
@@ -168,9 +172,9 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness, doubl
             MyMesh::EdgeHandle eh = mesh_.edge_handle(heh);
             int eidx = edge2reduced[eh.idx()];
             MyMesh::Point adj = mesh_.point(tov);
-            Md.coeffRef(row, eidx) += (center[0]-adj[0]);
-            Md.coeffRef(row+1, eidx) += ((center[1]-adj[1]));
-            Md.coeffRef(row+2, eidx) += (center[2]-adj[2]);
+            Mdcoeffs.push_back(T(row, eidx, (center[0]-adj[0])));
+            Mdcoeffs.push_back(T(row+1, eidx, ((center[1]-adj[1]))));
+            Mdcoeffs.push_back(T(row+2, eidx, (center[2]-adj[2])));
         }
         rhs[row] = 0;
         rhs[row+1] = -load;
@@ -200,6 +204,8 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness, doubl
         lb[edge2reduced[i]] = 0.0;//-std::numeric_limits<double>::infinity();
         result[edge2reduced[i]] = mesh_.data(eh).weight();
     }
+
+    Md.setFromTriplets(Mdcoeffs.begin(), Mdcoeffs.end());
 
     SparseMatrix<double, RowMajor> M(Md);
     int oldid = getMeshID();
@@ -274,7 +280,8 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, dou
         }
     }
 
-    DynamicSparseMatrix<double, RowMajor> L(3*n,3*nummdofs);
+    SparseMatrix<double, RowMajor> L(3*n,3*nummdofs);
+    vector<T> Lcoeffs;
     VectorXd Lrhs(3*n);
     Lrhs.setZero();
 
@@ -288,7 +295,7 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, dou
             if(!mesh_.data(vh).anchored())
             {
                 for(int j=0; j<3; j++)
-                    L.coeffRef(3*i+j, 3*vidx2midx[i]+j) = 1.0;
+                    Lcoeffs.push_back(T(3*i+j, 3*vidx2midx[i]+j, 1.0));
             }
             for(MyMesh::VertexVertexIter vv = mesh_.vv_iter(vh); vv; ++vv)
             {
@@ -297,7 +304,7 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, dou
                 if(!mesh_.data(adj).pinned() && !mesh_.data(adj).anchored())
                 {
                     for(int j=0; j<3; j++)
-                        L.coeffRef(3*i+j, 3*vidx2midx[adjidx]+j) = -1.0/valence;
+                        Lcoeffs.push_back(T(3*i+j, 3*vidx2midx[adjidx]+j, -1.0/valence));
                 }
                 else
                 {
@@ -309,7 +316,11 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, dou
         }
     }
 
-    DynamicSparseMatrix<double, RowMajor> Md(3*nummdofs,3*nummdofs);
+    L.setFromTriplets(Lcoeffs.begin(), Lcoeffs.end());
+
+    SparseMatrix<double> Md(3*nummdofs,3*nummdofs);
+    vector<T> Mdcoeffs;
+
     for(int i=0; i<n; i++)
     {
         MyMesh::VertexHandle vh = mesh_.vertex_handle(i);
@@ -321,11 +332,13 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, dou
             {
                 for(int k=0; k<3; k++)
                 {
-                    Md.coeffRef(3*vidx2midx[i]+j,3*vidx2midx[i]+k) = normal[j]*normal[k];
+                    Mdcoeffs.push_back(T(3*vidx2midx[i]+j,3*vidx2midx[i]+k, normal[j]*normal[k]));
                 }
             }
         }
     }
+
+    Md.setFromTriplets(Mdcoeffs.begin(), Mdcoeffs.end());
 
     //Md /= beta;
     VectorXd rhs = Md*q0;
@@ -360,7 +373,8 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, dou
             numunpinned++;
     }
 
-    DynamicSparseMatrix<double> CEd(3*nummdofs, 3*numunpinned);
+    SparseMatrix<double> CEd(3*nummdofs, 3*numunpinned);
+    vector<T> CEdcoeffs;
     VectorXd cerhs(3*numunpinned);
     cerhs.setZero();
     int row = 0;
@@ -378,9 +392,9 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, dou
                 int vidx = adj.idx();
                 for(int j=0; j<3; j++)
                 {
-                    addToStrippedMatrix(CEd, cerhs, i, j, 3*row+j,weight,vidx2midx);
+                    addToStrippedMatrix(CEdcoeffs, cerhs, i, j, 3*row+j,weight,vidx2midx);
 
-                    addToStrippedMatrix(CEd, cerhs, vidx, j, 3*row+j, -weight, vidx2midx);
+                    addToStrippedMatrix(CEdcoeffs, cerhs, vidx, j, 3*row+j, -weight, vidx2midx);
                 }
             }
             cerhs[3*row+1] -= mesh_.data(vh).load();
@@ -388,6 +402,8 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, dou
         }
     }
     assert(row == numunpinned);
+
+    CEd.setFromTriplets(CEdcoeffs.begin(), CEdcoeffs.end());
 
     int numplanarity = 0;
     for(MyMesh::FaceIter fi = mesh_.faces_begin(); fi != mesh_.faces_end(); ++fi)
@@ -398,7 +414,8 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, dou
         }
     }
 
-    DynamicSparseMatrix<double> Pd(3*nummdofs, numplanarity);
+    SparseMatrix<double> Pd(3*nummdofs, numplanarity);
+    vector<T> Pdcoeffs;
     VectorXd prhs(numplanarity);
     prhs.setZero();
 
@@ -472,13 +489,13 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, dou
                 VectorXd back(prhs.size());
                 for(int k=0; k<3; k++)
                 {
-                    addToStrippedMatrix(Pd, back, curtoidx, k, row, grade2[k], vidx2midx);
+                    addToStrippedMatrix(Pdcoeffs, back, curtoidx, k, row, grade2[k], vidx2midx);
                     //Pd.coeffRef(3*curtoidx+k,row) += grade2[k];
-                    addToStrippedMatrix(Pd, back, curfromidx, k, row, -grade2[k], vidx2midx);
+                    addToStrippedMatrix(Pdcoeffs, back, curfromidx, k, row, -grade2[k], vidx2midx);
                     //Pd.coeffRef(3*curfromidx+k, row) -= grade2[k];
-                    addToStrippedMatrix(Pd, back, curfromidx, k, row, -grade1[k], vidx2midx);
+                    addToStrippedMatrix(Pdcoeffs, back, curfromidx, k, row, -grade1[k], vidx2midx);
                     //Pd.coeffRef(3*curfromidx+k, row) -= grade1[k];
-                    addToStrippedMatrix(Pd, back, prevfromidx, k, row, grade1[k], vidx2midx);
+                    addToStrippedMatrix(Pdcoeffs, back, prevfromidx, k, row, grade1[k], vidx2midx);
                     //Pd.coeffRef(3*prevfromidx+k,row) += grade1[k];
                 }
 
@@ -491,6 +508,8 @@ double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, dou
         }
     }
     assert(row == numplanarity);
+
+    Pd.setFromTriplets(Pdcoeffs.begin(), Pdcoeffs.end());
 
     prhs += Pd.transpose()*q0;
 
@@ -568,7 +587,8 @@ double NetworkMesh::computeBestPositionsBCLS(double , double , double thickness,
         }
     }
 
-    DynamicSparseMatrix<double> CEd(3*n, 3*numunpinned);
+    SparseMatrix<double> CEd(3*n, 3*numunpinned);
+    vector<T> CEdcoeffs;
     VectorXd cerhs(3*numunpinned);
     cerhs.setZero();
     int row = 0;
@@ -588,8 +608,8 @@ double NetworkMesh::computeBestPositionsBCLS(double , double , double thickness,
                 for(int j=0; j<3; j++)
                 {
                     double div = (j == 1 ? load : 1.0);
-                    CEd.coeffRef(3*i+j, 3*row+j) += weight/div;
-                    CEd.coeffRef(3*vidx+j, 3*row+j) -= weight/div;
+                    CEdcoeffs.push_back(T(3*i+j, 3*row+j, weight/div));
+                    CEdcoeffs.push_back(T(3*vidx+j, 3*row+j, -weight/div));
                 }
             }
             cerhs[3*row+1] -= 1.0;
@@ -597,6 +617,8 @@ double NetworkMesh::computeBestPositionsBCLS(double , double , double thickness,
         }
     }
     assert(row == numunpinned);
+
+    CEd.setFromTriplets(CEdcoeffs.begin(), CEdcoeffs.end());
 
     SparseMatrix<double, RowMajor> M(CEd.transpose());
 
@@ -666,12 +688,12 @@ double NetworkMesh::computeBestPositionsBCLS(double , double , double thickness,
     return residual;
 }
 
-void NetworkMesh::addToStrippedMatrix(DynamicSparseMatrix<double> &M, VectorXd &rhs, int v, int k, int j, double val, std::map<int, int> &vidx2midx)
+void NetworkMesh::addToStrippedMatrix(std::vector<Eigen::Triplet<double> > &M, VectorXd &rhs, int v, int k, int j, double val, std::map<int, int> &vidx2midx)
 {
     MyMesh::VertexHandle vh = mesh_.vertex_handle(v);
     if(!mesh_.data(vh).pinned() && !mesh_.data(vh).anchored())
     {
-        M.coeffRef(3*vidx2midx[v] + k, j) += val;
+        M.push_back(T(3*vidx2midx[v] + k, j, val));
     }
     else
     {
@@ -1064,7 +1086,8 @@ double NetworkMesh::enforcePlanarity()
         }
     }
 
-    DynamicSparseMatrix<double> Pd(3*n, numplanarity);
+    SparseMatrix<double> Pd(3*n, numplanarity);
+    vector<T> Pdcoeffs;
     VectorXd p0(numplanarity);
     p0.setZero();
 
@@ -1109,10 +1132,10 @@ double NetworkMesh::enforcePlanarity()
                 sumtheta += theta;
                 for(int k=0; k<3; k++)
                 {
-                    Pd.coeffRef(3*curtoidx+k,row) += grade2[k];
-                    Pd.coeffRef(3*curfromidx+k, row) -= grade2[k];
-                    Pd.coeffRef(3*curfromidx+k, row) -= grade1[k];
-                    Pd.coeffRef(3*prevfromidx+k,row) += grade1[k];
+                    Pdcoeffs.push_back(T(3*curtoidx+k,row, grade2[k]));
+                    Pdcoeffs.push_back(T(3*curfromidx+k, row, -grade2[k]));
+                    Pdcoeffs.push_back(T(3*curfromidx+k, row, -grade1[k]));
+                    Pdcoeffs.push_back(T(3*prevfromidx+k,row, grade1[k]));
                 }
 
                 prev = cur;
@@ -1124,6 +1147,8 @@ double NetworkMesh::enforcePlanarity()
         }
     }
     assert(row == numplanarity);
+
+    Pd.setFromTriplets(Pdcoeffs.begin(), Pdcoeffs.end());
 
     VectorXd q0(3*n);
     for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
@@ -1511,30 +1536,4 @@ void NetworkMesh::flip(MyMesh::EdgeHandle &_eh)
     mesh_.set_halfedge_handle(va0, a1);
   if (mesh_.halfedge_handle(vb0) == a0)
     mesh_.set_halfedge_handle(vb0, b1);
-}
-
-double NetworkMesh::optimizeIPOPT()
-{
-    auto_ptr<MeshLock> ml = acquireMesh();
-    Ipopt::TNLP *mynlp = new NMOPT(*this);
-
-    Ipopt::IpoptApplication *app = new Ipopt::IpoptApplication();
-
- app->Options()->SetNumericValue("tol", 1e-6);
- app->Options()->SetStringValue("mu_strategy", "adaptive");
- app->Options()->SetStringValue("output_file", "ipopt.out");
-
- // Intialize the IpoptApplication and process the options
- Ipopt::ApplicationReturnStatus status;
- status = app->Initialize();
- if (status != Ipopt::Solve_Succeeded) {
-   printf("\n\n*** Error during initialization!\n");
-   return (int) status;
- }
-
- // Ask Ipopt to solve the problem
- status = app->OptimizeTNLP(mynlp);
- double err = calculateEquilibriumViolation();
- cout << err << endl;
- return 0;
 }

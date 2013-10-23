@@ -2,7 +2,7 @@
 #include "bcls.h"
 
 #include <iostream>
-#include <unsupported/Eigen/SparseExtra>
+#include <Eigen/Sparse>
 
 using namespace Eigen;
 using namespace std;
@@ -110,7 +110,7 @@ void Solvers::linearSolveLDLT(const SparseMatrix<double> &A, const VectorXd &rhs
     assert(A.cols() == rhs.size());
     assert(A.rows() == A.cols());
     assert(A.rows() == result.size());
-    SparseLDLT<SparseMatrix<double> > ldlt(A);
+    SimplicialLDLT<SparseMatrix<double> > ldlt(A);
     result = ldlt.solve(rhs);
 }
 

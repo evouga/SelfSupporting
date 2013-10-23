@@ -242,12 +242,11 @@ void Controller::iterateNetwork()
 
 void Controller::computeBestWeights()
 {
-    nm_->optimizeIPOPT();
     nm_->setSurfaceAreaLoads(p_.density, p_.thickness, p_.extramass);
-    /*double maxstress = p_.maxStress;
+    double maxstress = p_.maxStress;
     if(!p_.enforceMaxWeight)
         maxstress = std::numeric_limits<double>::infinity();
-    p_.nmresidual = nm_->computeBestWeights(maxstress, p_.thickness, 1e-10);*/
+    p_.nmresidual = nm_->computeBestWeights(maxstress, p_.thickness, 1e-10);
     updateGLWindows();
 }
 
