@@ -6,10 +6,9 @@ using namespace Eigen;
 
 NetworkMeshRenderer::NetworkMeshRenderer(Mesh &m) : MeshRenderer(m)
 {
-
 }
 
-void NetworkMeshRenderer::render3D()
+void NetworkMeshRenderer::render3D(double time, double modeAmp)
 {
     auto_ptr<MeshLock> ml = m_.acquireMesh();
     const MyMesh &mesh_ = m_.getMesh();
@@ -45,7 +44,7 @@ void NetworkMeshRenderer::render3D()
         else
             glColor4f(0.4, 0.1, 0.0, 1.0);
         MyMesh::Point p1, p2;
-        m_.edgeEndpoints(e, p1, p2);
+        ((NetworkMesh &)m_).edgeEndpointsWithMode(e, p1, p2, modeAmp*sin(time));
         glVertex3f(p1[0],p1[1],p1[2]);
         glVertex3f(p2[0],p2[1],p2[2]);
         glEnd();
@@ -64,7 +63,7 @@ void NetworkMeshRenderer::render3D()
     }
 }
 
-void NetworkMeshRenderer::renderSurface()
+void NetworkMeshRenderer::renderSurface(double time, double modeAmp)
 {
     auto_ptr<MeshLock> ml = m_.acquireMesh();
     const MyMesh &mesh_ = m_.getMesh();
@@ -96,8 +95,9 @@ void NetworkMeshRenderer::renderSurface()
 //                glColor4f(0,0,0,1.0);
 
 
+            MyMesh::Point pt;
+            ((NetworkMesh &)m_).pointWithMode(v.handle(), pt, modeAmp*sin(time));
 
-            MyMesh::Point pt = mesh_.point(v);
             MyMesh::Point n;
             mesh_.calc_vertex_normal_correct(v, n);
             n.normalize();
@@ -143,7 +143,7 @@ void NetworkMeshRenderer::renderConjugateVectors3D()
 }
 
 
-void NetworkMeshRenderer::render2D()
+void NetworkMeshRenderer::render2D(double , double modeAmp)
 {
     auto_ptr<MeshLock> ml = m_.acquireMesh();
     glEnable(GL_LINE_SMOOTH);

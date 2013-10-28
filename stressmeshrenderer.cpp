@@ -7,7 +7,7 @@ StressMeshRenderer::StressMeshRenderer(Mesh &m) : MeshRenderer(m)
 
 }
 
-void StressMeshRenderer::render3D()
+void StressMeshRenderer::render3D(double, double )
 {
     auto_ptr<MeshLock> ml = m_.acquireMesh();
     const MyMesh &mesh_ = m_.getMesh();
@@ -58,6 +58,6 @@ void StressMeshRenderer::render3D()
     glShadeModel(GL_SMOOTH);
 }
 
-void StressMeshRenderer::render2D()
+void StressMeshRenderer::render2D(double, double)
 {
 }

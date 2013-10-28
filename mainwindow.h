@@ -152,6 +152,10 @@ private slots:
 
     void on_excludePinnedBox_clicked();
 
+    void on_modeButton_clicked();
+
+    void on_modeAmplitudeSlider_sliderMoved(int position);
+
 protected:
     void moveEvent(QMoveEvent *);
     void resizeEvent(QResizeEvent *);

@@ -9,8 +9,8 @@ public:
     ReferenceMeshRenderer(Mesh &m);
 
     void renderPick3D();
-    void render3D();
-    void render2D();
+    void render3D(double time, double modeAmp);
+    void render2D(double time, double mdoeAmp);
 
 private:
 

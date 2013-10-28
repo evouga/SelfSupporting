@@ -6,7 +6,7 @@ ReferenceMeshRenderer::ReferenceMeshRenderer(Mesh &m) : MeshRenderer(m)
 {
 }
 
-void ReferenceMeshRenderer::render2D()
+void ReferenceMeshRenderer::render2D(double, double)
 {
     auto_ptr<MeshLock> ml = m_.acquireMesh();
     const MyMesh &mesh_ = m_.getMesh();
@@ -24,7 +24,7 @@ void ReferenceMeshRenderer::render2D()
     glEnd();
 }
 
-void ReferenceMeshRenderer::render3D()
+void ReferenceMeshRenderer::render3D(double , double )
 {
     renderSurface3D(RF_FACES | RF_WIREFRAME);
 }

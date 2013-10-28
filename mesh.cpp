@@ -282,7 +282,6 @@ void Mesh::setSurfaceAreaLoads(double density, double thickness, double extramas
         {
             extra = extramass;
         }
-        thickness = 0.1;
         mesh_.data(vi).set_load(9.8*(extra + density*area*thickness ));
     }
     invalidateMesh();

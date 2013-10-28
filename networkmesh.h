@@ -2,6 +2,7 @@
 #define NETWORKMESH_H
 
 #include "mesh.h"
+#include <Eigen/Core>
 #include <Eigen/Sparse>
 
 class ReferenceMesh;
@@ -25,6 +26,7 @@ public:
     // Given a (possibly non-self-supporting) 3D mesh, finds non-negative weights that come as close as possible to
     // satisfying the force-equilibrium constraints
     double computeBestWeights(double maxstress, double thickness, double tol);
+    void calculateMode(double density, double thickness);
 
 
     // Given non-negative weights, finds the closest mesh to the given mesh that is self-supporting with those weights
@@ -49,12 +51,15 @@ public:
     bool exportWeights(const char *name);
 
     void edgeFlip();
+    void edgeEndpointsWithMode(MyMesh::EdgeHandle edge, MyMesh::Point &p1, MyMesh::Point &p2, double t);
+    void pointWithMode(MyMesh::VertexHandle vert, MyMesh::Point &pt, double t);
 
 
 private:
     Eigen::Matrix2d approximateStressHessian(MyMesh::FaceHandle face);
     void fixBadVertices();
     bool fixBadVerticesNew();
+
 
     double computeLaplacianWeight(MyMesh::EdgeHandle edge);
     double computeLaplacianAlpha(MyMesh::HalfedgeHandle heh);
@@ -68,6 +73,8 @@ private:
     MyMesh subdreference_;
 
     NetworkMeshRenderer *renderer_;
+
+    Eigen::VectorXd mode_;
 
 };
 

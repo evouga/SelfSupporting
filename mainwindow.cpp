@@ -325,6 +325,7 @@ void MainWindow::reportParams()
     c_.setProjectVertically(ui->projectVerticallyCheckBox->isChecked());
     c_.setInfluence(ui->influenceEdit->text().toInt());
     c_.setExcludePinned(ui->excludePinnedBox->isChecked());
+    c_.setModeAmplitude(ui->modeAmplitudeSlider->value());
 }
 
 void MainWindow::on_actionSubdivide_triggered()
@@ -541,4 +542,14 @@ void MainWindow::on_actionPin_triggered()
 void MainWindow::on_excludePinnedBox_clicked()
 {
     c_.setExcludePinned(ui->excludePinnedBox->isChecked());
+}
+
+void MainWindow::on_modeButton_clicked()
+{
+    c_.calculateMode();
+}
+
+void MainWindow::on_modeAmplitudeSlider_sliderMoved(int position)
+{
+    c_.setModeAmplitude(position);
 }

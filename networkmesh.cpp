@@ -201,7 +201,7 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness, doubl
             maxweight /= 8;
         }
         ub[edge2reduced[i]] = maxweight;
-        lb[edge2reduced[i]] = 0.0;//-std::numeric_limits<double>::infinity();
+        lb[edge2reduced[i]] = 0.001;//-std::numeric_limits<double>::infinity();
         result[edge2reduced[i]] = mesh_.data(eh).weight();
     }
 
@@ -228,6 +228,106 @@ double NetworkMesh::computeBestWeights(double maxstress, double thickness, doubl
     }
     double after = calculateEquilibriumViolation();
     return after;
+}
+
+
+
+void NetworkMesh::calculateMode(double density, double thickness)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+
+    int numinterior = 0;
+    vector<int> dofmap;
+    vector<int> invdofmap;
+
+    for(MyMesh::VertexIter vi = mesh_.vertices_begin(); vi != mesh_.vertices_end(); ++vi)
+    {
+        if(mesh_.data(vi.handle()).pinned())
+        {
+            invdofmap.push_back(-1);
+            continue;
+        }
+        dofmap.push_back(vi.handle().idx());
+        invdofmap.push_back(numinterior);
+        numinterior++;
+    }
+
+    SparseMatrix<double> A(3*numinterior, 3*numinterior);
+    SparseMatrix<double> N(3*numinterior, numinterior);
+
+    vector<T> Acoeffs;
+    vector<T> Ncoeffs;
+    for(int i=0; i<numinterior; i++)
+    {
+        MyMesh::VertexHandle vert = mesh_.vertex_handle(dofmap[i]);
+        double area = vertexArea(vert);
+        for(int j=0; j<3; j++)
+            Acoeffs.push_back(T(3*i+j, 3*i+j, thickness*density*area));
+
+        MyMesh::Normal n;
+        mesh_.calc_vertex_normal_correct(vert, n);
+        Vector3d en;
+        for(int j=0; j<3; j++)
+            en[j] = n[j];
+        en.normalize();
+
+        for(int j=0; j<3; j++)
+        {
+            Ncoeffs.push_back(T(3*i+j, i, en[j]));
+        }
+    }
+
+    A.setFromTriplets(Acoeffs.begin(), Acoeffs.end());
+    N.setFromTriplets(Ncoeffs.begin(), Ncoeffs.end());
+
+    SparseMatrix<double> M = A*N;
+    SparseMatrix<double> L(3*numinterior, 3*numinterior);
+    vector<T> Lcoeffs;
+    for(int i=0; i<numinterior; i++)
+    {
+        MyMesh::VertexHandle vh = mesh_.vertex_handle(dofmap[i]);
+        for(MyMesh::VertexOHalfedgeIter voh = mesh_.voh_iter(vh); voh; ++voh)
+        {
+            MyMesh::HalfedgeHandle heh = voh.handle();
+            MyMesh::VertexHandle nb = mesh_.to_vertex_handle(heh);
+            if(mesh_.data(nb).pinned())
+                continue;
+            int intidx = invdofmap[nb.idx()];
+            MyMesh::EdgeHandle eh = mesh_.edge_handle(heh);
+            double weight = mesh_.data(eh).weight();
+            for(int j=0; j<3; j++)
+            {
+                Lcoeffs.push_back(T(3*i+j, 3*intidx+j, -weight));
+                Lcoeffs.push_back(T(3*i+j, 3*i+j, weight));
+            }
+        }
+    }
+    L.setFromTriplets(Lcoeffs.begin(), Lcoeffs.end());
+    SparseMatrix<double> K = L*N;
+
+    SparseMatrix<double> left = M.transpose()*M;
+    SparseMatrix<double> right = N.transpose()*K;
+    VectorXd alpha(numinterior);
+
+    alpha.setRandom();
+    SimplicialLDLT<SparseMatrix<double> > solver(right);
+    for(int i=0; i<1000; i++)
+    {
+        VectorXd newalpha = left*alpha;
+        newalpha = solver.solve(newalpha);
+
+        double eval = alpha.dot(newalpha);
+        std::cout << i << " " << eval << endl;
+        alpha = newalpha/newalpha.norm();
+    }
+    VectorXd deltaq = N*alpha;
+    mode_.resize(3*mesh_.n_vertices());
+    mode_.setZero();
+    for(int i=0; i<numinterior; i++)
+    {
+        for(int j=0; j<3; j++)
+            mode_[3*dofmap[i]+j] = deltaq[3*i+j];
+    }
 }
 
 double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, double thickness, bool planarity, bool projectVertically)
@@ -1536,4 +1636,40 @@ void NetworkMesh::flip(MyMesh::EdgeHandle &_eh)
     mesh_.set_halfedge_handle(va0, a1);
   if (mesh_.halfedge_handle(vb0) == a0)
     mesh_.set_halfedge_handle(vb0, b1);
+}
+
+void NetworkMesh::pointWithMode(MyMesh::VertexHandle vert, MyMesh::Point &pt, double t)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    MyMesh::Point pt = mesh_.point(vert);
+
+    if(mode_.size() == mesh_.n_vertices())
+    {
+        for(int j=0; j<3; j++)
+            pt[j] += t*mode_[3*vert.idx()+j];
+    }
+}
+
+void NetworkMesh::edgeEndpointsWithMode(MyMesh::EdgeHandle edge, MyMesh::Point &p1, MyMesh::Point &p2, double t)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    MyMesh::HalfedgeHandle heh = mesh_.halfedge_handle(edge,0);
+    if(!heh.is_valid())
+        heh = mesh_.halfedge_handle(edge,1);
+    assert(heh.is_valid());
+
+    MyMesh::VertexHandle to = mesh_.to_vertex_handle(heh);
+    MyMesh::VertexHandle from = mesh_.from_vertex_handle(heh);
+
+    p1 = mesh_.point(from);
+    p2 = mesh_.point(to);
+
+    if(mode_.size() == 3*mesh_.n_vertices())
+    {
+        for(int j=0; j<3; j++)
+        {
+            p1[j] += t*mode_[3*from.idx()+j];
+            p2[j] += t*mode_[3*to.idx()+j];
+        }
+    }
 }

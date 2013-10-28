@@ -20,13 +20,22 @@
 using namespace Eigen;
 using namespace std;
 
-Controller::Controller(MainWindow &w) : w_(w)
+Controller::Controller(MainWindow &w) : w_(w), time_(0)
 {
     rm_ = new ReferenceMesh(*this);
     nm_ = new NetworkMesh(*this);
     sm_ = new StressMesh(*this);
     solvers_ = new Solvers();
     nt_ = new NetworkThread(*this);
+    timer_ = new QTimer(this);
+    connect(timer_, SIGNAL(timeout()), this, SLOT(tick()));
+    timer_->start(100);
+}
+
+void Controller::tick()
+{
+    time_ += 0.1;
+    updateGLWindows();
 }
 
 Controller::~Controller()
@@ -38,6 +47,7 @@ Controller::~Controller()
     delete nm_;
     delete sm_;
     delete solvers_;
+    delete timer_;
 }
 
 NetworkThread *Controller::getNT()
@@ -250,6 +260,12 @@ void Controller::computeBestWeights()
     updateGLWindows();
 }
 
+void Controller::calculateMode()
+{
+    nm_->calculateMode(p_.density, p_.thickness);
+    updateGLWindows();
+}
+
 void Controller::computeBestPositions()
 {
     //double residualp = nm_->computeBestPositionsTangentLS(p_.alpha, p_.beta, p_.thickness, p_.planarity, p_.projectVertically);
@@ -372,10 +388,10 @@ void Controller::computeClosestPointOnPlane(const Vector2d &pos, int &closestidx
 void Controller::renderMesh2D()
 {
     if(w_.showReferenceMesh())
-        rm_->getRenderer().render2D();
+        rm_->getRenderer().render2D(time_, p_.modeAmplitude);
     if(w_.showNetworkMesh())
     {
-        nm_->getRenderer().render2D();
+        nm_->getRenderer().render2D(time_, p_.modeAmplitude);
         if(w_.showConjugateVectors())
             ((NetworkMeshRenderer &)nm_->getRenderer()).renderConjugateVectors2D();
     }
@@ -385,15 +401,15 @@ void Controller::renderMesh2D()
 void Controller::renderMesh3D()
 {
     if(w_.showNetworkSurface())
-        ((NetworkMeshRenderer &)nm_->getRenderer()).renderSurface();
+        ((NetworkMeshRenderer &)nm_->getRenderer()).renderSurface(time_, p_.modeAmplitude);
     if(w_.showNetworkMesh())    
-        nm_->getRenderer().render3D();
+        nm_->getRenderer().render3D(time_, p_.modeAmplitude);
     if(w_.showConjugateVectors())
         ((NetworkMeshRenderer &)nm_->getRenderer()).renderConjugateVectors3D();
     if(w_.showReferenceMesh())
-        rm_->getRenderer().render3D();
+        rm_->getRenderer().render3D(time_, p_.modeAmplitude);
     if(w_.showStressSurface())
-        sm_->getRenderer().render3D();
+        sm_->getRenderer().render3D(time_, p_.modeAmplitude);
 }
 
 void Controller::renderPickMesh3D()
@@ -685,4 +701,9 @@ void Controller::pinSelected()
 {
     rm_->pinHandled();
     w_.updateGLWindows();
+}
+
+void Controller::setModeAmplitude(int value)
+{
+    p_.modeAmplitude = 0.1*value;
 }

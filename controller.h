@@ -4,6 +4,7 @@
 #include <Eigen/Core>
 #include <QString>
 #include <vector>
+#include <QObject>
 
 class MainWindow;
 class ReferenceMesh;
@@ -12,6 +13,7 @@ class Solvers;
 class NetworkThread;
 class StressMesh;
 class Camera;
+class QTimer;
 
 struct Params
 {
@@ -32,10 +34,13 @@ struct Params
     bool projectVertically;
     int influence;
     bool excludePinned;
+    double modeAmplitude;
 };
 
-class Controller
+class Controller : public QObject
 {
+    Q_OBJECT
+
 public:
     Controller(MainWindow &w);
     ~Controller();
@@ -70,6 +75,7 @@ public:
     void subdivideReferenceMesh(bool andboundary);
     void subdivideReferenceMeshLoop(bool andboundary);
     void triangulateThrustNetwork();
+    void calculateMode();
     Eigen::Vector3d computeMeshCentroid();
     double computeMeshBoundingSphere(const Eigen::Vector3d &center);
     double computeMeshBoundingCircle(const Eigen::Vector3d &center);
@@ -116,6 +122,7 @@ public:
     void computeConjugateDirs();
     void setInfluence(int influence);
     void setExcludePinned(bool state);
+    void setModeAmplitude(int value);
 
     void pinReferenceBoundary();
     void unpinReferenceBoundary();
@@ -134,6 +141,9 @@ public:
     NetworkThread *getNT();
     std::vector<int> selectRectangle(const Eigen::Vector2d &c1, const Eigen::Vector2d &c2, Camera &c);
 
+public slots:
+    void tick();
+
 private:
     void resetParams();
 
@@ -145,6 +155,9 @@ private:
     NetworkThread *nt_;
 
     Params p_;
+
+    QTimer *timer_;
+    double time_;
 };
 
 #endif // CONTROLLER_H
