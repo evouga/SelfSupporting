@@ -1641,7 +1641,7 @@ void NetworkMesh::flip(MyMesh::EdgeHandle &_eh)
 void NetworkMesh::pointWithMode(MyMesh::VertexHandle vert, MyMesh::Point &pt, double t)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
-    MyMesh::Point pt = mesh_.point(vert);
+    pt = mesh_.point(vert);
 
     if(mode_.size() == mesh_.n_vertices())
     {
