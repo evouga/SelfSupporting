@@ -4,11 +4,13 @@
 using namespace std;
 using namespace Eigen;
 
+const double PI = 3.1415926535898;
+
 NetworkMeshRenderer::NetworkMeshRenderer(Mesh &m) : MeshRenderer(m)
 {
 }
 
-void NetworkMeshRenderer::render3D(double time, double modeAmp)
+void NetworkMeshRenderer::render3D(double time, int mode, double modeAmp)
 {
     auto_ptr<MeshLock> ml = m_.acquireMesh();
     const MyMesh &mesh_ = m_.getMesh();
@@ -44,7 +46,7 @@ void NetworkMeshRenderer::render3D(double time, double modeAmp)
         else
             glColor4f(0.4, 0.1, 0.0, 1.0);
         MyMesh::Point p1, p2;
-        ((NetworkMesh &)m_).edgeEndpointsWithMode(e, p1, p2, modeAmp*sin(time));
+        ((NetworkMesh &)m_).edgeEndpointsWithMode(e, p1, p2, mode, modeAmp*sin(time));
         glVertex3f(p1[0],p1[1],p1[2]);
         glVertex3f(p2[0],p2[1],p2[2]);
         glEnd();
@@ -63,7 +65,7 @@ void NetworkMeshRenderer::render3D(double time, double modeAmp)
     }
 }
 
-void NetworkMeshRenderer::renderSurface(double time, double modeAmp)
+void NetworkMeshRenderer::renderSurface(double time, int mode, double modeAmp)
 {
     auto_ptr<MeshLock> ml = m_.acquireMesh();
     const MyMesh &mesh_ = m_.getMesh();
@@ -81,22 +83,20 @@ void NetworkMeshRenderer::renderSurface(double time, double modeAmp)
 
         glBegin(GL_POLYGON);
         for (MyMesh::ConstFaceVertexIter v = mesh_.cfv_iter(f); v; ++v) {
-            //if(((NetworkMesh &)m_).isBadVertex(v.handle()))
-//                glColor4f(1.0,0.0,0.0,1.0);
-//            else
-                glColor4f(156/255., 213/255., 86/255., 1);
 
-            //double viol = 1+log(mesh_.data(v.handle()).violation())/24.0;
-            //glColor4f(viol, 213/255., 86/255., 1);
 
-//            if(mesh_.data(v.handle()).handled())
-//                glColor4f(1.0,0.0,0.0,1.0);
-//            else if(mesh_.data(v.handle()).outofenvelope())
-//                glColor4f(0,0,0,1.0);
 
 
             MyMesh::Point pt;
-            ((NetworkMesh &)m_).pointWithMode(v.handle(), pt, modeAmp*sin(time));
+            ((NetworkMesh &)m_).pointWithMode(v.handle(), pt, mode, modeAmp*sin(time));
+
+            double modeMag = ((NetworkMesh &)m_).pointModeValue(v.handle(), mode);
+            Vector3d color = colormap(modeMag, -1, 1);
+
+            glColor4f(color[0], color[1], color[2], 1.0);
+
+            //glColor4f(156/255., 213/255., 86/255., 1);
+
 
             MyMesh::Point n;
             mesh_.calc_vertex_normal_correct(v, n);
@@ -143,7 +143,7 @@ void NetworkMeshRenderer::renderConjugateVectors3D()
 }
 
 
-void NetworkMeshRenderer::render2D(double , double modeAmp)
+void NetworkMeshRenderer::render2D(double , int, double)
 {
     auto_ptr<MeshLock> ml = m_.acquireMesh();
     glEnable(GL_LINE_SMOOTH);
@@ -205,4 +205,71 @@ void NetworkMeshRenderer::renderConjugateVectors2D()
         glVertex2d(pt[0]+radius*v[0], pt[2]+radius*v[2]);
         glEnd();
     }
+}
+
+Vector3d NetworkMeshRenderer::colormap(double val, double min, double max) const
+{
+    double mapped = (val-min)/(max-min);
+    return colormap(mapped);
+}
+
+Vector3d NetworkMeshRenderer::colormap(double val) const
+{
+    Vector3d hsl;
+    hsl[0] = (1.0-val)*4.0*PI/3.0;
+    hsl[1] = 1.0;
+    hsl[2] = 0.5*val;
+    return HSLtoRGB(hsl);
+}
+
+Vector3d NetworkMeshRenderer::HSLtoRGB(const Vector3d &hsl) const
+{
+    double chroma = (1.0 - fabs(2.0*hsl[2]-1.0))*hsl[1];
+    double Hprime = hsl[0]*6.0/(2.0*PI);
+    double hmod = fmod(Hprime, 2.0);
+    double x = chroma*(1.0 - fabs(hmod-1.0));
+
+    Vector3d rgb;
+
+    if(Hprime < 1.0)
+    {
+        rgb[0] = chroma;
+        rgb[1] = x;
+        rgb[2] = 0;
+    }
+    else if(Hprime < 2.0)
+    {
+        rgb[0] = x;
+        rgb[1] = chroma;
+        rgb[2] = 0;
+    }
+    else if(Hprime < 3.0)
+    {
+        rgb[0] = 0;
+        rgb[1] = chroma;
+        rgb[2] = x;
+    }
+    else if(Hprime < 4.0)
+    {
+        rgb[0] = 0;
+        rgb[1] = x;
+        rgb[2] = chroma;
+    }
+    else if(Hprime < 5.0)
+    {
+        rgb[0] = x;
+        rgb[1] = 0;
+        rgb[2] = chroma;
+    }
+    else
+    {
+        rgb[0] = chroma;
+        rgb[1] = 0;
+        rgb[2] = x;
+    }
+
+    double m = hsl[2]-0.5*chroma;
+    for(int i=0; i<3; i++)
+        rgb[i] += m;
+    return rgb;
 }

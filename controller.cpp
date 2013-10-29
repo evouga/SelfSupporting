@@ -388,10 +388,10 @@ void Controller::computeClosestPointOnPlane(const Vector2d &pos, int &closestidx
 void Controller::renderMesh2D()
 {
     if(w_.showReferenceMesh())
-        rm_->getRenderer().render2D(time_, p_.modeAmplitude);
+        rm_->getRenderer().render2D(time_, p_.mode, p_.modeAmplitude);
     if(w_.showNetworkMesh())
     {
-        nm_->getRenderer().render2D(time_, p_.modeAmplitude);
+        nm_->getRenderer().render2D(time_, p_.mode, p_.modeAmplitude);
         if(w_.showConjugateVectors())
             ((NetworkMeshRenderer &)nm_->getRenderer()).renderConjugateVectors2D();
     }
@@ -401,15 +401,15 @@ void Controller::renderMesh2D()
 void Controller::renderMesh3D()
 {
     if(w_.showNetworkSurface())
-        ((NetworkMeshRenderer &)nm_->getRenderer()).renderSurface(time_, p_.modeAmplitude);
+        ((NetworkMeshRenderer &)nm_->getRenderer()).renderSurface(time_, p_.mode, p_.modeAmplitude);
     if(w_.showNetworkMesh())    
-        nm_->getRenderer().render3D(time_, p_.modeAmplitude);
+        nm_->getRenderer().render3D(time_, p_.mode, p_.modeAmplitude);
     if(w_.showConjugateVectors())
         ((NetworkMeshRenderer &)nm_->getRenderer()).renderConjugateVectors3D();
     if(w_.showReferenceMesh())
-        rm_->getRenderer().render3D(time_, p_.modeAmplitude);
+        rm_->getRenderer().render3D(time_, p_.mode, p_.modeAmplitude);
     if(w_.showStressSurface())
-        sm_->getRenderer().render3D(time_, p_.modeAmplitude);
+        sm_->getRenderer().render3D(time_, p_.mode, p_.modeAmplitude);
 }
 
 void Controller::renderPickMesh3D()
@@ -705,5 +705,10 @@ void Controller::pinSelected()
 
 void Controller::setModeAmplitude(int value)
 {
-    p_.modeAmplitude = 0.1*value;
+    p_.modeAmplitude = 0.01*value;
+}
+
+void Controller::setMode(int mode)
+{
+    p_.mode = mode;
 }

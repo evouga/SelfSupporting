@@ -51,9 +51,9 @@ public:
     bool exportWeights(const char *name);
 
     void edgeFlip();
-    void edgeEndpointsWithMode(MyMesh::EdgeHandle edge, MyMesh::Point &p1, MyMesh::Point &p2, double t);
-    void pointWithMode(MyMesh::VertexHandle vert, MyMesh::Point &pt, double t);
-
+    void edgeEndpointsWithMode(MyMesh::EdgeHandle edge, MyMesh::Point &p1, MyMesh::Point &p2, int mode, double t);
+    void pointWithMode(MyMesh::VertexHandle vert, MyMesh::Point &pt, int mode, double t);
+    double pointModeValue(MyMesh::VertexHandle vert, int mode);
 
 private:
     Eigen::Matrix2d approximateStressHessian(MyMesh::FaceHandle face);
@@ -74,7 +74,7 @@ private:
 
     NetworkMeshRenderer *renderer_;
 
-    Eigen::VectorXd mode_;
+    Eigen::MatrixXd modes_;
 
 };
 

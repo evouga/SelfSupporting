@@ -11,8 +11,8 @@ public:
     MeshRenderer(Mesh &m);
     virtual ~MeshRenderer();
 
-    virtual void render3D(double time, double modeAmp)=0;
-    virtual void render2D(double time, double modeAmp)=0;
+    virtual void render3D(double time, int mode, double modeAmp)=0;
+    virtual void render2D(double time, int mode, double modeAmp)=0;
     static void encodeAsColor(unsigned int n, Mesh::PrimType type, float &r, float &g, float &b);
     static void decodeFromColor(unsigned int &n, Mesh::PrimType &type, float r, float g, float b);
     static void decodeFromColor(unsigned int &n, Mesh::PrimType &type, GLubyte *pixelbuf);

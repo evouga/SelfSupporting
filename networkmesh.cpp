@@ -307,7 +307,39 @@ void NetworkMesh::calculateMode(double density, double thickness)
 
     SparseMatrix<double> left = M.transpose()*M;
     SparseMatrix<double> right = N.transpose()*K;
-    VectorXd alpha(numinterior);
+
+    std::cout << "Building dense matrices" << std::endl;
+    MatrixXd leftD = left;
+    MatrixXd rigthD = right;
+
+    std::cout << "Eigenvalue computation" << std::endl;
+
+    GeneralizedSelfAdjointEigenSolver<MatrixXd> ges;
+    ges.compute(left, right);
+    cout << "The generalized eigenvalues are: " << ges.eigenvalues().transpose() << endl;
+
+    MatrixXd interiormodes = N*ges.eigenvectors();
+    modes_.resize(3*mesh_.n_vertices(), interiormodes.cols());
+    modes_.setZero();
+    for(int i=0; i<numinterior; i++)
+    {
+        for(int j=0; j<3; j++)
+            modes_.row(3*dofmap[i]+j) = interiormodes.row(3*i+j);
+    }
+
+    for(int i=0; i<interiormodes.cols(); i++)
+    {
+        double maxnorm = 0;
+        for(int j=0; j<mesh_.n_vertices(); j++)
+        {
+            Vector3d vec = modes_.col(i).segment<3>(3*j);
+            maxnorm = std::max(maxnorm, vec.norm());
+        }
+        if(maxnorm > 0)
+            modes_.col(i) /= maxnorm;
+    }
+
+    /*VectorXd alpha(numinterior);
 
     alpha.setRandom();
     SimplicialLDLT<SparseMatrix<double> > solver(right);
@@ -327,7 +359,7 @@ void NetworkMesh::calculateMode(double density, double thickness)
     {
         for(int j=0; j<3; j++)
             mode_[3*dofmap[i]+j] = deltaq[3*i+j];
-    }
+    }*/
 }
 
 double NetworkMesh::computeBestPositionsTangentLS(double alpha, double beta, double thickness, bool planarity, bool projectVertically)
@@ -1638,19 +1670,41 @@ void NetworkMesh::flip(MyMesh::EdgeHandle &_eh)
     mesh_.set_halfedge_handle(vb0, b1);
 }
 
-void NetworkMesh::pointWithMode(MyMesh::VertexHandle vert, MyMesh::Point &pt, double t)
+void NetworkMesh::pointWithMode(MyMesh::VertexHandle vert, MyMesh::Point &pt, int mode, double t)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
     pt = mesh_.point(vert);
 
-    if(mode_.size() == mesh_.n_vertices())
+    if(modes_.rows() == 3*mesh_.n_vertices() && mode >= 0 && mode < modes_.cols())
     {
+        int numcols = modes_.cols();
         for(int j=0; j<3; j++)
-            pt[j] += t*mode_[3*vert.idx()+j];
+            pt[j] += t*modes_.col(numcols-mode-1)[3*vert.idx()+j];
     }
 }
 
-void NetworkMesh::edgeEndpointsWithMode(MyMesh::EdgeHandle edge, MyMesh::Point &p1, MyMesh::Point &p2, double t)
+double NetworkMesh::pointModeValue(MyMesh::VertexHandle vert, int mode)
+{
+    auto_ptr<MeshLock> ml = acquireMesh();
+    double result = 0;
+
+    if(modes_.rows() == 3*mesh_.n_vertices() && mode >= 0 && mode < modes_.cols())
+    {
+        int numcols = modes_.cols();
+        MyMesh::Normal n;
+        mesh_.calc_vertex_normal_correct(vert, n);
+        double norm=0;
+        for(int i=0; i<3; i++)
+        {
+            norm += n[i]*n[i];
+            result += n[i]*modes_.col(numcols-mode-1)[3*vert.idx()+i];
+        }
+        result /= sqrt(norm);
+    }
+    return result;
+}
+
+void NetworkMesh::edgeEndpointsWithMode(MyMesh::EdgeHandle edge, MyMesh::Point &p1, MyMesh::Point &p2, int mode, double t)
 {
     auto_ptr<MeshLock> ml = acquireMesh();
     MyMesh::HalfedgeHandle heh = mesh_.halfedge_handle(edge,0);
@@ -1664,12 +1718,13 @@ void NetworkMesh::edgeEndpointsWithMode(MyMesh::EdgeHandle edge, MyMesh::Point &
     p1 = mesh_.point(from);
     p2 = mesh_.point(to);
 
-    if(mode_.size() == 3*mesh_.n_vertices())
+    if(modes_.rows() == 3*mesh_.n_vertices() && mode >= 0 && modes_.cols() > mode)
     {
+        int numcols = modes_.cols();
         for(int j=0; j<3; j++)
         {
-            p1[j] += t*mode_[3*from.idx()+j];
-            p2[j] += t*mode_[3*to.idx()+j];
+            p1[j] += t*modes_.col(numcols-mode-1)[3*from.idx()+j];
+            p2[j] += t*modes_.col(numcols-mode-1)[3*to.idx()+j];
         }
     }
 }

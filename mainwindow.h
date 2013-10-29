@@ -156,6 +156,8 @@ private slots:
 
     void on_modeAmplitudeSlider_sliderMoved(int position);
 
+    void on_modeEdit_textEdited(const QString &arg1);
+
 protected:
     void moveEvent(QMoveEvent *);
     void resizeEvent(QResizeEvent *);

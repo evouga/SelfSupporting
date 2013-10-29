@@ -646,7 +646,7 @@
      <number>999</number>
     </property>
     <property name="value">
-     <number>10</number>
+     <number>100</number>
     </property>
     <property name="orientation">
      <enum>Qt::Horizontal</enum>
@@ -663,6 +663,32 @@
     </property>
     <property name="text">
      <string>Mode Amplitude</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="modeEdit">
+    <property name="geometry">
+     <rect>
+      <x>1170</x>
+      <y>760</y>
+      <width>41</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_8">
+    <property name="geometry">
+     <rect>
+      <x>1220</x>
+      <y>760</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Mode</string>
     </property>
    </widget>
   </widget>

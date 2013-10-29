@@ -326,6 +326,7 @@ void MainWindow::reportParams()
     c_.setInfluence(ui->influenceEdit->text().toInt());
     c_.setExcludePinned(ui->excludePinnedBox->isChecked());
     c_.setModeAmplitude(ui->modeAmplitudeSlider->value());
+    c_.setMode(ui->modeEdit->text().toInt());
 }
 
 void MainWindow::on_actionSubdivide_triggered()
@@ -552,4 +553,9 @@ void MainWindow::on_modeButton_clicked()
 void MainWindow::on_modeAmplitudeSlider_sliderMoved(int position)
 {
     c_.setModeAmplitude(position);
+}
+
+void MainWindow::on_modeEdit_textEdited(const QString &arg1)
+{
+    c_.setMode(arg1.toInt());
 }

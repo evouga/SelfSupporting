@@ -35,6 +35,7 @@ struct Params
     int influence;
     bool excludePinned;
     double modeAmplitude;
+    int mode;
 };
 
 class Controller : public QObject
@@ -123,6 +124,7 @@ public:
     void setInfluence(int influence);
     void setExcludePinned(bool state);
     void setModeAmplitude(int value);
+    void setMode(int mode);
 
     void pinReferenceBoundary();
     void unpinReferenceBoundary();
